@@ -49,6 +49,18 @@ const path = Astro.url.pathname;
       <a href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
       <a href="https://github.com/EshaanDhavala">GitHub</a>
       <a href="/resume.pdf">Résumé</a>
+      <details class="what-moves">
+        <summary>What’s moving in the background?</summary>
+        <p>Every animation on this site is drawn from real data from my projects:</p>
+        <ul>
+          <li><b>Top of the page:</b> a real NFL dropback replayed from 10 Hz player-tracking data (Justin Herbert, 2021 Week 3 at Kansas City). Blue dots are the offense, gray the defense, the outline is the pocket forming and collapsing. From QB Clutch Ratings.</li>
+          <li><b>Next to “Projects”:</b> the clutch ratings of all 15 quarterbacks, sorted. Bars above the line beat their own average in close games.</li>
+          <li><b>Under the field-goal model:</b> make probability by kick distance for an average kicker (blue), with elite and struggling kickers (gray). The gold dot rides the curve.</li>
+          <li><b>Beside “About me” (wide screens):</b> where one UCLA tennis player’s returns landed in a match, appearing one at a time. Gold marks returns that missed.</li>
+          <li><b>By “About me”:</b> my weekly average mood from 131 days of journal entries (JournalToData).</li>
+        </ul>
+        <p>Each one draws in, holds, fades out, and loops. They stop when you scroll away and stay still if your device asks for reduced motion.</p>
+      </details>
     </footer>
     <script>
       import '../scripts/game-motion';
@@ -84,4 +96,9 @@ const path = Astro.url.pathname;
   .foot .fname { display: inline-flex; align-items: center; min-height: 44px; font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
   .foot a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
   .foot a:hover { color: var(--lime); }
+  .what-moves { flex-basis: 100%; max-width: 46rem; margin: 1rem auto 0; font-size: 0.9rem; color: var(--ink-2); text-align: left; }
+  .what-moves summary { cursor: pointer; text-align: center; color: var(--ink-2); min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .what-moves summary:hover { color: var(--ink); }
+  .what-moves ul { margin: 0.6rem 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .what-moves b { color: var(--ink); font-weight: 600; }
 </style>

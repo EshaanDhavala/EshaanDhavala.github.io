@@ -3,7 +3,9 @@ import Game from '../layouts/Game.astro';
 import Card from '../components/game/Card.astro';
 import FgLive from '../components/FgLive.astro';
 import HeroPlay from '../components/HeroPlay.astro';
+import Ambient from '../components/Ambient.astro';
 import { entries, CATS } from '../data/entries';
+import { asset } from '../lib/asset';
 
 const career = [
   ['Summer 2026', 'USAA', 'Data Science Intern'],
@@ -44,7 +46,7 @@ const ticker = [
         </p>
       </div>
       <figure class="portrait" data-hero-in>
-        <div class="ring"><img src="/img/eshaan-circle.jpg" alt="Eshaan Dhavala" width="800" height="800" fetchpriority="high" /></div>
+        <div class="ring"><img src={asset("/img/eshaan-circle.jpg")} alt="Eshaan Dhavala" width="800" height="800" fetchpriority="high" /></div>
         <figcaption><b>UCLA ’27</b><span>Bruin Sports Analytics co-chair</span></figcaption>
       </figure>
     </div>
@@ -58,6 +60,7 @@ const ticker = [
 
   <section id="projects" class="projects wrap" aria-labelledby="projects-title">
     <div class="phead">
+      <Ambient kind="bars" class="amb-bars" />
       <div>
         <h2 id="projects-title">Projects</h2>
         <p class="count" data-count-label>{entries.length} projects</p>
@@ -77,6 +80,7 @@ const ticker = [
   </section>
 
   <section class="spot wrap" aria-labelledby="spot-title" data-reveal data-spot>
+    <Ambient kind="kick" class="amb-kick" />
     <div class="spot-head">
       <h2 id="spot-title">Try the field-goal model</h2>
       <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick.</p>
@@ -93,6 +97,8 @@ const ticker = [
   </section>
 
   <section id="profile" class="profile wrap" aria-labelledby="profile-title">
+    <Ambient kind="journal" class="amb-journal" />
+    <Ambient kind="tennis" class="amb-tennis" />
     <div class="p-main">
       <h2 id="profile-title" data-reveal>About me</h2>
       <ul class="tiles">
@@ -122,6 +128,17 @@ const ticker = [
 </Game>
 
 <style>
+  /* ---------- background data animations ---------- */
+  .projects, .spot, .roster, .profile { position: relative; }
+  .grid, .spot-head, .spot-panel, .p-main, .group { position: relative; z-index: 1; }
+  .phead > *:not(:global(.ambient)) { position: relative; z-index: 1; }
+  .phead :global(.amb-bars) { top: 8px; left: 260px; width: 320px; height: 90px; }
+  .spot :global(.amb-kick) { left: 0; bottom: -70px; width: 440px; height: 170px; }
+  .profile :global(.amb-tennis) { left: -200px; top: 140px; width: 180px; height: 220px; }
+  @media (max-width: 1439px) { .profile :global(.amb-tennis) { display: none; } }
+  .profile :global(.amb-journal) { right: 0; top: -10px; width: 380px; height: 120px; }
+  @media (max-width: 900px) { .phead :global(.amb-bars) { left: auto; right: 0; top: 4px; width: 160px; height: 60px; } }
+
   /* ---------- hero ---------- */
   .hero { position: relative; min-height: min(calc(100svh - 64px - 140px), 760px); display: flex; flex-direction: column; overflow: hidden; isolation: isolate; }
   .hero-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 2rem; padding: clamp(32px, 6vh, 72px) 0; }

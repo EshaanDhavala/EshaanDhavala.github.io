@@ -1,0 +1,121 @@
+---
+/**
+ * Faint background animations drawn from real project data. Each one draws in, holds,
+ * fades to empty, and repeats, so the loop never cuts. See the footer note for what each is.
+ *   kick    : field-goal make probability vs distance (elite / average / struggling kicker)
+ *   bars    : QB clutch ratings, 15 quarterbacks
+ *   tennis  : where one UCLA player's returns landed in a match
+ *   journal : weekly average mood, Jan–Jun 2026
+ */
+interface Props { kind: 'kick' | 'bars' | 'tennis' | 'journal'; class?: string }
+const { kind, class: cls } = Astro.props;
+---
+<div class:list={['ambient', cls]} aria-hidden="true"><canvas data-ambient={kind}></canvas></div>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const DRAW = 3.2, HOLD = 2.2, FADE = 1.2, GAP = 0.8, PERIOD = DRAW + HOLD + FADE + GAP;
+  const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+
+  type Painter = (ctx: CanvasRenderingContext2D, w: number, h: number, p: number) => void;
+  const cache: Record<string, Promise<any>> = {};
+  const get = (u: string, text = false) => (cache[u] ??= fetch(u).then((r) => (text ? r.text() : r.json())));
+
+  async function painter(kind: string): Promise<Painter> {
+    const blue = css('--blue') || '#7fb2e5', ink2 = css('--ink-2') || '#a9b4c6', gold = css('--lime') || '#f2b33d';
+    if (kind === 'kick') {
+      const g = await get('/data/fg_grid.json');
+      const lines = ['struggling|0', 'elite|0', 'average|0'].map((k) => g.grid[k] as number[]);
+      return (ctx, w, h, p) => {
+        const n = lines[0].length, upto = Math.max(2, Math.floor(ease(p) * n));
+        const X = (i: number) => (i / (n - 1)) * w, Y = (v: number) => h - ((v - 0.2) / 0.8) * h;
+        lines.forEach((L, li) => {
+          ctx.beginPath();
+          for (let i = 0; i < upto; i++) i ? ctx.lineTo(X(i), Y(L[i])) : ctx.moveTo(X(i), Y(L[i]));
+          ctx.strokeStyle = li === 2 ? blue : ink2; ctx.lineWidth = li === 2 ? 2.5 : 1.2; ctx.stroke();
+        });
+        const L = lines[2], i = upto - 1;
+        ctx.beginPath(); ctx.arc(X(i), Y(L[i]), 4, 0, Math.PI * 2); ctx.fillStyle = gold; ctx.fill();
+      };
+    }
+    if (kind === 'bars') {
+      const t: string = await get('/data/qb_clutch_ratings.csv', true);
+      const vals = t.trim().split('\n').slice(1).map((l) => +l.split(',')[3]).sort((a, b) => b - a);
+      return (ctx, w, h, p) => {
+        const n = vals.length, bw = w / n, mid = h / 2, k = ease(p);
+        vals.forEach((v, i) => {
+          const local = ease(p * 1.6 - i / n * 0.6) * (k > 0 ? 1 : 0);
+          const bh = (v / 0.6) * (h / 2) * local;
+          ctx.fillStyle = v >= 0 ? blue : ink2;
+          ctx.fillRect(i * bw + bw * 0.2, v >= 0 ? mid - bh : mid, bw * 0.6, Math.abs(bh));
+        });
+        ctx.fillStyle = ink2; ctx.fillRect(0, mid, w, 1);
+      };
+    }
+    if (kind === 'tennis') {
+      const r = await get('/data/returns.json');
+      const pts = r.filter((d: any) => d.Bounce_Side === 'far').map((d: any) => ({ x: -+d.Bounce_x, y: 23.77 - +d.Bounce_y, ok: d.Result === 'In' }));
+      return (ctx, w, h, p) => {
+        const s = Math.min(w / 12, h / 14), ox = w / 2, oy = h * 0.06;
+        const X = (x: number) => ox + x * s, Y = (y: number) => oy + (y + 1) * s;
+        ctx.strokeStyle = ink2; ctx.lineWidth = 1;
+        ctx.strokeRect(X(-4.115), Y(0), 8.23 * s, 11.885 * s);
+        ctx.beginPath(); ctx.moveTo(X(-4.115), Y(11.885 - 6.4)); ctx.lineTo(X(4.115), Y(11.885 - 6.4)); ctx.moveTo(X(0), Y(11.885 - 6.4)); ctx.lineTo(X(0), Y(11.885)); ctx.stroke();
+        ctx.fillStyle = ink2; ctx.fillRect(X(-5), Y(11.885) - 1, 10 * s, 2);
+        const show = Math.floor(ease(p) * pts.length);
+        pts.slice(0, show).forEach((d: any, i: number) => {
+          ctx.beginPath(); ctx.arc(X(d.x), Y(Math.max(-0.8, d.y)), i === show - 1 ? 5 : 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = d.ok ? blue : gold; ctx.fill();
+        });
+      };
+    }
+    // journal
+    const snap = await get('/data/journal_snapshot.json');
+    const m = snap.weeks.filter((w: any) => w.days_logged >= 5).map((w: any) => w.mood_1_10 as number);
+    return (ctx, w, h, p) => {
+      const n = m.length, upto = Math.max(2, Math.floor(ease(p) * n));
+      const X = (i: number) => (i / (n - 1)) * w, Y = (v: number) => h - ((v - 6.5) / 2.5) * h;
+      ctx.beginPath();
+      for (let i = 0; i < upto; i++) i ? ctx.lineTo(X(i), Y(m[i])) : ctx.moveTo(X(i), Y(m[i]));
+      ctx.strokeStyle = blue; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+      for (let i = 0; i < upto; i++) { ctx.beginPath(); ctx.arc(X(i), Y(m[i]), 2.5, 0, Math.PI * 2); ctx.fillStyle = blue; ctx.fill(); }
+    };
+  }
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-ambient]').forEach(async (cv, idx) => {
+    if (cv.dataset.ready) return; cv.dataset.ready = '1';
+    const ctx = cv.getContext('2d')!;
+    const paint = await painter(cv.dataset.ambient!);
+    let w = 0, h = 0, visible = false, raf = 0;
+    const offset = idx * 1.7; // stagger so they don't pulse in sync
+    const size = () => {
+      const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+      w = r.width; h = r.height; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const frame = (t: number) => {
+      ctx.clearRect(0, 0, w, h);
+      let p: number, a = 1;
+      if (t < DRAW) p = t / DRAW;
+      else if (t < DRAW + HOLD) p = 1;
+      else if (t < DRAW + HOLD + FADE) { p = 1; a = 1 - (t - DRAW - HOLD) / FADE; }
+      else { p = 0; a = 0; }
+      if (a <= 0) return;
+      ctx.globalAlpha = a; paint(ctx, w, h, p); ctx.globalAlpha = 1;
+    };
+    const tick = (now: number) => { frame(((now / 1000) + offset) % PERIOD); if (visible) raf = requestAnimationFrame(tick); };
+    size();
+    if (reduce) { frame(DRAW + 0.1); addEventListener('resize', () => { size(); frame(DRAW + 0.1); }); return; }
+    addEventListener('resize', size);
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting; cancelAnimationFrame(raf);
+      if (visible) raf = requestAnimationFrame(tick);
+    }).observe(cv);
+  });
+</script>
+
+<style>
+  .ambient { position: absolute; pointer-events: none; z-index: 0; opacity: 0.32; }
+  .ambient canvas { width: 100%; height: 100%; display: block; }
+  @media (max-width: 760px) { .ambient { opacity: 0.18; } }
+</style>

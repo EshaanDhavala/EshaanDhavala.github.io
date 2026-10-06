@@ -103,7 +103,7 @@ Muted team palette: night navy with two roles, never more.
 Same structure as before (sticky HUD, hero capped so the lineup peeks, 3 starters then the roster, project pages with picture + title then detail). Depth is flat: 1px insets only, no drop-shadow halos. Radii: 10px buttons, 16px cards, 4px chips, circular portrait with no ring.
 
 ## Motion
-Native scrolling (no smooth-scroll library). The hero replays a real 10 Hz tracking-data dropback (players as dots, pocket hull forming) on a canvas, paused off-screen and static under reduced motion. Hero name parallaxes with scroll; cards reveal in batches; card tilt on hover; stat count-ups; view transitions into project pages. Reduced motion turns all of it off.
+Native scrolling (no smooth-scroll library). The hero replays a real 10 Hz tracking-data dropback (players as dots, pocket hull forming) on a canvas, paused off-screen and static under reduced motion. Four faint background animations from real project data (QB clutch bars, FG make-probability curves, tennis return bounces, weekly mood) loop draw-in → hold → fade → gap; staggered, paused off-screen, explained in the footer ('What's moving in the background?'). Hero name parallaxes with scroll; cards reveal in batches; card tilt on hover; stat count-ups; view transitions into project pages. Reduced motion turns all of it off.
 
 ## Do's and Don'ts
 - **Do** let project pictures be the only saturated colour on the page.

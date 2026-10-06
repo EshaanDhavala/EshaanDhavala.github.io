@@ -1,11 +1,12 @@
 ---
 import type { Entry } from '../../data/entries';
 import { CATS } from '../../data/entries';
+import { asset } from '../../lib/asset';
 interface Props { e: Entry; eager?: boolean; headingLevel?: 2 | 3; big?: boolean }
 const { e, eager = false, headingLevel = 3, big = false } = Astro.props;
 const H = `h${headingLevel}`;
 const year = (e.when.match(/20\d\d/g) ?? ['']).slice(-1)[0];
-const src = e.pic.kind === 'img' ? e.pic.src : '';
+const src = e.pic.kind === 'img' ? asset(e.pic.src) : '';
 const alt = e.pic.kind === 'img' ? e.pic.alt : '';
 ---
 <article class:list={['card', { big }]} data-cats={e.cats.join(' ')} data-card style={`--c: var(--k-${e.plate})`}>

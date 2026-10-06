@@ -3,12 +3,13 @@ import Game from '../../layouts/Game.astro';
 import Card from '../../components/game/Card.astro';
 import Detail from '../../components/shared/Detail.astro';
 import { entries, CATS, type Entry } from '../../data/entries';
+import { asset } from '../../lib/asset';
 
 export function getStaticPaths() {
   return entries.map((e, i) => ({ params: { slug: e.slug }, props: { e, next: entries[(i + 1) % entries.length], prev: entries[(i - 1 + entries.length) % entries.length] } }));
 }
 const { e, next, prev } = Astro.props as { e: Entry; next: Entry; prev: Entry };
-const src = e.pic.kind === 'img' ? e.pic.src : '';
+const src = e.pic.kind === 'img' ? asset(e.pic.src) : '';
 const alt = e.pic.kind === 'img' ? e.pic.alt : '';
 ---
 <Game title={e.name} description={e.what} image={src}>

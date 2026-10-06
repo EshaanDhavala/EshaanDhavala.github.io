@@ -2,6 +2,7 @@
 /** Theme-neutral project detail: media, charts, bullets, figures, links. Themes style it via the .d-* classes. */
 import type { Entry } from '../../data/entries';
 import FgLive from '../FgLive.astro';
+import { asset } from '../../lib/asset';
 interface Props { e: Entry; headingLevel?: 2 | 3 }
 const { e, headingLevel = 3 } = Astro.props;
 const H = `h${headingLevel}`;
@@ -20,7 +21,7 @@ const chartLabel: Record<string, string> = {
   </dl>
   {e.video && (
     <figure class="d-video" id="demo">
-      <video src={e.video.src} poster={e.video.poster} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
+      <video src={asset(e.video.src)} poster={asset(e.video.poster)} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
     </figure>
   )}
   <div class="d-cols">
@@ -45,7 +46,7 @@ const chartLabel: Record<string, string> = {
   )}
   {e.figures?.map((f) => (
     <figure class="d-fig">
-      <a href={f.src}><img src={f.src} alt={f.alt} width={f.w} height={f.h} loading="lazy" decoding="async" /></a>
+      <a href={asset(f.src)}><img src={asset(f.src)} alt={f.alt} width={f.w} height={f.h} loading="lazy" decoding="async" /></a>
       <figcaption>{f.caption}</figcaption>
     </figure>
   ))}
