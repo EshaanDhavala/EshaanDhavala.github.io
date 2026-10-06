@@ -38,7 +38,7 @@ const chartLabel: Record<string, string> = {
   {e.note && <p class="d-note">{e.note}</p>}
   {e.charts?.map((c) =>
     c === 'fg' ? (
-      <figure class="d-fg"><FgLive /><figcaption>Predictions from the trained model: outdoor, 55°F, no rain, sea level, tie game.</figcaption></figure>
+      <figure class="d-fg"><FgLive /><figcaption>Predictions from the trained model: outdoor, 55°F, no rain, sea level, tie game. Capped at 57 yards, where the data runs out.</figcaption></figure>
     ) : (
       <figure class="d-chart"><div class="chart" data-chart={c} role="img" aria-label={chartLabel[c]}></div><figcaption>{chartLabel[c]}</figcaption></figure>
     ),

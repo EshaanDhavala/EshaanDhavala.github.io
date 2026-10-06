@@ -1,7 +1,6 @@
 // Motion for the sports-game theme: smooth scroll, parallax, reveal-on-scroll, card tilt, count-ups, category filter.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -56,28 +55,16 @@ function countUp(el: HTMLElement) {
 }
 
 function motion() {
-  const lenis = new Lenis({ lerp: 0.12 });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((t) => lenis.raf(t * 1000));
-  gsap.ticker.lagSmoothing(0);
-  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]').forEach((a) => {
-    const hash = a.getAttribute('href')!.replace(/^\//, '');
-    a.addEventListener('click', (e) => {
-      if (location.pathname !== '/' && a.getAttribute('href')!.startsWith('/#')) return;
-      const t = document.querySelector<HTMLElement>(hash);
-      if (t) { e.preventDefault(); lenis.scrollTo(t, { offset: -70 }); history.replaceState(null, '', hash); }
-    });
-  });
 
   // parallax: data-parallax="0.3" moves at 30% extra speed through its section
   document.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
     const s = parseFloat(el.dataset.parallax!);
     const root = el.closest<HTMLElement>('[data-parallax-root]') ?? el;
-    gsap.to(el, { yPercent: -100 * s, ease: 'none', scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: 0.6 } });
+    gsap.to(el, { yPercent: -100 * s, ease: 'none', scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true } });
   });
   // field lines scroll toward the viewer
   document.querySelectorAll<HTMLElement>('[data-field]').forEach((el) => {
-    gsap.to(el, { '--field-y': '420px', ease: 'none', scrollTrigger: { trigger: el.closest('[data-parallax-root]') ?? el, start: 'top top', end: 'bottom top', scrub: 0.6 } });
+    gsap.to(el, { '--field-y': '420px', ease: 'none', scrollTrigger: { trigger: el.closest('[data-parallax-root]') ?? el, start: 'top top', end: 'bottom top', scrub: true } });
   });
 
   // reveal: only hide what starts below the fold, so nothing above it ever flashes

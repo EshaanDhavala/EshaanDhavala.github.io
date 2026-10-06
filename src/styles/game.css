@@ -24,6 +24,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); scroll-padding-top: 80px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1.0625rem; line-height: 1.55; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; overflow-x: clip; }
 ::selection { background: var(--lime); color: var(--on-lime); }
 img, video, svg { display: block; max-width: 100%; }

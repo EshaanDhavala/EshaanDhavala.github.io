@@ -93,7 +93,6 @@ const catLabel = (c: string) => CATS.find((x) => x.id === c)!.label;
 <script>
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import Lenis from 'lenis';
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   gsap.registerPlugin(ScrollTrigger);
@@ -109,13 +108,6 @@ const catLabel = (c: string) => CATS.find((x) => x.id === c)!.label;
   });
 
   if (!reduce) {
-    const lenis = new Lenis({ lerp: 0.11 });
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((t) => lenis.raf(t * 1000));
-    gsap.ticker.lagSmoothing(0);
-    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) =>
-      a.addEventListener('click', (e) => { const t = document.querySelector(a.getAttribute('href')!); if (t) { e.preventDefault(); lenis.scrollTo(t as HTMLElement, { offset: -10 }); } }),
-    );
 
     // hero: name drifts apart, constellation moves at depth-scaled speeds
     gsap.to('.l1', { xPercent: -14, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
@@ -164,8 +156,6 @@ const catLabel = (c: string) => CATS.find((x) => x.id === c)!.label;
   }
   :global(html[data-preview='scroll'] body) { margin: 0; font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif; font-size: 1.05rem; line-height: 1.5; }
   :global(html[data-preview='scroll'] ::selection) { background: var(--violet); color: #0a0a0b; }
-  :global(html.lenis) { height: auto; }
-  :global(.lenis.lenis-smooth) { scroll-behavior: auto !important; }
 
   .hero { position: relative; min-height: 100dvh; display: grid; place-items: center; overflow: hidden; padding: 0 16px; }
   .float { position: absolute; inset: 0; }

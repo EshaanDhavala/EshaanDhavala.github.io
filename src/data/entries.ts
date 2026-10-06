@@ -86,6 +86,7 @@ export const entries: Entry[] = [
       'Held-out ROC-AUC 0.78',
       'Brier 0.104 vs 0.122 for guessing the league rate',
       'Live at playbyplay.football',
+      'Known limit: past ~57 yd the model flattens out (only 77 NFL attempts from 60+ since 2016), so long kicks come out too optimistic',
     ],
     links: [
       { href: 'https://playbyplay.football', label: 'Live tool' },

@@ -9,6 +9,7 @@ const career = [
   ['2026 – now', 'Bruin Sports Analytics', 'Football Co-Chair & Research Analyst'],
   ['2025 – 2026', 'Bruin Sports Analytics', 'Tennis Data Analyst'],
   ['2024 – 2026', 'Mystic Lake Casino Steakhouse', 'Lead Host'],
+  ['2022 – 2023', 'Tokyo Sushi and Grill', 'Host & Cashier'],
 ];
 const traits = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history', 'Astronomy'];
 const starters = entries.filter((e) => e.starter);
@@ -77,7 +78,7 @@ const ticker = [
   <section class="spot wrap" aria-labelledby="spot-title" data-reveal data-spot>
     <div class="spot-head">
       <h2 id="spot-title">Try the field-goal model</h2>
-      <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick.</p>
+      <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick. It stops at 57 yards: past that there are too few NFL attempts for the model to be trusted.</p>
       <a class="btn btn-line" href="/entries/nfl-overtime-4th-down/">See the project</a>
     </div>
     <div class="spot-panel"><FgLive /></div>
@@ -101,7 +102,7 @@ const ticker = [
       </ul>
       <h3 data-reveal>Career</h3>
       <table class="career" data-reveal>
-        <tbody>{career.map(([y, t, r], i) => <tr class:list={{ minor: i === career.length - 1 }}><td>{y}</td><td>{t}</td><td>{r}</td></tr>)}</tbody>
+        <tbody>{career.map(([y, t, r], i) => <tr class:list={{ minor: i >= 3 }}><td>{y}</td><td>{t}</td><td>{r}</td></tr>)}</tbody>
       </table>
       <h3 data-reveal>Off the field</h3>
       <ul class="traits" data-reveal>{traits.map((t) => <li>{t}</li>)}</ul>
