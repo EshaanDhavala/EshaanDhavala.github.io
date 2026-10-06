@@ -31,9 +31,9 @@ Eshaan is a UCLA Statistics & Data Science student (Dec 2027) who does sports an
 
 ## Brand Commitments
 
-- **Voice: casual but not corny.** It reads like Eshaan talking: short, plain, first person, confident. No jokes, puns, or quips, no "derpy" or millennial-internet tone, no forced personality, no "notebook" or "entry" metaphors, nothing that sounds like marketing or AI. The theme lives in the UI, not in wordplay in the copy. Labels can use game vocabulary ("Select a project", "Player profile", "Up next"); descriptions stay straight.
+- **Voice: casual but not corny.** It reads like Eshaan talking: short, plain, first person, confident. No jokes, puns, or quips, no "derpy" or millennial-internet tone, no forced personality, no "notebook" or "entry" metaphors, nothing that sounds like marketing or AI. The theme lives in the UI, not in wordplay in the copy. Labels stay plain ("Projects", "About me", "Interests"); descriptions stay straight.
 - **Minimal words.** Bullets, labels, numbers. One-line descriptions. Prose only where it's genuinely needed; no explanatory paragraphs.
-- **Theme: sports-game menu**, user-pinned (Oct 2026, replaced the kiosk). Projects are cards; categories are Sports / AI & ML / Stats; About is a "player profile". Must include scroll animations and parallax, still readable and quick to scan. No order bag or combos (user rejected them as tacky).
+- **No theme copy** (Oct 6 2026): plain labels (Projects, Featured, More projects, About me, Interests). Look: navy, blue numbers, gold actions. Flair comes from real data (hero replays a real tracking-data play), plus parallax and scroll reveals. No order bag, combos, or game/menu wording.
 - Sleek and modern, with a few human touches.
 - Contact: email, LinkedIn, GitHub. The résumé PDF is public and includes a phone number (his call).
 

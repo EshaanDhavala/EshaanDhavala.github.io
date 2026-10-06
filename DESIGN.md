@@ -81,9 +81,9 @@ components:
 
 ## Overview
 
-**Creative North Star: "Select Your Project"**
+**Creative North Star: "The Data Behind the Game"**
 
-A sports game's menu system (title screen, project select with a starting lineup and roster, player profile), drawn with restraint: night-navy ground, warm off-white type, upright stadium-signage display face, gold for actions and blue for numbers. Real artifacts carry the color; the chrome does not. No glows, gradients, neon, or per-category colour coding (removed Oct 2026 at Eshaan's request: they read as generic AI design).
+A plain portfolio (Projects: Featured + More projects, About me, Interests) with one signature: a real NFL play from Eshaan's tracking-data project replays in the hero. Drawn with restraint: night-navy ground, warm off-white type, upright stadium-signage display face, gold for actions and blue for numbers. Real artifacts carry the color; the chrome does not. No glows, gradients, neon, or per-category colour coding (removed Oct 2026 at Eshaan's request: they read as generic AI design).
 
 ## Colors
 Muted team palette: night navy with two roles, never more.
@@ -103,7 +103,7 @@ Muted team palette: night navy with two roles, never more.
 Same structure as before (sticky HUD, hero capped so the lineup peeks, 3 starters then the roster, project pages with picture + title then detail). Depth is flat: 1px insets only, no drop-shadow halos. Radii: 10px buttons, 16px cards, 4px chips, circular portrait with no ring.
 
 ## Motion
-Native scrolling (no smooth-scroll library). Hero name and faint field lines parallax with scroll; cards reveal in batches; card tilt on hover; stat count-ups; view transitions into project pages. Reduced motion turns all of it off.
+Native scrolling (no smooth-scroll library). The hero replays a real 10 Hz tracking-data dropback (players as dots, pocket hull forming) on a canvas, paused off-screen and static under reduced motion. Hero name parallaxes with scroll; cards reveal in batches; card tilt on hover; stat count-ups; view transitions into project pages. Reduced motion turns all of it off.
 
 ## Do's and Don'ts
 - **Do** let project pictures be the only saturated colour on the page.

@@ -1,0 +1,97 @@
+---
+/** A real NFL dropback from the QB clutch project, replayed from 10 Hz tracking data behind the hero. */
+---
+<div class="hero-play" aria-hidden="true">
+  <canvas data-hero-play></canvas>
+</div>
+<p class="hero-play-cap">Real tracking data: Herbert dropback, 2021 Wk 3 at KC. Blue = offense, outline = the pocket.</p>
+
+<script>
+  type P = [number, number, string];
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-play]');
+  if (canvas) {
+    const ctx = canvas.getContext('2d')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let data: { frames: P[][]; snapIndex: number; releaseIndex: number } | null = null;
+    let w = 0, h = 0, dpr = 1, raf = 0, visible = true, t0 = performance.now();
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+    function size() {
+      const r = canvas!.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1);
+      w = r.width; h = r.height;
+      canvas!.width = w * dpr; canvas!.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function hull(pts: number[][]) {
+      if (pts.length < 3) return pts;
+      pts = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const cross = (o: number[], a: number[], b: number[]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+      const lo: number[][] = [], up: number[][] = [];
+      for (const p of pts) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+      for (const p of pts.slice().reverse()) { while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    }
+    function draw(ft: number) {
+      if (!data) return;
+      const F = data.frames, n = F.length;
+      const i = Math.min(n - 2, Math.floor(ft)), a = ft - i;
+      const A = F[i], B = F[i + 1];
+      // scale: 30 yards across the canvas width, centered on the backfield
+      const s = Math.min(w / 30, h / 30);
+      const ox = w * 0.42, oy = h * 0.5;
+      const X = (x: number) => ox + x * s, Y = (y: number) => oy + y * s;
+      ctx.clearRect(0, 0, w, h);
+      const blue = css('--blue') || '#7fb2e5', ink = css('--ink') || '#f3efe6', ink2 = css('--ink-2') || '#a9b4c6', gold = css('--lime') || '#f2b33d';
+      // yard lines
+      ctx.strokeStyle = 'rgba(127,178,229,0.10)'; ctx.lineWidth = 1;
+      for (let yl = -20; yl <= 30; yl += 5) { ctx.beginPath(); ctx.moveTo(X(yl), 0); ctx.lineTo(X(yl), h); ctx.stroke(); }
+      const pos = A.map((p, k) => { const q = B[k] ?? p; return [p[0] + (q[0] - p[0]) * a, p[1] + (q[1] - p[1]) * a, p[2]] as P; });
+      // pocket: hull of pass blockers, after the snap
+      if (ft >= data.snapIndex) {
+        const ring = hull(pos.filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])]));
+        if (ring.length > 2) {
+          ctx.beginPath(); ring.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
+          ctx.fillStyle = 'rgba(127,178,229,0.10)'; ctx.fill();
+          ctx.strokeStyle = blue; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5; ctx.stroke(); ctx.globalAlpha = 1;
+        }
+      }
+      for (const [x, y, k] of pos) {
+        const r = k === 'b' ? 3.5 : k === 'q' ? 8 : 6;
+        ctx.beginPath(); ctx.arc(X(x), Y(y), r, 0, Math.PI * 2);
+        ctx.fillStyle = k === 'b' ? gold : k === 'q' ? ink : k === 'o' || k === 'w' ? blue : ink2;
+        ctx.globalAlpha = k === 'd' || k === 'r' ? 0.55 : 0.9;
+        ctx.fill(); ctx.globalAlpha = 1;
+      }
+    }
+    function loop(now: number) {
+      if (!data) return;
+      const n = data.frames.length;
+      const secs = (now - t0) / 1000;
+      const period = n / 10 + 1.4; // play at real speed, then hold
+      const ft = Math.min(n - 1.001, (secs % period) * 10);
+      draw(ft);
+      if (visible) raf = requestAnimationFrame(loop);
+    }
+    fetch('/data/hero-play.json').then((r) => r.json()).then((d) => {
+      data = d; size();
+      if (reduce) draw(d.releaseIndex);
+      else raf = requestAnimationFrame(loop);
+    });
+    addEventListener('resize', () => { size(); if (reduce && data) draw(data.releaseIndex); });
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible && !reduce && data) { cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
+    }).observe(canvas);
+  }
+</script>
+
+<style>
+  .hero-play { position: absolute; top: 0; bottom: 48px; left: 40%; right: 25%; z-index: -1; pointer-events: none; }
+  .hero-play canvas { width: 100%; height: 100%; display: block; }
+  .hero-play-cap { position: absolute; left: 44%; bottom: 60px; margin: 0; font-size: 0.75rem; color: var(--ink-2); max-width: 22rem; }
+  @media (max-width: 899px) {
+    .hero-play { inset: 0; opacity: 0.45; }
+    .hero-play-cap { display: none; }
+  }
+</style>

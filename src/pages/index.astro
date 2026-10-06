@@ -2,6 +2,7 @@
 import Game from '../layouts/Game.astro';
 import Card from '../components/game/Card.astro';
 import FgLive from '../components/FgLive.astro';
+import HeroPlay from '../components/HeroPlay.astro';
 import { entries, CATS } from '../data/entries';
 
 const career = [
@@ -27,7 +28,7 @@ const ticker = [
 ---
 <Game>
   <section class="hero" data-parallax-root aria-labelledby="hero-title">
-    <div class="field" data-field aria-hidden="true"></div>
+    <HeroPlay />
     <div class="hero-inner wrap">
       <div class="hero-text">
         <h1 id="hero-title" data-parallax="0.12"><span data-hero-in>Eshaan</span><span data-hero-in>Dhavala</span></h1>
@@ -58,7 +59,7 @@ const ticker = [
   <section id="projects" class="projects wrap" aria-labelledby="projects-title">
     <div class="phead">
       <div>
-        <h2 id="projects-title">Select a project</h2>
+        <h2 id="projects-title">Projects</h2>
         <p class="count" data-count-label>{entries.length} projects</p>
       </div>
       <div class="tabs" role="group" aria-label="Filter projects">
@@ -66,10 +67,10 @@ const ticker = [
         <button type="button" data-filter="all" aria-pressed="true">All</button>
         {CATS.map((c) => <button type="button" data-filter={c.id} aria-pressed="false">{c.label}</button>)}
         <span class="kbd hint" aria-hidden="true">E</span>
-        <span class="hint-txt hint" aria-hidden="true">to switch</span>
+        <span class="hint-txt hint" aria-hidden="true">keys to switch</span>
       </div>
     </div>
-    <h3 class="group" data-group="starters">Starting lineup</h3>
+    <h3 class="group" data-group="starters">Featured</h3>
     <div class="grid starters" data-list="starters">
       {starters.map((e, i) => <div class="cell" data-reveal><Card e={e} big eager={i < 2} /></div>)}
     </div>
@@ -85,7 +86,7 @@ const ticker = [
   </section>
 
   <section class="wrap roster" aria-labelledby="roster-title">
-    <h3 id="roster-title" class="group" data-group="bench">Rest of the roster</h3>
+    <h3 id="roster-title" class="group" data-group="bench">More projects</h3>
     <div class="grid" data-list="roster">
       {bench.map((e) => <div class="cell" data-bench data-reveal><Card e={e} /></div>)}
     </div>
@@ -93,18 +94,18 @@ const ticker = [
 
   <section id="profile" class="profile wrap" aria-labelledby="profile-title">
     <div class="p-main">
-      <h2 id="profile-title" data-reveal>Player profile</h2>
+      <h2 id="profile-title" data-reveal>About me</h2>
       <ul class="tiles">
         <li data-reveal><small>Studying</small><b>Statistics &amp; Data Science, UCLA</b></li>
         <li data-reveal><small>Graduating</small><b>December 2027</b></li>
         <li data-reveal><small>Team</small><b>Bruin Sports Analytics, football co-chair</b></li>
         <li data-reveal><small>Looking for</small><b>2027 roles in data science, ML, sports analytics</b></li>
       </ul>
-      <h3 data-reveal>Career</h3>
+      <h3 data-reveal>Experience</h3>
       <table class="career" data-reveal>
         <tbody>{career.map(([y, t, r], i) => <tr class:list={{ minor: i >= 3 }}><td>{y}</td><td>{t}</td><td>{r}</td></tr>)}</tbody>
       </table>
-      <h3 data-reveal>Off the field</h3>
+      <h3 data-reveal>Interests</h3>
       <ul class="traits" data-reveal>{traits.map((t) => <li>{t}</li>)}</ul>
       <a class="news" href="https://plhswave.org/4411/features/study-hard-crunch-harder/" data-reveal>
         <span class="n-src">In the news</span>
@@ -123,17 +124,6 @@ const ticker = [
 <style>
   /* ---------- hero ---------- */
   .hero { position: relative; min-height: min(calc(100svh - 64px - 140px), 760px); display: flex; flex-direction: column; overflow: hidden; isolation: isolate; }
-  .field {
-    --field-y: 0px;
-    position: absolute; left: -40%; right: -40%; bottom: 48px; height: 115%; z-index: -1;
-    transform: perspective(900px) rotateX(58deg); transform-origin: 50% 100%;
-    background:
-      repeating-linear-gradient(0deg, rgba(127, 178, 229, 0.12) 0 2px, transparent 2px 84px),
-      var(--bg-2);
-    background-position: 0 var(--field-y);
-    mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
-  }
   .hero-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 2rem; padding: clamp(32px, 6vh, 72px) 0; }
   @media (min-width: 900px) { .hero-inner { grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); } }
   h1 { display: flex; flex-direction: column; font-weight: 900; font-size: clamp(4rem, 12vw, 10rem); line-height: 0.82; letter-spacing: 0; }

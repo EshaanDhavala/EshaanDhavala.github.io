@@ -35,7 +35,7 @@ const path = Astro.url.pathname;
       <a class="brand" href="/" aria-label="Eshaan Dhavala, home"><span>Eshaan</span> <span>Dhavala</span></a>
       <nav aria-label="Site">
         <a href="/#projects">Projects</a>
-        <a href="/#profile">Profile</a>
+        <a href="/#profile">About</a>
         <a href="/resume.pdf">Résumé</a>
         <a class="mail" href="mailto:eshaandhavala@gmail.com">Email</a>
       </nav>
@@ -80,8 +80,8 @@ const path = Astro.url.pathname;
     nav a[href='/resume.pdf'] { display: none; }
     nav .mail { padding: 0 12px; }
   }
-  .foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.6rem; padding: 3rem 0 4rem; margin-top: 5rem; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 0.95rem; }
-  .foot .fname { font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
+  .foot { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.25rem 1.6rem; padding: 3rem 0 4rem; margin-top: 5rem; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 0.95rem; }
+  .foot .fname { display: inline-flex; align-items: center; min-height: 44px; font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
   .foot a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
   .foot a:hover { color: var(--lime); }
 </style>
