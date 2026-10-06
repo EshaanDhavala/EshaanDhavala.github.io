@@ -28,6 +28,7 @@ const path = Astro.url.pathname;
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
     <meta name="theme-color" content="#0f1724" />
+    <script is:inline data-goatcounter="https://eshaandhavala.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </head>
   <body>
     <a class="visually-hidden skip" href="#main">Skip to content</a>
@@ -36,7 +37,7 @@ const path = Astro.url.pathname;
       <nav aria-label="Site">
         <a href="/#projects">Projects</a>
         <a href="/#profile">About</a>
-        <a href="/tools/">Tools</a>
+        <a href="/tools/"><span class="nav-ai">AI&nbsp;</span>Tools</a>
         <a href="/resume.pdf">Résumé</a>
         <a class="mail" href="mailto:eshaandhavala@gmail.com">Email</a>
       </nav>
@@ -50,7 +51,7 @@ const path = Astro.url.pathname;
       <a href="mailto:eshaandhavala@gmail.com">eshaandhavala@gmail.com</a>
       <a href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
       <a href="https://github.com/EshaanDhavala">GitHub</a>
-      <a href="/tools/">Tools</a>
+      <a href="/tools/"><span class="nav-ai">AI&nbsp;</span>Tools</a>
       <a href="/resume.pdf">Résumé</a>
       <details class="what-moves">
         <summary>What’s moving in the background?</summary>
@@ -61,7 +62,7 @@ const path = Astro.url.pathname;
           <li><b>Under the field-goal model:</b> make probability by kick distance for an average kicker (blue), with elite and struggling kickers (gray). The gold dot rides the curve.</li>
           <li><b>Beside “About me” (wide screens):</b> where one UCLA tennis player’s returns landed in a match, appearing one at a time. Gold marks returns that missed.</li>
           <li><b>By “About me”:</b> my weekly average mood from 131 days of journal entries (JournalToData).</li>
-          <li><b>Above the field-goal model:</b> the USAA closure-reason capture rate climbing from 28% to 66%.</li>
+          <li><b>Above the field-goal model (right):</b> the USAA closure-reason capture rate climbing from 28% to 66%.</li>
           <li><b>Next to the field-goal title:</b> PlayScan’s pass / run / special-teams probabilities on the 6 plays in its demo video.</li>
           <li><b>Next to “More projects”:</b> the UCLA Football AI assistant: a question, typing dots, then the answer’s bars (synthetic demo data).</li>
           <li><b>In “About me”:</b> share of severe (blue), moderate and mild ADHD cases by household income, from the DataLearn project.</li>
@@ -93,7 +94,7 @@ const path = Astro.url.pathname;
   .brand { display: inline-flex; align-items: center; gap: 0.28em; min-height: 44px; text-decoration: none; font: 900 1.55rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.01em; white-space: nowrap; }
   .brand span:last-child { color: var(--blue); }
   nav { display: flex; align-items: center; gap: clamp(0.75rem, 2.4vw, 1.75rem); font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.06em; }
-  nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; color: var(--ink-2); }
+  nav a { white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; color: var(--ink-2); }
   nav a:hover { color: var(--ink); }
   nav .mail { color: var(--on-lime); background: var(--lime); padding: 0 14px; border-radius: 8px; }
   nav .mail:hover { background: #f7c25e; color: var(--on-lime); }
@@ -103,6 +104,7 @@ const path = Astro.url.pathname;
     nav { gap: 0.8rem; font-size: 0.95rem; }
     nav a[href='/resume.pdf'] { display: none; }
     nav .mail { padding: 0 12px; }
+    .nav-ai { display: none; }
   }
   @media (max-width: 420px) {
     nav a[href='/#profile'] { display: none; }
