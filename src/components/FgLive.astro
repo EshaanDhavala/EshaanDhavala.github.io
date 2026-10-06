@@ -1,7 +1,7 @@
 ---
 /** The field-goal model, live: precomputed predictions from the trained model, driven by three controls. */
 ---
-<div class="fg" data-fg>
+<div class="fg" data-fg style="color: var(--fg-ink, #fff)">
   <div class="readout" aria-live="polite">
     <span class="pct" data-fg-pct>78%</span>
     <span class="cap">chance it’s good</span>
@@ -37,10 +37,14 @@
 
   let grid: any;
   async function setup() {
-    const root = document.querySelector<HTMLElement>('[data-fg]');
-    if (!root || root.dataset.ready) return;
-    root.dataset.ready = '1';
+    const roots = document.querySelectorAll<HTMLElement>('[data-fg]:not([data-ready])');
+    if (!roots.length) return;
+    roots.forEach((r) => (r.dataset.ready = 'pending'));
     grid ??= await fetch('/data/fg_grid.json').then((r) => r.json());
+    roots.forEach(init);
+  }
+  function init(root: HTMLElement) {
+    root.dataset.ready = '1';
     const state = { d: 50, gust: '0', kicker: 'average' };
     const pct = root.querySelector<HTMLElement>('[data-fg-pct]')!;
     const dist = root.querySelector<HTMLElement>('[data-fg-dist]')!;
@@ -53,18 +57,21 @@
       pct.textContent = `${Math.round(p * 100)}%`;
       dist.textContent = `${state.d} yd`;
       const rows = grid.distances.map((d: number, i: number) => ({ d, p: series()[i] }));
-      const ink = getComputedStyle(root!).getPropertyValue('--fg-ink').trim() || '#fff';
+      const cs = getComputedStyle(root);
+      const ink = cs.getPropertyValue('--fg-ink').trim() || '#fff';
+      const accent = cs.getPropertyValue('--fg-accent').trim() || '#ff5a1f';
+      const font = cs.fontFamily;
       curve.replaceChildren(
         Plot.plot({
           width: Math.min(curve.clientWidth || 420, 560), height: 120, marginLeft: 0, marginRight: 8, marginTop: 8, marginBottom: 22,
-          style: { background: 'transparent', color: ink, fontFamily: 'Archivo Variable, sans-serif', fontSize: '11px' },
+          style: { background: 'transparent', color: ink, fontFamily: font, fontSize: '11px' },
           x: { domain: [18, 66], ticks: [20, 30, 40, 50, 60], tickFormat: (d: number) => `${d}`, label: null },
           y: { domain: [0.4, 1], axis: null },
           marks: [
             Plot.areaY(rows, { x: 'd', y1: 0.4, y2: 'p', fill: ink, fillOpacity: 0.14, curve: 'monotone-x' }),
             Plot.lineY(rows, { x: 'd', y: 'p', stroke: ink, strokeWidth: 2.5, curve: 'monotone-x' }),
             Plot.ruleX([state.d], { stroke: ink, strokeDasharray: '3 3' }),
-            Plot.dot([{ d: state.d, p: series()[state.d - 18] }], { x: 'd', y: 'p', r: 7, fill: '#ff5a1f', stroke: ink, strokeWidth: 2 }),
+            Plot.dot([{ d: state.d, p: series()[state.d - 18] }], { x: 'd', y: 'p', r: 7, fill: accent, stroke: ink, strokeWidth: 2 }),
           ],
         }),
       );
@@ -84,11 +91,11 @@
     update();
   }
   document.addEventListener('astro:page-load', setup);
+  setup();
 </script>
 
 <style>
   .fg {
-    --fg-ink: #ffffff;
     display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; color: var(--fg-ink);
   }
   .readout { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
@@ -99,14 +106,15 @@
   .ctl-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; opacity: 0.85; margin-bottom: 0.4rem; padding: 0; }
   .ctl-label b { font-weight: 800; opacity: 1; }
   .slider { display: block; }
-  input[type='range'] { width: 100%; accent-color: #ff5a1f; height: 28px; cursor: pointer; }
+  input[type='range'] { width: 100%; accent-color: var(--fg-accent, #ff5a1f); height: 28px; cursor: pointer; }
   .seg { display: flex; gap: 0.35rem; flex-wrap: wrap; }
   .seg button {
     min-height: 40px; padding: 0 0.9rem; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.12); color: var(--fg-ink); border: 1px solid rgba(255, 255, 255, 0.28);
+    background: color-mix(in srgb, var(--fg-ink) 12%, transparent); color: var(--fg-ink); border: 1px solid color-mix(in srgb, var(--fg-ink) 30%, transparent);
+    font-family: inherit;
   }
-  .seg button:hover { background: rgba(255, 255, 255, 0.22); }
-  .seg button[aria-pressed='true'] { background: #fff; color: #0f3d25; border-color: #fff; }
+  .seg button:hover { background: color-mix(in srgb, var(--fg-ink) 22%, transparent); }
+  .seg button[aria-pressed='true'] { background: var(--fg-ink); color: var(--fg-on-ink, #0f3d25); border-color: var(--fg-ink); }
   .curve { min-height: 120px; }
   @media (min-width: 900px) {
     .fg { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: end; column-gap: 2rem; }

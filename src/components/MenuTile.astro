@@ -1,24 +1,19 @@
 ---
-import Icon from './Icon.astro';
+import Pic from './shared/Pic.astro';
 import type { Entry } from '../data/entries';
 
 interface Props { e: Entry; eager?: boolean }
 const { e, eager = false } = Astro.props;
-const thumb = e.slug === 'playscan' ? '/thumbs/playscan.jpg' : `/thumbs/${e.slug}.svg`;
 ---
 <article class="tile" data-cats={e.cats.join(' ')}>
   <div class="pic" style={`--plate: var(--${e.plate})`} transition:name={`pic-${e.slug}`}>
-    <img src={thumb} alt="" width="640" height="400" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    <Pic e={e} eager={eager} />
   </div>
   <div class="body">
     <h3><a href={`/entries/${e.slug}/`}>{e.name}</a></h3>
     <p class="what">{e.what}</p>
     <div class="row">
       <span class="chip">{e.stat.value} <small>{e.stat.label}</small></span>
-      <button type="button" class="add" data-add={e.slug} aria-pressed="false" aria-label={`Add ${e.name} to order`}>
-        <span class="i-plus"><Icon name="plus" size={20} /></span>
-        <span class="i-check"><Icon name="check" size={20} /></span>
-      </button>
     </div>
   </div>
 </article>
@@ -31,8 +26,8 @@ const thumb = e.slug === 'playscan' ? '/thumbs/playscan.jpg' : `/thumbs/${e.slug
   }
   .tile:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(22, 20, 31, 0.06), 0 18px 36px -16px rgba(22, 20, 31, 0.35); }
   .tile:has(a:focus-visible) { outline: 3px solid var(--sauce); outline-offset: 3px; }
-  .pic { background: var(--plate); aspect-ratio: 16 / 10; }
-  .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .pic { background: var(--plate); color: #fff; }
+  .pic :global(.pic) { height: 100%; }
   .body { display: flex; flex-direction: column; gap: 0.45rem; padding: 0.95rem 1rem 1rem; flex: 1; }
   h3 { font-size: 1.12rem; font-stretch: 112%; }
   h3 a { text-decoration: none; }
@@ -41,17 +36,6 @@ const thumb = e.slug === 'playscan' ? '/thumbs/playscan.jpg' : `/thumbs/${e.slug
   .what { color: var(--ink-2); font-size: 0.92rem; line-height: 1.4; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: auto; padding-top: 0.35rem; }
   .row .chip { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .add {
-    position: relative; z-index: 2; flex: none; width: 44px; height: 44px; border-radius: 999px; border: 0; cursor: pointer;
-    display: grid; place-items: center; background: var(--ink); color: var(--tile);
-    transition: background-color 140ms ease-out, transform 120ms ease-out;
-  }
-  .add:hover { background: var(--violet); color: #fff; }
-  .add:active { transform: scale(0.92); }
-  .add .i-check { display: none; }
-  .add[aria-pressed='true'] { background: var(--violet); color: #fff; }
-  .add[aria-pressed='true'] .i-plus { display: none; }
-  .add[aria-pressed='true'] .i-check { display: block; }
 
   @media (max-width: 640px) {
     .tile { flex-direction: row; }

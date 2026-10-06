@@ -3,7 +3,7 @@ import Kiosk from '../layouts/Kiosk.astro';
 import MenuTile from '../components/MenuTile.astro';
 import FgLive from '../components/FgLive.astro';
 import Icon from '../components/Icon.astro';
-import { entries, CATS, COMBOS, bySlug } from '../data/entries';
+import { entries, CATS } from '../data/entries';
 
 const experience = [
   ['Data Science Intern', 'USAA', 'May – Aug 2026'],
@@ -24,7 +24,6 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
             {c.label} <span>{entries.filter((e) => e.cats.includes(c.id)).length}</span>
           </button>
         ))}
-        <a class="cat" href="#combos">Combos</a>
         <a class="cat" href="#about">About</a>
       </div>
     </nav>
@@ -38,9 +37,6 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
           </div>
           <div class="promo-actions">
             <span class="chip">0.78 <small>AUC</small></span>
-            <button type="button" class="btn btn-sauce" data-add="nfl-overtime-4th-down" data-add-text="Add to order" data-added-text="In your order" aria-pressed="false">
-              <span data-add-label>Add to order</span>
-            </button>
             <a class="btn btn-onplate" href="/entries/nfl-overtime-4th-down/">Details <Icon name="arrow-right" size={18} /></a>
           </div>
         </div>
@@ -57,29 +53,8 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
         </div>
       </section>
 
-      <section id="combos" aria-labelledby="combos-title">
-        <div class="sec-head"><h2 id="combos-title">Combos</h2></div>
-        <div class="combos">
-          {COMBOS.map((c) => (
-            <article class="combo">
-              <div class="combo-pics" aria-hidden="true">
-                {c.slugs.map((s) => {
-                  const e = bySlug(s);
-                  return <div style={`background: var(--${e.plate})`}><img src={s === 'playscan' ? '/thumbs/playscan.jpg' : `/thumbs/${s}.svg`} alt="" width="640" height="400" loading="lazy" /></div>;
-                })}
-              </div>
-              <div class="combo-body">
-                <h3>{c.name}</h3>
-                <ul>{c.slugs.map((s) => <li><a href={`/entries/${s}/`}>{bySlug(s).name}</a></li>)}</ul>
-                <button type="button" class="btn btn-ghost" data-add-combo={c.slugs.join(',')}><Icon name="plus" size={18} /> <span data-add-label>Add combo</span></button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section id="about" class="about" aria-labelledby="about-title">
-        <img class="photo" src="/img/eshaan.jpg" alt="Eshaan Dhavala" width="599" height="900" loading="lazy" />
+        <img class="photo" src="/img/eshaan.jpg" alt="Eshaan Dhavala" width="900" height="900" loading="lazy" />
         <div class="about-body">
           <h2 id="about-title">Hi, I’m Eshaan.</h2>
           <ul class="facts">
@@ -118,7 +93,6 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
 </Kiosk>
 
 <script>
-  import '../scripts/order';
   function setupFilter() {
     const btns = document.querySelectorAll<HTMLButtonElement>('.rail [data-filter]');
     const tiles = document.querySelectorAll<HTMLElement>('#menu .tile');
@@ -168,13 +142,13 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
     .rail { height: calc(100dvh - 68px); }
     .rail-inner { flex-direction: column; padding: 1.25rem 0.85rem; overflow: visible; }
     .cat { min-height: 52px; font-size: 1.08rem; padding: 0 1rem; border-radius: 12px; }
-    .cat[href='#combos'] { margin-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.22); border-radius: 0 0 12px 12px; padding-top: 1.25rem; min-height: 64px; }
+    .cat[href='#about'] { margin-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.22); border-radius: 0 0 12px 12px; padding-top: 1.25rem; min-height: 64px; }
   }
 
   .content { padding: clamp(16px, 2.5vw, 32px); padding-bottom: 0; display: flex; flex-direction: column; gap: 3.5rem; min-width: 0; }
 
   .promo {
-    --fg-ink: #fff;
+    --fg-ink: #fff; --fg-accent: #ff5a1f; --fg-on-ink: #0f3d25;
     background: var(--football); color: #fff; border-radius: 22px; padding: clamp(18px, 3vw, 32px);
     display: flex; flex-direction: column; gap: 1.5rem;
     background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
@@ -207,24 +181,13 @@ const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op pu
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 248px), 1fr)); }
   .grid :global(.tile[hidden]) { display: none; }
 
-  .combos { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
-  .combo { background: var(--tile); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
-  .combo-pics { display: grid; grid-template-columns: repeat(4, 1fr); }
-  .combo-pics div { aspect-ratio: 1; }
-  .combo-pics img { width: 100%; height: 100%; object-fit: cover; }
-  .combo-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
-  .combo h3 { font-size: 1.25rem; font-stretch: 118%; }
-  .combo ul { list-style: none; display: flex; flex-direction: column; gap: 0.2rem; color: var(--ink-2); font-size: 0.95rem; }
-  .combo li a { text-decoration: none; }
-  .combo li a:hover { color: var(--violet); text-decoration: underline; }
-  .combo .btn { margin-top: auto; align-self: flex-start; }
 
   .about {
     display: grid; gap: clamp(1.25rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr);
     background: var(--tile); border-radius: 22px; padding: clamp(18px, 3vw, 36px); box-shadow: var(--shadow);
   }
   @media (min-width: 820px) { .about { grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr); align-items: start; } }
-  .photo { width: 100%; max-width: 340px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 16px; background: var(--screen); }
+  .photo { width: 100%; max-width: 300px; aspect-ratio: 1; object-fit: cover; border-radius: 16px; background: var(--screen); }
   @media (min-width: 820px) { .photo { position: sticky; top: 100px; } }
   .about-body { display: flex; flex-direction: column; gap: 1rem; max-width: 46rem; }
   .about h2 { font-size: clamp(2rem, 4vw, 2.8rem); font-stretch: 125%; }

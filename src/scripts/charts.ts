@@ -1,7 +1,7 @@
 import * as Plot from '@observablehq/plot';
 
 const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const style = () => ({ background: 'transparent', color: css('--ink'), fontFamily: 'Archivo Variable, sans-serif', fontSize: '12px' });
+const style = () => ({ background: 'transparent', color: css('--ink'), fontFamily: getComputedStyle(document.body).fontFamily, fontSize: '12px' });
 const width = (el: HTMLElement, max = 860) => Math.min(el.clientWidth || 640, max);
 const cache = new Map<string, Promise<any>>();
 const get = (url: string, text = false) => {
@@ -42,6 +42,30 @@ const charts: Record<string, (el: HTMLElement) => Promise<Element>> = {
       ],
     });
   },
+  async 'journal-dow'(el) {
+    const s = await get('/data/journal_snapshot.json');
+    const rows = s.insights.by_dow as { dow: string; mood: number; gym_rate: number }[];
+    const days = rows.map((r) => r.dow);
+    const w = Math.min(width(el), 760);
+    const half = (w - 24) / 2;
+    const common = { height: 220, style: style(), x: { domain: days, label: null, padding: 0.25 } };
+    const mood = Plot.plot({
+      ...common, width: half, marginLeft: 32,
+      y: { domain: [7, 8.5], label: 'mood', grid: true },
+      marks: [Plot.barY(rows, { x: 'dow', y1: 7, y2: 'mood', fill: (d) => (d.mood === Math.max(...rows.map((r) => r.mood)) ? css('--sauce') : css('--violet')), rx: 3 }),
+        Plot.text(rows, { x: 'dow', y: 'mood', text: (d) => d.mood.toFixed(1), dy: -8, fill: css('--ink'), fontWeight: 700 })],
+    });
+    const gym = Plot.plot({
+      ...common, width: half, marginLeft: 36,
+      y: { domain: [0, 1], label: 'gym days', tickFormat: '%', grid: true },
+      marks: [Plot.barY(rows, { x: 'dow', y: 'gym_rate', fill: css('--violet'), rx: 3 }),
+        Plot.text(rows, { x: 'dow', y: 'gym_rate', text: (d) => `${Math.round(d.gym_rate * 100)}%`, dy: -8, fill: css('--ink'), fontWeight: 700 })],
+    });
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:24px;justify-content:center';
+    wrap.append(mood, gym);
+    return wrap;
+  },
   async tennis(el) {
     const raw = await get('/data/returns.json');
     const pts = raw.filter((d: any) => d.Bounce_Side === 'far').map((d: any) => ({ ...d, x: -+d.Bounce_x, y: 23.77 - +d.Bounce_y }));
@@ -77,6 +101,7 @@ function drawAll() {
 
 let t: number | undefined;
 document.addEventListener('astro:page-load', drawAll);
+drawAll();
 window.addEventListener('themechange', drawAll);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawAll);
 window.addEventListener('resize', () => { clearTimeout(t); t = window.setTimeout(drawAll, 160); });

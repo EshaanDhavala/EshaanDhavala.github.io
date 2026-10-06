@@ -27,9 +27,11 @@ export interface Entry {
   results: string[];
   links: Link[];
   figures?: Figure[];
-  /** interactive chart on the item screen */
-  chart?: 'qb' | 'journal' | 'tennis' | 'fg';
-  video?: { src: string; poster: string };
+  /** card picture: an inline data drawing (src/assets/thumbs/<slug>.svg) or a photo */
+  pic: { kind: 'svg' } | { kind: 'img'; src: string; alt: string };
+  /** interactive charts on the detail view */
+  charts?: ('qb' | 'journal' | 'journal-dow' | 'tennis' | 'fg')[];
+  video?: { src: string; poster: string; label: string };
   note?: string;
 }
 
@@ -41,6 +43,8 @@ export const entries: Entry[] = [
     stat: { value: '~6s', label: 'per answer' },
     cats: ['football', 'ai'],
     plate: 'ai',
+    pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'The AI Assistant answering which O-linemen have the weakest hamstrings, with a bar chart' },
+    video: { src: '/media/ai-assistant.mp4', poster: '/media/ai-assistant-poster.jpg', label: 'Screen recording of the AI Assistant answering four coach questions with charts and a CSV, on synthetic data' },
     when: '2026',
     where: 'Bruin Sports Analytics × UCLA Football',
     stack: ['R / Shiny', 'Anthropic API', 'Tool use', 'dplyr'],
@@ -57,7 +61,7 @@ export const entries: Entry[] = [
       'Demo on synthetic data; real-athlete use waiting on privacy approval',
     ],
     links: [],
-    figures: [{ src: '/img/ucla-dashboard.jpg', alt: 'UCLA Performance Database dashboard with a roster table ranked by Athleticism Score', caption: 'The dashboard it lives in. Synthetic data: every name and number is fake.', w: 1440, h: 900, wide: true }],
+    note: 'Recorded on synthetic data. Every athlete name and number is fake.',
   },
   {
     slug: 'nfl-overtime-4th-down',
@@ -84,7 +88,8 @@ export const entries: Entry[] = [
       { href: 'https://playbyplay.football', label: 'Live tool' },
       { href: 'https://github.com/Bruin-Sports-Analytics/nfl-ot-4th-down-model/tree/feature/fg-probability-model', label: 'Code' },
     ],
-    chart: 'fg',
+    pic: { kind: 'svg' },
+    charts: ['fg'],
     figures: [
       { src: '/img/fg-explainer.png', alt: 'Four-panel chart of field goal make probability by distance, kicker quality, weather, and game scenario', caption: 'The summary slide I presented.', w: 1600, h: 891, wide: true },
       { src: '/img/fg-heatmap.png', alt: 'Heatmap of make probability by kick distance and wind gust speed', caption: 'Distance × wind gust, league-average kicker.', w: 1600, h: 1002 },
@@ -104,7 +109,8 @@ export const entries: Entry[] = [
       'Pipeline joining 10 Hz NFL tracking (2021, wks 1–8) to play-by-play',
       'Pass-rusher features; fixed data leakage across the team’s code',
       'XGBoost predicts EPA per dropback from pocket, pressure, QB, and game state',
-      'Clutch rating = vs. expected in close games (40–60% win prob), minus the QB’s average',
+      'Clutch = Q4/OT plays that are close (40–60% win prob), a 4th down within one score, or a 2-minute drill',
+      'Clutch rating = performance vs. expected on clutch plays, minus the QB’s own average',
     ],
     results: [
       'Leave-one-week-out RMSE 1.57 EPA',
@@ -112,7 +118,8 @@ export const entries: Entry[] = [
       'Small samples (11–41 clutch dropbacks per QB): a first look',
     ],
     links: [{ href: 'https://github.com/Bruin-Sports-Analytics/qb-optimality', label: 'Code' }],
-    chart: 'qb',
+    pic: { kind: 'svg' },
+    charts: ['qb'],
   },
   {
     slug: 'usaa-closure-reasons',
@@ -134,6 +141,7 @@ export const entries: Entry[] = [
       'Pitched 3 fixes to senior leadership: rep training, a better dropdown, predicting the reason before the call',
     ],
     links: [],
+    pic: { kind: 'svg' },
     note: 'Internal work. No company data shown.',
   },
   {
@@ -151,9 +159,10 @@ export const entries: Entry[] = [
       '16 frames per play → ResNet18 → LSTM → class',
       'Live mode: detects each snap from screen motion, overlays the call',
     ],
-    results: ['89% on held-out validation clips'],
+    results: ['89% on held-out validation clips', 'Demo: 6 validation plays it never trained on, with its real probabilities'],
     links: [{ href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
-    video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg' },
+    pic: { kind: 'img', src: '/thumbs/playscan.jpg', alt: 'PlayScan calling a run play over an NFL broadcast' },
+    video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg', label: 'PlayScan reading six validation plays and calling pass, run, or special teams with its probabilities' },
   },
   {
     slug: 'journal-to-data',
@@ -170,9 +179,15 @@ export const entries: Entry[] = [
       'Pydantic validation; asks a follow-up when something’s missing',
       'Streamlit app: log, dashboard, weekly review, chat with your data',
     ],
-    results: ['131 of 132 nights logged', '57 gym days · 8.2 h avg sleep · 7.8/10 avg mood'],
+    results: [
+      '131 of 132 nights logged · 57 gym days · 8.2 h avg sleep',
+      'Best mood: Fridays (8.3/10). Lowest: Tuesdays (7.5)',
+      'Gym schedule: Mon/Tue 68%, Thu 58%, Sun 11%. Split: 21 push, 19 pull, 11 legs',
+      'Sleep and mood barely move together (r = −0.12); gym days and rest days had the same mood',
+    ],
     links: [{ href: 'https://github.com/EshaanDhavala/Journal-to-Data-Base', label: 'Code' }],
-    chart: 'journal',
+    pic: { kind: 'svg' },
+    charts: ['journal-dow', 'journal'],
   },
   {
     slug: 'tennis-scouting',
@@ -190,9 +205,11 @@ export const entries: Entry[] = [
       'Leaflet travel map: venues, live weather, court conditions',
       'Built data for 12 untracked away matches from video',
     ],
-    results: ['Scouting graphics for 8 opponents'],
+    results: ['Scouting graphics for 8 opponents', 'Travel map used by players on the road'],
     links: [],
-    chart: 'tennis',
+    pic: { kind: 'img', src: '/thumbs/tennis-scouting.jpg', alt: 'Travel dashboard map with a venue card showing live weather for SMU in Dallas' },
+    charts: ['tennis'],
+    figures: [{ src: '/img/travel-popup.jpg', alt: 'Leaflet travel dashboard: venue card for SMU in Dallas with travel, conditions, live weather, and nearby tabs', caption: 'Travel dashboard: each away venue has travel time, court conditions, live weather, and what’s nearby.', w: 1280, h: 800, wide: true }],
   },
   {
     slug: 'house-prices',
@@ -212,6 +229,7 @@ export const entries: Entry[] = [
     ],
     results: ['Kaggle test R² 0.888'],
     links: [],
+    pic: { kind: 'svg' },
   },
   {
     slug: 'adhd-diagnosis',
@@ -231,6 +249,7 @@ export const entries: Entry[] = [
     ],
     results: ['Severe share: 23% in the lowest income group vs 12% in the highest'],
     links: [],
+    pic: { kind: 'svg' },
     figures: [{ src: '/img/adhd-income.png', alt: 'Stacked bar chart of ADHD severity by household income', caption: 'Severity by household income.', w: 1600, h: 1062 }],
   },
   {
@@ -250,13 +269,8 @@ export const entries: Entry[] = [
     ],
     results: [],
     links: [],
+    pic: { kind: 'svg' },
   },
-];
-
-export const COMBOS = [
-  { id: 'football', name: 'Football Combo', slugs: ['nfl-overtime-4th-down', 'qb-clutch-optimality', 'playscan', 'ucla-football-ai-assistant'] },
-  { id: 'ai', name: 'AI Combo', slugs: ['ucla-football-ai-assistant', 'journal-to-data', 'playscan', 'usaa-closure-reasons'] },
-  { id: 'stats', name: 'Stats Combo', slugs: ['usaa-closure-reasons', 'house-prices', 'adhd-diagnosis', 'qb-clutch-optimality'] },
 ];
 
 export const bySlug = (slug: string) => {

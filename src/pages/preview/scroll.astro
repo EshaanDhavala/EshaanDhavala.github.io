@@ -1,0 +1,248 @@
+---
+import '@fontsource-variable/bricolage-grotesque/index.css';
+import Bare from '../../layouts/Bare.astro';
+import Pic from '../../components/shared/Pic.astro';
+import Detail from '../../components/shared/Detail.astro';
+import { entries, CATS } from '../../data/entries';
+
+// Hero constellation: fixed positions (% of the hero) and depth for each project picture.
+const spots = [
+  [6, 14, 0.9], [74, 8, 0.6], [84, 46, 1.2], [8, 62, 0.7], [62, 74, 1.0],
+  [30, 6, 1.3], [44, 82, 0.5], [90, 82, 0.8], [2, 36, 1.1], [56, 30, 0.4],
+];
+const catLabel = (c: string) => CATS.find((x) => x.id === c)!.label;
+---
+<Bare title="Eshaan Dhavala · Cinematic preview" theme="scroll" bg="#0a0a0b">
+  <div class="s">
+    <section class="hero" aria-labelledby="h">
+      <div class="float" aria-hidden="true">
+        {entries.map((e, i) => (
+          <div class="chip-card" data-depth={spots[i][2]} style={`left:${spots[i][0]}%;top:${spots[i][1]}%;--c:var(--k-${e.plate});--d:${spots[i][2]}`}>
+            <Pic e={e} eager />
+          </div>
+        ))}
+      </div>
+      <div class="hero-text">
+        <h1 id="h"><span class="l1">Eshaan</span><span class="l2">Dhavala</span></h1>
+        <p class="lede">Stats &amp; Data Science at UCLA. I build models and tools for football, tennis, and anything with a dataset.</p>
+        <a class="cue" href="#work">Scroll</a>
+      </div>
+    </section>
+
+    <nav class="index" aria-label="Projects">
+      <ol>
+        {entries.map((e, i) => (
+          <li><a href={`#p-${e.slug}`} data-index={e.slug} style={`--c:var(--k-${e.plate})`}><span class="ix">{String(i + 1).padStart(2, '0')}</span><span class="il">{e.name}</span></a></li>
+        ))}
+      </ol>
+    </nav>
+
+    <div id="work">
+      {entries.map((e, i) => (
+        <section class="scene" id={`p-${e.slug}`} data-scene={e.slug} style={`--c:var(--k-${e.plate})`} aria-labelledby={`t-${e.slug}`}>
+          <div class="scene-grid">
+            <div class="copy">
+              <p class="cat">{e.cats.map(catLabel).join(' / ')}</p>
+              <h2 id={`t-${e.slug}`}>{e.name}</h2>
+              <p class="stat"><span class="num" data-count={e.stat.value}>{e.stat.value}</span><span class="lab">{e.stat.label}</span></p>
+              <p class="what">{e.what}</p>
+              <ul class="res">{(e.results.length ? e.results : e.built).slice(0, 3).map((r) => <li>{r}</li>)}</ul>
+            </div>
+            <div class="media">
+              {e.video ? (
+                <video src={e.video.src} poster={e.video.poster} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
+              ) : (
+                <Pic e={e} class="mpic" />
+              )}
+            </div>
+          </div>
+          <details class="more">
+            <summary>Full breakdown</summary>
+            <Detail e={e} />
+          </details>
+        </section>
+      ))}
+    </div>
+
+    <section class="about" aria-labelledby="ab">
+      <img src="/img/eshaan.jpg" alt="Eshaan Dhavala" width="900" height="900" loading="lazy" />
+      <div>
+        <h2 id="ab">About</h2>
+        <ul class="facts">
+          <li>Stats &amp; Data Science at UCLA, graduating Dec 2027</li>
+          <li>Co-chair of Bruin Sports Analytics football</li>
+          <li>Data science intern at USAA, summer 2026</li>
+          <li>Looking for 2027 roles in data science, ML, and sports analytics</li>
+        </ul>
+        <a class="press" href="https://plhswave.org/4411/features/study-hard-crunch-harder/">
+          <span class="pq">“The closest one is 10 minutes away and 7 minutes if I’m really hungry.”</span>
+          <span class="ps">Me, in a feature my high school paper (The Wave) ran on me and my Taco Bell order, 2024</span>
+        </a>
+        <p class="interests">Football · UFC · Weightlifting · Music theory · Co-op puzzle games · Japanese art history · Astronomy</p>
+        <p class="contact">
+          <a href="mailto:eshaandhavala@gmail.com">eshaandhavala@gmail.com</a>
+          <a href="/resume.pdf">Résumé</a>
+          <a href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
+          <a href="https://github.com/EshaanDhavala">GitHub</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</Bare>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import Lenis from 'lenis';
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // index appears once the projects start, and highlights the current one
+  ScrollTrigger.create({ trigger: '#work', start: 'top 60%', end: 'bottom 40%', onToggle: (st) => document.querySelector('.index')!.classList.toggle('on', st.isActive) });
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-index]');
+  document.querySelectorAll<HTMLElement>('[data-scene]').forEach((sc) => {
+    ScrollTrigger.create({
+      trigger: sc, start: 'top 55%', end: 'bottom 45%',
+      onToggle: (st) => { if (st.isActive) links.forEach((l) => l.toggleAttribute('aria-current', l.dataset.index === sc.dataset.scene)); },
+    });
+  });
+
+  if (!reduce) {
+    const lenis = new Lenis({ lerp: 0.11 });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((t) => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) =>
+      a.addEventListener('click', (e) => { const t = document.querySelector(a.getAttribute('href')!); if (t) { e.preventDefault(); lenis.scrollTo(t as HTMLElement, { offset: -10 }); } }),
+    );
+
+    // hero: name drifts apart, constellation moves at depth-scaled speeds
+    gsap.to('.l1', { xPercent: -14, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    gsap.to('.l2', { xPercent: 14, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    document.querySelectorAll<HTMLElement>('.chip-card').forEach((c) => {
+      const d = +c.dataset.depth!;
+      gsap.to(c, { yPercent: -120 * d, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    });
+    gsap.from('.chip-card', { opacity: 0, scale: 0.8, duration: 1.1, ease: 'expo.out', stagger: 0.06 });
+    const hero = document.querySelector<HTMLElement>('.hero')!;
+    hero.addEventListener('pointermove', (e) => {
+      const x = e.clientX / innerWidth - 0.5, y = e.clientY / innerHeight - 0.5;
+      document.querySelectorAll<HTMLElement>('.chip-card').forEach((c) => gsap.to(c, { x: x * 30 * +c.dataset.depth!, y: y * 24 * +c.dataset.depth!, duration: 0.8, ease: 'expo.out', overwrite: 'auto' }));
+    });
+
+    // scenes: media eases in from slightly small and soft; stat counts up; data drawings draw themselves
+    document.querySelectorAll<HTMLElement>('[data-scene]').forEach((sc) => {
+      const media = sc.querySelector('.media');
+      gsap.fromTo(media, { scale: 0.86, filter: 'blur(6px)', opacity: 0.4 }, { scale: 1, filter: 'blur(0px)', opacity: 1, ease: 'none', scrollTrigger: { trigger: sc, start: 'top 85%', end: 'top 25%', scrub: true } });
+      gsap.from(sc.querySelectorAll('.cat, h2, .stat, .what, .res li'), { y: 28, opacity: 0, duration: 0.9, ease: 'expo.out', stagger: 0.07, scrollTrigger: { trigger: sc, start: 'top 70%', once: true } });
+      const num = sc.querySelector<HTMLElement>('[data-count]');
+      const m = num?.dataset.count!.match(/^([^\d]*)([\d,.]+)(.*)$/);
+      if (num && m && !m[3].includes('→')) {
+        const target = parseFloat(m[2].replace(/,/g, '')), dec = (m[2].split('.')[1] || '').length, comma = m[2].includes(',');
+        const o = { v: 0 };
+        gsap.to(o, { v: target, duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: sc, start: 'top 70%', once: true },
+          onUpdate: () => { const v = o.v.toFixed(dec); num.textContent = m[1] + (comma ? Number(v).toLocaleString('en-US') : v) + m[3]; } });
+      }
+      sc.querySelectorAll<SVGGeometryElement>('.mpic path, .mpic line, .mpic polyline').forEach((p) => {
+        const len = typeof p.getTotalLength === 'function' ? p.getTotalLength() : 0;
+        if (!len || len > 4000) return;
+        gsap.fromTo(p, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.6, ease: 'expo.out', scrollTrigger: { trigger: sc, start: 'top 65%', once: true } });
+      });
+    });
+  }
+  // charts inside a closed <details> need a redraw once opened
+  document.querySelectorAll('details.more').forEach((d) => d.addEventListener('toggle', () => { window.dispatchEvent(new Event('resize')); ScrollTrigger.refresh(); }));
+</script>
+
+<style>
+  :global(html[data-preview='scroll']) {
+    --bg: #0a0a0b; --ink: #f2efe9; --ink-2: #a7a29a; --line: rgba(242, 239, 233, 0.12);
+    --violet: #c9f24d; --sauce: #ff7a45;
+    --k-football: #34d27a; --k-tennis: #4fa3ff; --k-ai: #9b7bff; --k-stats: #ff7a45;
+    background: var(--bg); color: var(--ink); color-scheme: dark;
+  }
+  :global(html[data-preview='scroll'] body) { margin: 0; font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif; font-size: 1.05rem; line-height: 1.5; }
+  :global(html[data-preview='scroll'] ::selection) { background: var(--violet); color: #0a0a0b; }
+  :global(html.lenis) { height: auto; }
+  :global(.lenis.lenis-smooth) { scroll-behavior: auto !important; }
+
+  .hero { position: relative; min-height: 100dvh; display: grid; place-items: center; overflow: hidden; padding: 0 16px; }
+  .float { position: absolute; inset: 0; }
+  .chip-card { position: absolute; width: clamp(110px, calc(9vw * var(--d) + 60px), 230px); border-radius: 12px; overflow: hidden; color: var(--c); background: color-mix(in srgb, var(--c) 12%, #121214); box-shadow: 0 20px 50px -24px #000, inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent); opacity: calc(0.35 + var(--d) * 0.45); }
+  .chip-card :global(.pic-svg) { padding: 8px; }
+  @media (max-width: 700px) {
+    .chip-card { width: clamp(70px, calc(10vw * var(--d) + 50px), 120px); opacity: calc(0.18 + var(--d) * 0.22); }
+    .chip-card:nth-child(n + 7) { display: none; }
+  }
+  .hero-text { position: relative; z-index: 2; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
+  h1 { margin: 0; display: flex; flex-direction: column; font-weight: 800; font-stretch: 75%; font-size: clamp(4rem, 15vw, 13rem); line-height: 0.82; letter-spacing: -0.03em; text-transform: uppercase; }
+  .l2 { color: var(--violet); }
+  .lede { margin: 0; max-width: 34rem; color: var(--ink-2); font-size: clamp(1.05rem, 1.6vw, 1.3rem); text-wrap: balance; }
+  .cue { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 16px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+  .cue:hover { box-shadow: inset 0 0 0 1px var(--violet); color: var(--violet); }
+
+  .index { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 30; display: none; opacity: 0; pointer-events: none; transition: opacity 240ms ease-out; }
+  .index.on { opacity: 1; pointer-events: auto; }
+  @media (min-width: 1100px) { .index { display: block; } }
+  .index ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .index a { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-decoration: none; color: var(--ink-2); font-size: 0.8rem; padding: 3px 0; }
+  .index .il { opacity: 0; transform: translateX(6px); transition: opacity 160ms ease-out, transform 160ms ease-out; white-space: nowrap; }
+  .index .ix { font-variant-numeric: tabular-nums; width: 2.2em; text-align: right; }
+  .index:hover .il, .index a:focus-visible .il, .index a[aria-current] .il { opacity: 1; transform: none; }
+  .index a[aria-current] { color: var(--c); }
+  .index a::after { content: ''; width: 18px; height: 2px; background: currentColor; opacity: 0.5; }
+  .index a[aria-current]::after { width: 30px; opacity: 1; }
+
+  .scene { min-height: 100dvh; padding: clamp(64px, 10vh, 120px) clamp(16px, 5vw, 80px); display: flex; flex-direction: column; justify-content: center; gap: 2rem; border-top: 1px solid var(--line); position: relative; }
+  .scene::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(900px 500px at 85% 40%, color-mix(in srgb, var(--c) 10%, transparent), transparent 70%); }
+  .scene-grid { position: relative; display: grid; gap: clamp(1.5rem, 4vw, 4rem); grid-template-columns: minmax(0, 1fr); align-items: center; max-width: 1280px; width: 100%; margin: 0 auto; }
+  @media (min-width: 960px) { .scene-grid { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
+  .cat { margin: 0; color: var(--c); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .scene h2 { margin: 0.4rem 0 0; font-weight: 800; font-stretch: 80%; font-size: clamp(2.6rem, 6vw, 5.2rem); line-height: 0.92; letter-spacing: -0.02em; text-wrap: balance; }
+  .stat { margin: 1.2rem 0 0.8rem; display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .num { font-weight: 800; font-stretch: 75%; font-size: clamp(3rem, 7vw, 5.6rem); line-height: 0.9; color: var(--c); font-variant-numeric: tabular-nums; }
+  .lab { color: var(--ink-2); font-weight: 600; }
+  .what { margin: 0 0 1rem; font-size: 1.2rem; max-width: 32rem; }
+  .res { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--ink-2); max-width: 34rem; }
+  .res li { padding-left: 1.1rem; position: relative; }
+  .res li::before { content: ''; position: absolute; left: 0; top: 0.65em; width: 8px; height: 2px; background: var(--c); }
+  .media { border-radius: 18px; overflow: hidden; background: color-mix(in srgb, var(--c) 9%, #111113); color: var(--c); box-shadow: 0 40px 80px -40px #000, inset 0 0 0 1px var(--line); will-change: transform; }
+  .media video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; }
+  .media :global(.pic-svg) { padding: clamp(16px, 3vw, 36px); }
+  .more { position: relative; max-width: 1280px; width: 100%; margin: 0 auto; }
+  .more summary { cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; padding: 10px 18px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); list-style: none; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary::after { content: '+'; color: var(--c); font-weight: 700; }
+  .more[open] summary::after { content: '–'; }
+  .more summary:hover { box-shadow: inset 0 0 0 1px var(--c); }
+  .more :global(.detail) { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .more :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 0.4rem 2rem; margin: 0; }
+  .more :global(.d-meta dt) { color: var(--ink-2); font-size: 0.8rem; }
+  .more :global(.d-meta dd) { margin: 0; }
+  .more :global(.d-cols) { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+  .more :global(.d-h) { font-weight: 700; font-size: 1.2rem; margin: 0 0 0.6rem; color: var(--c); }
+  .more :global(.d-list) { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .more :global(figure) { margin: 0; background: #121214; border-radius: 14px; padding: 14px; box-shadow: inset 0 0 0 1px var(--line); }
+  .more :global(video), .more :global(.d-fig img) { width: 100%; display: block; border-radius: 8px; }
+  .more :global(.d-fig img) { max-height: 70vh; object-fit: contain; }
+  .more :global(figcaption), .more :global(.d-note) { color: var(--ink-2); font-size: 0.9rem; margin-top: 8px; }
+  .more :global(.d-fg) { --fg-ink: #f2efe9; --fg-accent: var(--c); --fg-on-ink: #0a0a0b; }
+  .more :global(.chart) { overflow-x: auto; display: grid; justify-items: center; }
+  .more :global(.d-links) { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .more :global(.d-links a) { color: #0a0a0b; background: var(--c); padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 700; }
+
+  .about { min-height: 90dvh; display: grid; gap: clamp(2rem, 5vw, 5rem); grid-template-columns: minmax(0, 1fr); align-items: center; padding: clamp(64px, 12vh, 140px) clamp(16px, 5vw, 80px) 140px; border-top: 1px solid var(--line); max-width: 1280px; margin: 0 auto; }
+  @media (min-width: 900px) { .about { grid-template-columns: 340px minmax(0, 1fr); } }
+  .about img { width: 100%; max-width: 340px; aspect-ratio: 1; object-fit: cover; border-radius: 20px; }
+  .about h2 { margin: 0 0 1rem; font-weight: 800; font-stretch: 75%; font-size: clamp(3rem, 7vw, 5.6rem); line-height: 0.9; text-transform: uppercase; }
+  .facts { margin: 0 0 1.5rem; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; font-size: 1.1rem; }
+  .press { display: flex; flex-direction: column; gap: 0.4rem; text-decoration: none; color: inherit; padding: 1.2rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 1.2rem; }
+  .pq { font-size: clamp(1.3rem, 2.4vw, 1.8rem); font-weight: 600; line-height: 1.25; }
+  .ps { color: var(--ink-2); font-size: 0.95rem; }
+  .press:hover .pq { color: var(--violet); }
+  .interests { color: var(--ink-2); margin: 0 0 1.5rem; }
+  .contact { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin: 0; font-weight: 600; font-size: 1.1rem; }
+  .contact a { color: var(--ink); text-underline-offset: 5px; }
+  .contact a:hover { color: var(--violet); }
+</style>

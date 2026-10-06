@@ -1,0 +1,53 @@
+---
+/** Theme-neutral project detail: media, charts, bullets, figures, links. Themes style it via the .d-* classes. */
+import type { Entry } from '../../data/entries';
+import FgLive from '../FgLive.astro';
+interface Props { e: Entry; headingLevel?: 2 | 3 }
+const { e, headingLevel = 3 } = Astro.props;
+const H = `h${headingLevel}`;
+const chartLabel: Record<string, string> = {
+  qb: 'Clutch rating (EPA per play) by quarterback. Right of zero: better than their own average on clutch plays.',
+  journal: 'Weekly averages: mood (1–10) and hours of sleep.',
+  'journal-dow': 'By day of the week: average mood and how often I went to the gym.',
+  tennis: 'One UCLA player’s returns in one match, where each landed. Names left off.',
+};
+---
+<div class="detail">
+  <dl class="d-meta">
+    <div><dt>When</dt><dd>{e.when}</dd></div>
+    <div><dt>Where</dt><dd>{e.where}</dd></div>
+    <div><dt>Stack</dt><dd>{e.stack.join(' · ')}</dd></div>
+  </dl>
+  {e.video && (
+    <figure class="d-video">
+      <video src={e.video.src} poster={e.video.poster} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
+    </figure>
+  )}
+  <div class="d-cols">
+    <div>
+      <H class="d-h">What I built</H>
+      <ul class="d-list">{e.built.map((b) => <li>{b}</li>)}</ul>
+    </div>
+    {e.results.length > 0 && (
+      <div>
+        <H class="d-h">Results</H>
+        <ul class="d-list d-results">{e.results.map((b) => <li>{b}</li>)}</ul>
+      </div>
+    )}
+  </div>
+  {e.note && <p class="d-note">{e.note}</p>}
+  {e.charts?.map((c) =>
+    c === 'fg' ? (
+      <figure class="d-fg"><FgLive /><figcaption>Predictions from the trained model: outdoor, 55°F, no rain, sea level, tie game.</figcaption></figure>
+    ) : (
+      <figure class="d-chart"><div class="chart" data-chart={c} role="img" aria-label={chartLabel[c]}></div><figcaption>{chartLabel[c]}</figcaption></figure>
+    ),
+  )}
+  {e.figures?.map((f) => (
+    <figure class="d-fig">
+      <a href={f.src}><img src={f.src} alt={f.alt} width={f.w} height={f.h} loading="lazy" decoding="async" /></a>
+      <figcaption>{f.caption}</figcaption>
+    </figure>
+  ))}
+  {e.links.length > 0 && <p class="d-links">{e.links.map((l) => <a href={l.href} rel="noopener">{l.label}</a>)}</p>}
+</div>

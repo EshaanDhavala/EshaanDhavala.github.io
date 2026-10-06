@@ -1,0 +1,46 @@
+---
+/** Minimal document shell for theme previews: meta + body, no site chrome. */
+interface Props { title: string; theme: 'game' | 'arcade' | 'scroll'; bg: string }
+const { title, theme, bg } = Astro.props;
+const themes = [
+  { id: 'game', label: 'Sports game', href: '/preview/game/' },
+  { id: 'arcade', label: 'Arcade', href: '/preview/arcade/' },
+  { id: 'scroll', label: 'Cinematic', href: '/preview/scroll/' },
+  { id: 'kiosk', label: 'Kiosk (live)', href: '/' },
+];
+---
+<!doctype html>
+<html lang="en" data-preview={theme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content={bg} />
+  </head>
+  <body>
+    <slot />
+    <nav class="pv" aria-label="Theme previews">
+      <span>Preview</span>
+      {themes.map((t) => <a href={t.href} aria-current={t.id === theme ? 'page' : undefined}>{t.label}</a>)}
+    </nav>
+    <script>
+      import '../scripts/media';
+      import '../scripts/charts';
+    </script>
+  </body>
+</html>
+<style is:global>
+  .pv {
+    position: fixed; z-index: 100; left: 50%; bottom: 14px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px;
+    background: rgba(12, 12, 16, 0.86); color: #fff; font: 600 12px/1 system-ui, sans-serif;
+    box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+    max-width: calc(100% - 24px); overflow-x: auto; scrollbar-width: none;
+  }
+  .pv span { padding: 0 8px 0 10px; opacity: 0.6; white-space: nowrap; }
+  .pv a { color: #fff; text-decoration: none; padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
+  .pv a:hover { background: rgba(255, 255, 255, 0.14); }
+  .pv a[aria-current='page'] { background: #fff; color: #111; }
+</style>

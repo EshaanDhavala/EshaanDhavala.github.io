@@ -14,10 +14,6 @@
       "first_half": 0.46,
       "second_half": 0.41
     },
-    "screen_time_hours": {
-      "first_half": 7.77,
-      "second_half": 7.38
-    },
     "sleep_hours": {
       "first_half": 8.2,
       "second_half": 8.28
@@ -34,7 +30,6 @@
       "sleep_quality_1_10": null,
       "mood_1_10": 7.0,
       "workout_minutes": null,
-      "screen_time_hours": null,
       "gym_days": 0.0,
       "days_logged": 1.0
     },
@@ -44,7 +39,6 @@
       "sleep_quality_1_10": null,
       "mood_1_10": 7.71,
       "workout_minutes": null,
-      "screen_time_hours": null,
       "gym_days": 4.0,
       "days_logged": 7.0
     },
@@ -54,7 +48,6 @@
       "sleep_quality_1_10": null,
       "mood_1_10": 7.29,
       "workout_minutes": null,
-      "screen_time_hours": null,
       "gym_days": 0.0,
       "days_logged": 7.0
     },
@@ -64,7 +57,6 @@
       "sleep_quality_1_10": 6.86,
       "mood_1_10": 8.47,
       "workout_minutes": 22.86,
-      "screen_time_hours": 7.46,
       "gym_days": 2.0,
       "days_logged": 7.0
     },
@@ -74,7 +66,6 @@
       "sleep_quality_1_10": 7.04,
       "mood_1_10": 7.96,
       "workout_minutes": 32.14,
-      "screen_time_hours": 6.71,
       "gym_days": 5.0,
       "days_logged": 7.0
     },
@@ -84,7 +75,6 @@
       "sleep_quality_1_10": 7.43,
       "mood_1_10": 8.19,
       "workout_minutes": 35.0,
-      "screen_time_hours": 7.04,
       "gym_days": 5.0,
       "days_logged": 7.0
     },
@@ -94,7 +84,6 @@
       "sleep_quality_1_10": 7.0,
       "mood_1_10": 7.71,
       "workout_minutes": 25.0,
-      "screen_time_hours": 6.29,
       "gym_days": 4.0,
       "days_logged": 7.0
     },
@@ -104,7 +93,6 @@
       "sleep_quality_1_10": 7.43,
       "mood_1_10": 7.13,
       "workout_minutes": 32.14,
-      "screen_time_hours": 8.82,
       "gym_days": 5.0,
       "days_logged": 7.0
     },
@@ -114,7 +102,6 @@
       "sleep_quality_1_10": 5.64,
       "mood_1_10": 7.31,
       "workout_minutes": 24.29,
-      "screen_time_hours": 8.55,
       "gym_days": 4.0,
       "days_logged": 7.0
     },
@@ -124,7 +111,6 @@
       "sleep_quality_1_10": 7.57,
       "mood_1_10": 7.81,
       "workout_minutes": 2.86,
-      "screen_time_hours": 8.96,
       "gym_days": 1.0,
       "days_logged": 7.0
     },
@@ -134,7 +120,6 @@
       "sleep_quality_1_10": 7.43,
       "mood_1_10": 8.33,
       "workout_minutes": 20.71,
-      "screen_time_hours": 8.31,
       "gym_days": 3.0,
       "days_logged": 7.0
     },
@@ -144,7 +129,6 @@
       "sleep_quality_1_10": 7.71,
       "mood_1_10": 7.91,
       "workout_minutes": 18.57,
-      "screen_time_hours": 6.54,
       "gym_days": 3.0,
       "days_logged": 7.0
     },
@@ -154,7 +138,6 @@
       "sleep_quality_1_10": 7.33,
       "mood_1_10": 7.37,
       "workout_minutes": 38.33,
-      "screen_time_hours": 7.17,
       "gym_days": 1.0,
       "days_logged": 6.0
     },
@@ -164,7 +147,6 @@
       "sleep_quality_1_10": 6.86,
       "mood_1_10": 7.36,
       "workout_minutes": 25.71,
-      "screen_time_hours": 7.0,
       "gym_days": 4.0,
       "days_logged": 7.0
     },
@@ -174,7 +156,6 @@
       "sleep_quality_1_10": 6.43,
       "mood_1_10": 7.69,
       "workout_minutes": 32.86,
-      "screen_time_hours": 7.69,
       "gym_days": 3.0,
       "days_logged": 7.0
     },
@@ -184,7 +165,6 @@
       "sleep_quality_1_10": 7.0,
       "mood_1_10": 7.57,
       "workout_minutes": 35.71,
-      "screen_time_hours": 8.29,
       "gym_days": 3.0,
       "days_logged": 7.0
     },
@@ -194,7 +174,6 @@
       "sleep_quality_1_10": 6.0,
       "mood_1_10": 7.87,
       "workout_minutes": 28.57,
-      "screen_time_hours": 7.57,
       "gym_days": 3.0,
       "days_logged": 7.0
     },
@@ -204,7 +183,6 @@
       "sleep_quality_1_10": 7.0,
       "mood_1_10": 8.53,
       "workout_minutes": 15.71,
-      "screen_time_hours": 6.82,
       "gym_days": 2.0,
       "days_logged": 7.0
     },
@@ -214,7 +192,6 @@
       "sleep_quality_1_10": 7.0,
       "mood_1_10": 8.54,
       "workout_minutes": 10.0,
-      "screen_time_hours": 7.75,
       "gym_days": 2.0,
       "days_logged": 7.0
     },
@@ -224,9 +201,72 @@
       "sleep_quality_1_10": 6.8,
       "mood_1_10": 7.44,
       "workout_minutes": 24.0,
-      "screen_time_hours": 7.25,
       "gym_days": 3.0,
       "days_logged": 5.0
     }
-  ]
+  ],
+  "insights": {
+    "by_dow": [
+      {
+        "dow": "Mon",
+        "mood": 7.62,
+        "sleep": 8.24,
+        "gym_rate": 0.68,
+        "days": 19.0
+      },
+      {
+        "dow": "Tue",
+        "mood": 7.53,
+        "sleep": 8.24,
+        "gym_rate": 0.68,
+        "days": 19.0
+      },
+      {
+        "dow": "Wed",
+        "mood": 7.62,
+        "sleep": 8.66,
+        "gym_rate": 0.37,
+        "days": 19.0
+      },
+      {
+        "dow": "Thu",
+        "mood": 7.83,
+        "sleep": 7.25,
+        "gym_rate": 0.58,
+        "days": 19.0
+      },
+      {
+        "dow": "Fri",
+        "mood": 8.29,
+        "sleep": 8.24,
+        "gym_rate": 0.37,
+        "days": 19.0
+      },
+      {
+        "dow": "Sat",
+        "mood": 8.02,
+        "sleep": 9.33,
+        "gym_rate": 0.22,
+        "days": 18.0
+      },
+      {
+        "dow": "Sun",
+        "mood": 7.73,
+        "sleep": 7.76,
+        "gym_rate": 0.11,
+        "days": 18.0
+      }
+    ],
+    "gym_split": {
+      "push": 21,
+      "pull": 19,
+      "legs": 11,
+      "other": 6
+    },
+    "mood_gym_vs_rest": {
+      "gym": 7.82,
+      "rest": 7.79
+    },
+    "corr_sleep_mood": -0.12
+  }
 }

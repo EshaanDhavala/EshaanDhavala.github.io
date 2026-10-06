@@ -3,7 +3,6 @@ import '@fontsource-variable/archivo/wdth.css';
 import '../styles/kiosk.css';
 import { ClientRouter } from 'astro:transitions';
 import Icon from '../components/Icon.astro';
-import { entries } from '../data/entries';
 
 interface Props { title?: string; description?: string; image?: string }
 const {
@@ -12,9 +11,6 @@ const {
   image = '/img/eshaan.jpg',
 } = Astro.props;
 const fullTitle = title ? `${title} · Eshaan Dhavala` : 'Eshaan Dhavala';
-const menuData = Object.fromEntries(
-  entries.map((e) => [e.slug, { slug: e.slug, name: e.name, stat: `${e.stat.value} ${e.stat.label}`, url: `/entries/${e.slug}/` }]),
-);
 ---
 <!doctype html>
 <html lang="en">
@@ -45,11 +41,6 @@ const menuData = Object.fromEntries(
         <a href="/#about">About</a>
         <a href="/resume.pdf">Résumé</a>
         <button type="button" class="icon-btn" data-theme-toggle aria-label="Toggle dark mode"><Icon name="moon" /></button>
-        <button type="button" class="bag" data-open-order aria-label="Your order">
-          <Icon name="bag" size={22} />
-          <span class="bag-label hide-sm">Order</span>
-          <span class="bag-count" data-bag-count hidden>0</span>
-        </button>
       </nav>
     </header>
 
@@ -65,37 +56,8 @@ const menuData = Object.fromEntries(
       <a href="/resume.pdf">Résumé</a>
     </footer>
 
-    <div class="order-bar" data-order-bar hidden transition:persist>
-      <button type="button" data-open-order>
-        <Icon name="bag" />
-        <span data-order-bar-label>0 items</span>
-        <span class="order-bar-cta">Review order <Icon name="arrow-right" size={18} /></span>
-      </button>
-    </div>
-
-    <dialog class="sheet" data-order-sheet aria-labelledby="order-title" transition:persist>
-      <div class="sheet-inner">
-        <div class="sheet-head">
-          <h2 id="order-title">Your order</h2>
-          <button type="button" class="icon-btn" data-close-order aria-label="Close"><Icon name="x" /></button>
-        </div>
-        <p class="sheet-empty" data-order-empty>Nothing yet. Add projects from the menu.</p>
-        <ul class="order-list" data-order-list></ul>
-        <div class="sheet-actions" data-order-actions hidden>
-          <a class="btn btn-sauce" data-order-mail href="mailto:eshaandhavala@gmail.com"><Icon name="mail" /> Email this list to Eshaan</a>
-          <button type="button" class="btn btn-ghost" data-order-copy><Icon name="copy" /> <span data-copy-label>Copy links</span></button>
-          <button type="button" class="link-btn" data-order-clear>Clear order</button>
-        </div>
-        <div class="sheet-foot">
-          <a href="/resume.pdf"><Icon name="file" size={18} /> Résumé (PDF)</a>
-          <p class="visually-hidden" aria-live="polite" data-order-live></p>
-        </div>
-      </div>
-    </dialog>
-
-    <script type="application/json" id="menu-data" set:html={JSON.stringify(menuData)} />
     <script>
-      import '../scripts/order';
+      import '../scripts/media';
       document.addEventListener('astro:page-load', () => {
         const t = document.querySelector<HTMLElement>('[data-theme-toggle]');
         if (!t || t.dataset.bound) return;
@@ -128,19 +90,6 @@ const menuData = Object.fromEntries(
   .bezel-nav > a:hover { color: #fff; }
   .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; border: 0; background: transparent; cursor: pointer; color: inherit; }
   .icon-btn:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
-  .bag {
-    position: relative; display: inline-flex; align-items: center; gap: 0.45rem;
-    height: 44px; padding: 0 1rem; border-radius: 999px; border: 0; cursor: pointer;
-    background: var(--violet); color: var(--violet-ink); font-weight: 800; font-stretch: 110%;
-  }
-  .bag:hover { background: var(--violet-2); }
-  .bag-count {
-    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center;
-    background: var(--sauce); color: var(--sauce-ink); font-size: 0.8rem; font-weight: 800;
-  }
-  .bag-count[hidden] { display: none; }
-  :global(.bag-count.bump) { animation: bump 320ms cubic-bezier(0.16, 1, 0.3, 1); }
-  @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.3); } 100% { transform: scale(1); } }
   @media (max-width: 560px) { .hide-sm { display: none; } .bag { padding: 0 0.8rem; } .brand-sub { display: none; } .brand-name { font-size: 1.02rem; font-stretch: 112%; white-space: nowrap; } .bezel-nav { gap: 0.6rem; font-size: 0.9rem; } .icon-btn { width: 36px; } }
 
   .foot {
@@ -151,38 +100,4 @@ const menuData = Object.fromEntries(
   .foot a { text-decoration: none; }
   .foot a:hover { color: var(--violet); text-decoration: underline; }
 
-  .order-bar { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 15; width: min(560px, calc(100% - 32px)); }
-  .order-bar[hidden] { display: none; }
-  .order-bar button {
-    width: 100%; display: flex; align-items: center; gap: 0.7rem; height: 60px; padding: 0 0.6rem 0 1.25rem;
-    border: 0; border-radius: 999px; cursor: pointer; background: var(--violet); color: var(--violet-ink);
-    font-weight: 800; font-stretch: 110%; font-size: 1.02rem; box-shadow: 0 12px 32px -12px rgba(67, 32, 194, 0.7);
-  }
-  .order-bar-cta { margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; background: var(--sauce); color: var(--sauce-ink); height: 46px; padding: 0 1.1rem; border-radius: 999px; }
-
-  .sheet {
-    margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(440px, 100vw); max-width: 100vw;
-    border: 0; padding: 0; background: var(--tile); color: var(--ink);
-  }
-  .sheet::backdrop { background: rgba(14, 13, 18, 0.55); }
-  .sheet[open] { animation: slide 260ms cubic-bezier(0.16, 1, 0.3, 1); }
-  @keyframes slide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .sheet { overscroll-behavior: contain; }
-  .sheet-inner { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.25rem 1.5rem 2rem; min-height: 100%; }
-  .sheet-head { display: flex; align-items: center; justify-content: space-between; }
-  .sheet-head h2 { font-size: 1.6rem; }
-  .sheet-empty { color: var(--ink-2); }
-  .order-list { list-style: none; display: flex; flex-direction: column; }
-  .order-list :global(li) { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid var(--line); }
-  .order-list :global(a) { font-weight: 800; font-stretch: 110%; text-decoration: none; }
-  .order-list :global(a:hover) { color: var(--violet); }
-  .order-list :global(.o-stat) { font-size: 0.85rem; color: var(--ink-2); font-weight: 600; }
-  .order-list :global(.o-x) { width: 36px; height: 36px; border-radius: 999px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--ink-2); }
-  .order-list :global(.o-x:hover) { background: var(--screen); color: var(--ink); }
-  .sheet-actions { display: flex; flex-direction: column; gap: 0.6rem; }
-  .sheet-actions[hidden] { display: none; }
-  .link-btn { background: none; border: 0; color: var(--ink-2); cursor: pointer; text-decoration: underline; padding: 0.4rem; align-self: center; }
-  .sheet-foot { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
-  .sheet-foot a { display: inline-flex; gap: 0.5rem; align-items: center; font-weight: 700; text-decoration: none; }
-  .sheet-foot a:hover { color: var(--violet); }
 </style>

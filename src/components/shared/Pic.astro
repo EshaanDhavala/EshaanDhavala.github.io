@@ -1,0 +1,19 @@
+---
+/** A project's picture: inline data drawing (coloured by the theme via `color`) or a photo. */
+import type { Entry } from '../../data/entries';
+import { svgFor } from '../../lib/pics';
+interface Props { e: Entry; eager?: boolean; class?: string }
+const { e, eager = false, class: cls } = Astro.props;
+---
+{e.pic.kind === 'svg' ? (
+  <div class:list={['pic', 'pic-svg', cls]} set:html={svgFor(e.slug)} />
+) : (
+  <div class:list={['pic', 'pic-img', cls]}>
+    <img src={e.pic.src} alt={e.pic.alt} width="1280" height="800" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  </div>
+)}
+<style>
+  .pic { aspect-ratio: 16 / 10; overflow: hidden; display: grid; place-items: stretch; }
+  .pic :global(svg) { width: 100%; height: 100%; display: block; }
+  .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+</style>

@@ -2,89 +2,33 @@
 import Kiosk from '../../layouts/Kiosk.astro';
 import Icon from '../../components/Icon.astro';
 import MenuTile from '../../components/MenuTile.astro';
-import FgLive from '../../components/FgLive.astro';
-import { entries, CATS, type Entry } from '../../data/entries';
+import Pic from '../../components/shared/Pic.astro';
+import Detail from '../../components/shared/Detail.astro';
+import { entries, type Entry } from '../../data/entries';
 
 export function getStaticPaths() {
   return entries.map((e) => ({ params: { slug: e.slug }, props: { e } }));
 }
 const { e } = Astro.props as { e: Entry };
-const thumb = e.slug === 'playscan' ? '/thumbs/playscan.jpg' : `/thumbs/${e.slug}.svg`;
 const related = entries.filter((x) => x.slug !== e.slug && x.cats.some((c) => e.cats.includes(c))).slice(0, 3);
-const catLabels = e.cats.map((c) => CATS.find((x) => x.id === c)!.label);
-const chartLabel: Record<string, string> = {
-  qb: 'Clutch rating (EPA per play) by quarterback. Right of zero = better than their own average in close games.',
-  journal: 'Weekly averages from the real sheet: mood (1–10) and hours of sleep.',
-  tennis: 'One UCLA player’s returns in one match, where each landed. Names left off.',
-};
+const ogImage = e.pic.kind === 'img' ? e.pic.src : '/img/eshaan.jpg';
 ---
-<Kiosk title={e.name} description={e.what} image={e.slug === 'playscan' ? '/media/playscan-poster.jpg' : '/img/eshaan.jpg'}>
+<Kiosk title={e.name} description={e.what} image={ogImage}>
   <div class="item">
     <a class="back" href="/#menu"><Icon name="arrow-left" size={18} /> Menu</a>
 
     <section class="hero">
       <div class="pic" style={`--plate: var(--${e.plate})`} transition:name={`pic-${e.slug}`}>
-        {e.video ? (
-          <video src={e.video.src} poster={e.video.poster} autoplay muted loop playsinline controls data-motion-video aria-label={`${e.name} demo recording: the model labeling plays live over a TV broadcast`}></video>
-        ) : (
-          <img src={thumb} alt="" width="640" height="400" />
-        )}
+        <Pic e={e} eager />
       </div>
       <div class="info">
         <h1>{e.name}</h1>
         <p class="what">{e.what}</p>
         <span class="chip big">{e.stat.value} <small>{e.stat.label}</small></span>
-        <div class="actions">
-          <button type="button" class="btn btn-sauce" data-add={e.slug} data-add-text="Add to order" data-added-text="In your order" aria-pressed="false">
-            <Icon name="bag" size={18} /> <span data-add-label>Add to order</span>
-          </button>
-          {e.links.map((l) => <a class="btn btn-ghost" href={l.href}>{l.label} <Icon name="external" size={16} /></a>)}
-        </div>
-        <dl class="meta">
-          <div><dt>When</dt><dd>{e.when}</dd></div>
-          <div><dt>Where</dt><dd>{e.where}</dd></div>
-          <div><dt>Menu</dt><dd>{catLabels.join(' · ')}</dd></div>
-        </dl>
-        <div class="stack">
-          <span class="stack-label">Made with</span>
-          <ul>{e.stack.map((s) => <li class="tag">{s}</li>)}</ul>
-        </div>
       </div>
     </section>
 
-    <section class="cols">
-      <div class="col">
-        <h2>What I built</h2>
-        <ul class="bullets">{e.built.map((b) => <li>{b}</li>)}</ul>
-      </div>
-      {e.results.length > 0 && (
-        <div class="col">
-          <h2>Results</h2>
-          <ul class="bullets results">{e.results.map((b) => <li>{b}</li>)}</ul>
-        </div>
-      )}
-    </section>
-    {e.note && <p class="note">{e.note}</p>}
-
-    {e.chart === 'fg' && (
-      <section class="panel live">
-        <h2>Try the model</h2>
-        <FgLive />
-        <p class="fine">Predictions from the trained model: outdoor, 55°F, no rain, sea level, tie game.</p>
-      </section>
-    )}
-    {e.chart && e.chart !== 'fg' && (
-      <figure class="panel">
-        <div class="chart" data-chart={e.chart} role="img" aria-label={chartLabel[e.chart]}></div>
-        <figcaption>{chartLabel[e.chart]}</figcaption>
-      </figure>
-    )}
-    {e.figures?.map((f) => (
-      <figure class:list={['panel', 'fig', { wide: f.wide }]}>
-        <a href={f.src} class="fig-link"><img src={f.src} alt={f.alt} width={f.w} height={f.h} loading="lazy" decoding="async" /></a>
-        <figcaption>{f.caption} <a href={f.src}>Full size</a></figcaption>
-      </figure>
-    ))}
+    <Detail e={e} headingLevel={2} />
 
     {related.length > 0 && (
       <section class="related">
@@ -96,54 +40,43 @@ const chartLabel: Record<string, string> = {
 </Kiosk>
 
 <script>
-  import '../../scripts/order';
   import '../../scripts/charts';
-  document.addEventListener('astro:page-load', () => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches)
-      document.querySelectorAll<HTMLVideoElement>('[data-motion-video]').forEach((v) => { v.autoplay = false; v.pause(); });
-  });
 </script>
 
 <style>
   .item { max-width: 1120px; margin: 0 auto; padding: clamp(16px, 3vw, 32px); display: flex; flex-direction: column; gap: 2.25rem; }
   .back { display: inline-flex; align-items: center; gap: 0.4rem; align-self: flex-start; font-weight: 800; text-decoration: none; min-height: 44px; padding: 0 1rem 0 0.75rem; border-radius: 999px; background: var(--tile); box-shadow: var(--shadow); }
   .back:hover { color: var(--violet); }
-
-  .hero { display: grid; gap: clamp(1.25rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .hero { display: grid; gap: clamp(1.25rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr); align-items: center; }
   @media (min-width: 880px) { .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
-  .pic { background: var(--plate); border-radius: 20px; overflow: hidden; aspect-ratio: 16 / 10; box-shadow: var(--shadow); }
-  .pic img, .pic video { width: 100%; height: 100%; object-fit: cover; }
+  .pic { background: var(--plate); color: #fff; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
   .info { display: flex; flex-direction: column; gap: 0.85rem; align-items: flex-start; }
   h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-stretch: 125%; }
   .what { font-size: 1.15rem; color: var(--ink-2); max-width: 34rem; }
   .chip.big { font-size: 1.35rem; padding: 0.3em 0.9em 0.34em; }
-  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
-  .actions .btn-sauce[aria-pressed='true'] { background: var(--ink); color: var(--tile); }
-  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; margin: 0.25rem 0 0; }
-  .meta dt { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
-  .meta dd { margin: 0; font-weight: 600; }
-  .stack { display: flex; flex-direction: column; gap: 0.4rem; }
-  .stack-label { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
-  .stack ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
-  .cols { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
-  .col { background: var(--tile); border-radius: 18px; padding: 1.4rem 1.5rem; box-shadow: var(--shadow); }
-  .col h2, .panel h2, .related h2 { font-size: 1.4rem; font-stretch: 118%; margin-bottom: 0.9rem; }
-  .bullets { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
-  .bullets li { position: relative; padding-left: 1.2rem; line-height: 1.45; }
-  .bullets li::before { content: ''; position: absolute; left: 0; top: 0.58em; width: 7px; height: 7px; border-radius: 2px; background: var(--violet); }
-  .results li::before { background: var(--sauce); }
-  .results li { font-weight: 600; }
-  .note { color: var(--ink-2); font-size: 0.9rem; margin-top: -1.25rem; }
-
-  .panel { margin: 0; background: var(--tile); border-radius: 18px; padding: 1.25rem; box-shadow: var(--shadow); }
-  .panel figcaption, .fine { margin-top: 0.75rem; color: var(--ink-2); font-size: 0.9rem; }
-  .panel img { border-radius: 10px; width: 100%; }
-  .chart { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
-  .live { background: var(--football); color: #fff; padding: clamp(18px, 3vw, 32px); }
-  .live h2 { color: #fff; }
-  .live .fine { color: rgba(255, 255, 255, 0.8); }
-  @media (min-width: 880px) { .fig:not(.wide) { max-width: 760px; } }
-
+  .item :global(.detail) { display: flex; flex-direction: column; gap: 1.25rem; }
+  .item :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 0.5rem 2.25rem; margin: 0; }
+  .item :global(.d-meta dt) { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
+  .item :global(.d-meta dd) { margin: 0; font-weight: 600; }
+  .item :global(.d-video), .item :global(.d-chart), .item :global(.d-fig), .item :global(.d-fg) { margin: 0; background: var(--tile); border-radius: 18px; padding: 1rem; box-shadow: var(--shadow); }
+  .item :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
+  .item :global(.d-cols) { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+  .item :global(.d-cols > div) { background: var(--tile); border-radius: 18px; padding: 1.4rem 1.5rem; box-shadow: var(--shadow); }
+  .item :global(.d-h) { font-size: 1.4rem; font-stretch: 118%; margin-bottom: 0.9rem; }
+  .item :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .item :global(.d-list li) { position: relative; padding-left: 1.2rem; line-height: 1.45; }
+  .item :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.58em; width: 7px; height: 7px; border-radius: 2px; background: var(--violet); }
+  .item :global(.d-results li) { font-weight: 600; }
+  .item :global(.d-results li::before) { background: var(--sauce); }
+  .item :global(.d-note), .item :global(figcaption) { color: var(--ink-2); font-size: 0.9rem; margin-top: 0.6rem; }
+  .item :global(.d-fig img) { width: 100%; max-height: 72vh; object-fit: contain; border-radius: 10px; background: var(--screen); }
+  .item :global(.d-fg) { --fg-ink: #fff; --fg-accent: #ff5a1f; --fg-on-ink: #0f3d25; background: var(--football); color: #fff; padding: clamp(18px, 3vw, 32px); }
+  .item :global(.d-fg figcaption) { color: rgba(255, 255, 255, 0.82); }
+  .item :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
+  .item :global(.d-links) { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .item :global(.d-links a) { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.2rem; border-radius: 999px; font-weight: 800; text-decoration: none; background: var(--ink); color: var(--tile); }
+  .item :global(.d-links a:hover) { background: var(--violet); color: #fff; }
+  .related h2 { font-size: 1.4rem; font-stretch: 118%; margin-bottom: 0.9rem; }
   .related .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 248px), 1fr)); }
 </style>
