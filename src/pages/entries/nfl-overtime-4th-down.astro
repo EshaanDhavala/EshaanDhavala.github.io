@@ -32,12 +32,12 @@ import Specimen from '../../components/Specimen.astro';
   </p>
   <ul>
     <li><strong>The kick:</strong> distance, surface, dome vs. outdoors, altitude (yes, Denver matters).</li>
-    <li><strong>The weather:</strong> wind, gusts, temperature, precipitation.</li>
+    <li><strong>The weather:</strong> wind gusts and temperature (each also crossed with distance, since both matter more on long kicks), and precipitation.</li>
     <li><strong>The kicker:</strong> rolling 6-game make rate and career make rate at that distance, plus how many attempts that career rate is based on.</li>
     <li><strong>The pressure:</strong> time left, score differential, overtime or not.</li>
   </ul>
   <p>
-    It’s gradient-boosted trees tuned by randomized search on <em>Brier score</em>, then calibrated. A
+    It’s gradient-boosted trees tuned by randomized search on <em>Brier score</em>, then isotonic-calibrated. A
     “70%” really needs to mean 70%, because the engine multiplies it against other probabilities. The
     train/test split is stratified by season so every era of kicking is in both sets.
   </p>

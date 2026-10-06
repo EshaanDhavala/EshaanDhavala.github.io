@@ -18,11 +18,13 @@ import Specimen from '../../components/Specimen.astro';
     The idea extends Brian Burke’s DeepQB (MIT Sloan, 2019) from throw choice to pocket behavior.
   </p>
 
-  <h2><span class="label">My part</span>Turning tracking data into pocket geometry, then a model</h2>
+  <h2><span class="label">My part</span>Integrating the pipeline, from tracking frames to a working model</h2>
   <Note>The pocket is literally a convex hull: the shape around every pass blocker, measured at the snap and again at the throw.</Note>
   <p>
-    Using 10 Hz player tracking from the NFL Big Data Bowl (weeks 1–8 of 2021), I engineered the
-    pocket-geometry features and trained the model:
+    Our team split up the feature families. I built the feature-engineering pipeline that joins the
+    NFL Big Data Bowl’s 10 Hz tracking (weeks 1–8 of 2021) to play-by-play and pulls the snap and release
+    frames, wrote the pass-rusher features, fixed data-leakage and feature bugs across everyone’s code, and
+    produced the final model and ratings. The features, at the moment of the throw:
   </p>
   <ul>
     <li><strong>Pocket area at release</strong> and <strong>collapse rate</strong>, from the convex hull of all pass blockers at the snap vs. at the throw.</li>
@@ -32,13 +34,13 @@ import Specimen from '../../components/Specimen.astro';
   </ul>
   <p>
     An XGBoost regressor predicts expected points added (EPA) for each dropback. A QB’s <em>optimality</em> on a play is actual EPA minus predicted. The <em>clutch rating</em> compares optimality in high-leverage
-    moments (win probability 40–60%) against everything else. Validation is leave-one-week-out, so the model
+    moments (win probability 40–60%) against the same QB’s average on all his dropbacks. Validation is leave-one-week-out, so the model
     never sees the week it’s scoring.
   </p>
 
   <Plate fig="1" wide>
     <div slot="media" id="qb-chart" class="chart" role="img" aria-label="Bar chart of clutch rating for 15 quarterbacks, from Justin Herbert at +0.53 to Carson Wentz at −0.50"></div>
-    Clutch rating = mean optimality in close games − mean optimality otherwise (EPA per play). Bar labels show
+    Clutch rating = mean optimality in close games − the QB’s overall mean optimality (EPA per play). Bar labels show
     the number of clutch dropbacks: these are small samples from half a season, so treat it as a first look,
     not a verdict.
   </Plate>

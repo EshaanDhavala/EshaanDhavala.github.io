@@ -49,7 +49,7 @@ export const entries: Entry[] = [
     when: 'Spring 2026',
     tags: ['Football', 'Stats'],
     stack: ['Python', 'XGBoost', 'SciPy convex hulls', 'NFL Big Data Bowl tracking'],
-    context: 'Bruin Sports Analytics · 5-person research team',
+    context: 'Bruin Sports Analytics · research team',
   },
   {
     slug: 'usaa-closure-reasons',
