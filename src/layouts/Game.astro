@@ -27,7 +27,7 @@ const path = Astro.url.pathname;
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
-    <meta name="theme-color" content="#06080e" />
+    <meta name="theme-color" content="#0f1724" />
   </head>
   <body>
     <a class="visually-hidden skip" href="#main">Skip to content</a>
@@ -36,6 +36,7 @@ const path = Astro.url.pathname;
       <nav aria-label="Site">
         <a href="/#projects">Projects</a>
         <a href="/#profile">About</a>
+        <a href="/tools/">Tools</a>
         <a href="/resume.pdf">Résumé</a>
         <a class="mail" href="mailto:eshaandhavala@gmail.com">Email</a>
       </nav>
@@ -49,6 +50,7 @@ const path = Astro.url.pathname;
       <a href="mailto:eshaandhavala@gmail.com">eshaandhavala@gmail.com</a>
       <a href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
       <a href="https://github.com/EshaanDhavala">GitHub</a>
+      <a href="/tools/">Tools</a>
       <a href="/resume.pdf">Résumé</a>
       <details class="what-moves">
         <summary>What’s moving in the background?</summary>
@@ -101,6 +103,9 @@ const path = Astro.url.pathname;
     nav { gap: 0.8rem; font-size: 0.95rem; }
     nav a[href='/resume.pdf'] { display: none; }
     nav .mail { padding: 0 12px; }
+  }
+  @media (max-width: 420px) {
+    nav a[href='/#profile'] { display: none; }
   }
   .foot { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.25rem 1.6rem; padding: 3rem 0 4rem; margin-top: 5rem; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 0.95rem; }
   .foot .fname { display: inline-flex; align-items: center; min-height: 44px; font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }

@@ -1,0 +1,115 @@
+---
+import Game from '../layouts/Game.astro';
+import { asset } from '../lib/asset';
+
+const tools = [
+  {
+    id: 'launchpad',
+    name: 'Launchpad',
+    line: 'My to-do list, built so I only ever look at one thing.',
+    img: '/thumbs/tool-launchpad.jpg',
+    alt: 'Launchpad: a dark dashboard with a “Do this now” card and focus timer, a priority queue, and School and Internship task lists.',
+    stats: [['25 min', 'focus timer'], ['6', 'areas of life'], ['2', 'devices, synced']],
+    does: [
+      '“Do this now” card with a 25-minute focus timer',
+      'Queue sorts itself: must-dos, then soonest deadline. Drag to override',
+      'Quick add reads “102C: HW2 fri 10pm” as class, task, deadline',
+      'Watches my Gmail: checks off “email X” when I send it, unlocks the next step when they reply',
+      'Claude reads new mail and suggests tasks I can accept in one tap',
+      'Syncs between my phone and laptop',
+    ],
+    stack: 'HTML + JS · Claude artifact database · Gmail via MCP · Claude for suggestions',
+    note: 'Private: it runs on my real tasks. Screenshot uses sample data.',
+  },
+  {
+    id: 'ledger',
+    name: 'Signal Ledger',
+    line: 'Every DS, AI and ML internship posting in one list.',
+    img: '/thumbs/tool-ledger.jpg',
+    alt: 'Signal Ledger: counts of new, applied and not-a-fit postings, filter tabs, and posting cards with Apply buttons.',
+    stats: [['6', 'job lists merged'], ['4', 'flags per posting'], ['Live', 'career-page radar']],
+    does: [
+      'Pulls six public Summer 2027 internship lists, de-duplicated by posting ID',
+      'Flags Minnesota, notable companies, no-sponsorship and grad-degree roles',
+      'Triage each one: New → Applied or Not a fit, freshest first',
+      'Radar tab: a watcher on my Mac checks company career feeds and pings me the minute an intern role goes up',
+    ],
+    stack: 'HTML + JS · Claude artifact database · scheduled watcher on my Mac',
+    note: 'Private: it tracks my real applications. Screenshot uses made-up companies.',
+  },
+  {
+    id: 'crash',
+    name: 'DS & AI Crash Course',
+    line: 'The self-study course I wrote to get ready for DS and ML interviews.',
+    img: '/thumbs/tool-crash.jpg',
+    alt: 'Crash Course: a module list with progress counts beside the course title and stats: 11 modules, 66 core videos, 34 optional, about 35.5 hours.',
+    stats: [['11', 'modules'], ['66', 'core videos'], ['≈35 h', 'start to finish']],
+    does: [
+      'Python, SQL, ML foundations, deep learning, PyTorch, LLMs, RAG, ML engineering, agents',
+      'Every video link checked; tick them off as you go',
+      'Code snippets that were actually run, with their real output',
+      'Memory hooks and “check yourself” questions per module',
+      'Part 1 of a study suite: Learn → Practice (199-question interview drill with spaced review) → Build → Interview → Speak',
+    ],
+    stack: 'Single static HTML page',
+    note: null,
+  },
+];
+---
+<Game title="Tools" description="Productivity tools Eshaan built with Claude: a focus-first to-do list, an internship tracker, and a DS & AI crash course.">
+  <section class="tools wrap" aria-labelledby="tools-title">
+    <a class="back" href="/">‹ Home</a>
+    <h1 id="tools-title">Tools I built for myself</h1>
+    <p class="lede">Built with Claude for my own day-to-day: staying on task, finding internships, studying.</p>
+
+    <ol class="list">
+      {tools.map((t, i) => (
+        <li class={`tool ${i % 2 ? 'flip' : ''}`} id={t.id} data-reveal>
+          <figure class="shot">
+            <img src={asset(t.img)} alt={t.alt} width="1600" height="1000" loading={i ? 'lazy' : 'eager'} />
+          </figure>
+          <div class="txt">
+            <span class="num">0{i + 1}</span>
+            <h2>{t.name}</h2>
+            <p class="line">{t.line}</p>
+            <dl class="stats">
+              {t.stats.map(([n, l]) => <div><dt>{n}</dt><dd>{l}</dd></div>)}
+            </dl>
+            <ul class="does">{t.does.map((d) => <li>{d}</li>)}</ul>
+            <p class="stack"><b>Stack</b> {t.stack}</p>
+            {t.note && <p class="note">{t.note}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Game>
+
+<style>
+  .tools { padding-top: clamp(28px, 5vh, 56px); }
+  .back { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); }
+  .back:hover { color: var(--ink); }
+  h1 { font-size: clamp(2.6rem, 7vw, 5.2rem); font-weight: 900; line-height: 0.9; margin-top: 0.4rem; }
+  .lede { margin-top: 0.9rem; color: var(--ink-2); max-width: 38rem; font-size: 1.1rem; }
+  .list { list-style: none; margin: clamp(36px, 6vh, 64px) 0 0; display: flex; flex-direction: column; gap: clamp(48px, 9vh, 104px); }
+  .tool { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 56px); align-items: center; }
+  .tool.flip .shot { order: 2; }
+  .shot { border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); background: var(--panel); }
+  .shot img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+  .num { font: 800 1rem/1 var(--display); color: var(--blue); letter-spacing: 0.08em; }
+  h2 { font-size: clamp(2rem, 4vw, 3rem); margin-top: 0.35rem; }
+  .line { margin-top: 0.5rem; font-size: 1.1rem; }
+  .stats { display: flex; gap: 0 clamp(18px, 3vw, 36px); margin: 1.1rem 0 0; flex-wrap: wrap; }
+  .stats dt { font: 900 2rem/1 var(--display); color: var(--blue); }
+  .stats dd { margin: 0.2rem 0 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
+  .does { list-style: none; margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .does li { position: relative; padding-left: 1.1rem; color: var(--ink); font-size: 1rem; }
+  .does li::before { content: ''; position: absolute; left: 0; top: 0.72em; width: 8px; height: 2px; background: var(--ink-2); }
+  .stack { margin-top: 1.1rem; font-size: 0.92rem; color: var(--ink-2); }
+  .stack b { font-weight: 600; color: var(--ink); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; margin-right: 0.4rem; }
+  .note { margin-top: 0.5rem; font-size: 0.85rem; color: var(--ink-2); }
+  @media (max-width: 899px) {
+    .tool { grid-template-columns: 1fr; }
+    .tool.flip .shot { order: 0; }
+  }
+</style>
