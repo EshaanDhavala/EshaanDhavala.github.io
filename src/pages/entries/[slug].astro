@@ -1,82 +1,97 @@
 ---
-import Kiosk from '../../layouts/Kiosk.astro';
-import Icon from '../../components/Icon.astro';
-import MenuTile from '../../components/MenuTile.astro';
-import Pic from '../../components/shared/Pic.astro';
+import Game from '../../layouts/Game.astro';
+import Card from '../../components/game/Card.astro';
 import Detail from '../../components/shared/Detail.astro';
-import { entries, type Entry } from '../../data/entries';
+import { entries, CATS, type Entry } from '../../data/entries';
 
 export function getStaticPaths() {
-  return entries.map((e) => ({ params: { slug: e.slug }, props: { e } }));
+  return entries.map((e, i) => ({ params: { slug: e.slug }, props: { e, next: entries[(i + 1) % entries.length], prev: entries[(i - 1 + entries.length) % entries.length] } }));
 }
-const { e } = Astro.props as { e: Entry };
-const related = entries.filter((x) => x.slug !== e.slug && x.cats.some((c) => e.cats.includes(c))).slice(0, 3);
-const ogImage = e.pic.kind === 'img' ? e.pic.src : '/img/eshaan.jpg';
+const { e, next, prev } = Astro.props as { e: Entry; next: Entry; prev: Entry };
+const src = e.pic.kind === 'img' ? e.pic.src : '';
+const alt = e.pic.kind === 'img' ? e.pic.alt : '';
 ---
-<Kiosk title={e.name} description={e.what} image={ogImage}>
-  <div class="item">
-    <a class="back" href="/#menu"><Icon name="arrow-left" size={18} /> Menu</a>
+<Game title={e.name} description={e.what} image={src}>
+  <article class="item wrap" style={`--c: var(--k-${e.plate})`}>
+    <a class="back" href="/#projects">All projects</a>
 
-    <section class="hero">
-      <div class="pic" style={`--plate: var(--${e.plate})`} transition:name={`pic-${e.slug}`}>
-        <Pic e={e} eager />
-      </div>
+    <header class="hero">
+      <figure class="pic-wrap">
+        <div class="pic" style={`view-transition-name: pic-${e.slug}`}>
+          <img src={src} alt={alt} width="1280" height="800" fetchpriority="high" />
+        </div>
+        {e.pic.kind === 'img' && e.pic.caption && <figcaption>{e.pic.caption}</figcaption>}
+      </figure>
       <div class="info">
+        <p class="cats">{e.cats.map((c) => <span class="cat" style={`--c: var(--k-${c})`}>{CATS.find((x) => x.id === c)!.label}</span>)}</p>
         <h1>{e.name}</h1>
         <p class="what">{e.what}</p>
-        <span class="chip big">{e.stat.value} <small>{e.stat.label}</small></span>
+        <p class="stat"><b data-countup>{e.stat.value}</b><span>{e.stat.label}</span></p>
+        {e.links.length > 0 && (
+          <p class="links">{e.links.map((l, i) => <a class:list={['btn', i === 0 ? 'btn-lime' : 'btn-line']} href={l.href} rel={l.href.startsWith('http') ? 'noopener' : undefined}>{l.label}</a>)}</p>
+        )}
       </div>
-    </section>
+    </header>
 
-    <Detail e={e} headingLevel={2} />
+    <div class="body" data-reveal>
+      <Detail e={e} headingLevel={2} />
+    </div>
 
-    {related.length > 0 && (
-      <section class="related">
-        <h2>You might also like</h2>
-        <div class="grid">{related.map((r) => <MenuTile e={r} />)}</div>
-      </section>
-    )}
-  </div>
-</Kiosk>
-
-<script>
-  import '../../scripts/charts';
-</script>
+    <nav class="nextup" aria-label="More projects">
+      <h2 data-reveal>Up next</h2>
+      <div class="pair">
+        <div data-reveal><Card e={next} headingLevel={3} /></div>
+        <div data-reveal><Card e={prev} headingLevel={3} /></div>
+      </div>
+    </nav>
+  </article>
+</Game>
 
 <style>
-  .item { max-width: 1120px; margin: 0 auto; padding: clamp(16px, 3vw, 32px); display: flex; flex-direction: column; gap: 2.25rem; }
-  .back { display: inline-flex; align-items: center; gap: 0.4rem; align-self: flex-start; font-weight: 800; text-decoration: none; min-height: 44px; padding: 0 1rem 0 0.75rem; border-radius: 999px; background: var(--tile); box-shadow: var(--shadow); }
-  .back:hover { color: var(--violet); }
-  .hero { display: grid; gap: clamp(1.25rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr); align-items: center; }
-  @media (min-width: 880px) { .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
-  .pic { background: var(--plate); color: #fff; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
-  .info { display: flex; flex-direction: column; gap: 0.85rem; align-items: flex-start; }
-  h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-stretch: 125%; }
-  .what { font-size: 1.15rem; color: var(--ink-2); max-width: 34rem; }
-  .chip.big { font-size: 1.35rem; padding: 0.3em 0.9em 0.34em; }
+  .item { padding-top: 28px; }
+  .back { display: inline-flex; align-items: center; gap: 8px; font: italic 800 1.05rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); text-decoration: none; min-height: 44px; }
+  .back::before { content: ''; width: 10px; height: 10px; border-left: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg); }
+  .back:hover { color: var(--lime); }
+  .hero { display: grid; gap: clamp(20px, 4vw, 48px); grid-template-columns: minmax(0, 1fr); align-items: center; margin: 12px 0 clamp(32px, 6vh, 64px); }
+  @media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+  .pic { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent), 0 40px 80px -40px #000; }
+  .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .pic-wrap figcaption { margin-top: 10px; color: var(--ink-2); font-size: 0.9rem; }
+  .info { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; min-width: 0; }
+  .cats { display: flex; gap: 6px; flex-wrap: wrap; }
+  h1 { font-weight: 900; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 0.9; }
+  .what { color: #c9d0e2; font-size: 1.15rem; max-width: 34rem; }
+  .stat { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .stat b { font: italic 900 clamp(3rem, 6vw, 4.6rem)/0.9 var(--display); color: var(--c); }
+  .stat span { color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
 
-  .item :global(.detail) { display: flex; flex-direction: column; gap: 1.25rem; }
-  .item :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 0.5rem 2.25rem; margin: 0; }
-  .item :global(.d-meta dt) { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
-  .item :global(.d-meta dd) { margin: 0; font-weight: 600; }
-  .item :global(.d-video), .item :global(.d-chart), .item :global(.d-fig), .item :global(.d-fg) { margin: 0; background: var(--tile); border-radius: 18px; padding: 1rem; box-shadow: var(--shadow); }
-  .item :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
-  .item :global(.d-cols) { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
-  .item :global(.d-cols > div) { background: var(--tile); border-radius: 18px; padding: 1.4rem 1.5rem; box-shadow: var(--shadow); }
-  .item :global(.d-h) { font-size: 1.4rem; font-stretch: 118%; margin-bottom: 0.9rem; }
-  .item :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
-  .item :global(.d-list li) { position: relative; padding-left: 1.2rem; line-height: 1.45; }
-  .item :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.58em; width: 7px; height: 7px; border-radius: 2px; background: var(--violet); }
-  .item :global(.d-results li) { font-weight: 600; }
-  .item :global(.d-results li::before) { background: var(--sauce); }
-  .item :global(.d-note), .item :global(figcaption) { color: var(--ink-2); font-size: 0.9rem; margin-top: 0.6rem; }
-  .item :global(.d-fig img) { width: 100%; max-height: 72vh; object-fit: contain; border-radius: 10px; background: var(--screen); }
-  .item :global(.d-fg) { --fg-ink: #fff; --fg-accent: #ff5a1f; --fg-on-ink: #0f3d25; background: var(--football); color: #fff; padding: clamp(18px, 3vw, 32px); }
-  .item :global(.d-fg figcaption) { color: rgba(255, 255, 255, 0.82); }
-  .item :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
-  .item :global(.d-links) { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-  .item :global(.d-links a) { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.2rem; border-radius: 999px; font-weight: 800; text-decoration: none; background: var(--ink); color: var(--tile); }
-  .item :global(.d-links a:hover) { background: var(--violet); color: #fff; }
-  .related h2 { font-size: 1.4rem; font-stretch: 118%; margin-bottom: 0.9rem; }
-  .related .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 248px), 1fr)); }
+  .body :global(.detail) { display: flex; flex-direction: column; gap: 20px; }
+  .body :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 10px 36px; padding: 16px 20px; background: var(--panel); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); }
+  .body :global(.d-meta dt) { color: var(--ink-2); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
+  .body :global(.d-meta dd) { margin: 2px 0 0; font-weight: 600; }
+  .body :global(.d-video), .body :global(.d-chart), .body :global(.d-fig), .body :global(.d-fg) { background: var(--panel); border-radius: 18px; padding: clamp(10px, 2vw, 18px); box-shadow: inset 0 0 0 1px var(--line); }
+  .body :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
+  .body :global(.d-cols) { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
+  .body :global(.d-cols > div) { background: var(--panel); border-radius: 18px; padding: 22px 24px; box-shadow: inset 0 0 0 1px var(--line); }
+  .body :global(.d-h) { font-size: 1.8rem; margin-bottom: 14px; color: var(--c); }
+  .body :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .body :global(.d-list li) { position: relative; padding-left: 20px; line-height: 1.45; }
+  .body :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.5em; width: 8px; height: 8px; background: var(--c); transform: skewX(-14deg); }
+  .body :global(.d-results li) { font-weight: 600; }
+  .body :global(.d-results li::before) { background: var(--lime); }
+  .body :global(.d-note) { color: var(--ink-2); font-size: 0.95rem; padding: 0 4px; }
+  .body :global(figcaption) { color: var(--ink-2); font-size: 0.92rem; margin-top: 10px; padding: 0 4px; }
+  .body :global(.d-fig a) { display: block; border-radius: 10px; overflow: hidden; background: #000; }
+  .body :global(.d-fig img) { width: 100%; max-height: 74vh; object-fit: contain; margin-inline: auto; }
+  .body :global(.d-fig:not(.wide)) { max-width: 860px; width: 100%; margin-inline: auto; }
+  .body :global(.d-fg) { --fg-ink: #eef2ff; --fg-accent: var(--lime); --fg-on-ink: #06080e; background: linear-gradient(160deg, #0f2a1a, #0b1a12); padding: clamp(18px, 3vw, 30px); }
+  .body :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
+  .body :global(.d-links) { display: none; }
+
+  .nextup { margin-top: clamp(56px, 10vh, 110px); }
+  .nextup h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 18px; }
+  .pair { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+  .pair > div { display: flex; }
+  .pair :global(.card) { flex: 1; }
 </style>

@@ -1,12 +1,11 @@
 ---
 /** Minimal document shell for theme previews: meta + body, no site chrome. */
-interface Props { title: string; theme: 'game' | 'arcade' | 'scroll'; bg: string }
+interface Props { title: string; theme: 'arcade' | 'scroll'; bg: string }
 const { title, theme, bg } = Astro.props;
 const themes = [
-  { id: 'game', label: 'Sports game', href: '/preview/game/' },
+  { id: 'main', label: 'Main site', href: '/' },
   { id: 'arcade', label: 'Arcade', href: '/preview/arcade/' },
   { id: 'scroll', label: 'Cinematic', href: '/preview/scroll/' },
-  { id: 'kiosk', label: 'Kiosk (live)', href: '/' },
 ];
 ---
 <!doctype html>

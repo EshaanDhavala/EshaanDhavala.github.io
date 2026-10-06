@@ -1,199 +1,163 @@
 ---
 name: Eshaan Dhavala
-description: Portfolio built as a self-order kiosk. Projects are menu items.
+description: Portfolio styled like a sports video game's menus. Title screen, project select, player profile.
 colors:
-  bezel: "#0e0d12"
-  bezel-ink: "#f3f2f8"
-  screen: "#f2f1f6"
-  tile: "#ffffff"
-  ink: "#16141f"
-  ink-2: "#4b4858"
-  line: "#e1dfe9"
-  violet: "#5b2ee0"
-  violet-2: "#4320c2"
-  sauce: "#ff5a1f"
-  sauce-ink: "#16141f"
-  plate-football: "#0f6b3e"
-  plate-tennis: "#2160c4"
-  plate-ai: "#4b22d6"
-  plate-stats: "#b8391a"
-  screen-dark: "#111016"
-  tile-dark: "#1b1a22"
-  ink-dark: "#f3f2f8"
-  ink-2-dark: "#aeaabd"
-  violet-dark: "#6d45ff"
+  bg: "#06080e"
+  bg-2: "#0a0e18"
+  panel: "#0e1320"
+  panel-2: "#151c2e"
+  line: "rgba(255,255,255,0.09)"
+  ink: "#eef2ff"
+  ink-2: "#9aa4bd"
+  lime: "#c6ff3d"
+  on-lime: "#0b1200"
+  cat-sports: "#e8c25a"
+  cat-ai: "#a78bfa"
+  cat-stats: "#ff7a59"
+  turf: "#0f3a22"
 typography:
   display:
-    fontFamily: "Archivo Variable, Archivo, system-ui, sans-serif"
-    fontSize: "clamp(2.2rem, 5vw, 3.6rem)"
-    fontWeight: 800
-    lineHeight: 1.04
-    letterSpacing: "-0.02em"
-    fontVariation: "'wdth' 125"
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "clamp(3.8rem, 11.5vw, 9.5rem)"
+    fontWeight: 900
+    lineHeight: 0.84
   headline:
-    fontFamily: "Archivo Variable, Archivo, system-ui, sans-serif"
-    fontSize: "clamp(1.7rem, 3.2vw, 2.4rem)"
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "clamp(2.4rem, 5vw, 3.8rem)"
     fontWeight: 800
-    lineHeight: 1.04
-    fontVariation: "'wdth' 125"
+    lineHeight: 0.95
   title:
-    fontFamily: "Archivo Variable, Archivo, system-ui, sans-serif"
-    fontSize: "1.12rem"
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "clamp(1.35rem, 9cqi, 1.7rem)"
     fontWeight: 800
-    fontVariation: "'wdth' 112"
+    lineHeight: 1
   body:
-    fontFamily: "Archivo Variable, Archivo, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "1.0625rem"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.55
     fontFeature: "'tnum' 1"
   label:
-    fontFamily: "Archivo Variable, Archivo, system-ui, sans-serif"
-    fontSize: "0.82rem"
-    fontWeight: 700
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "0.72rem"
+    fontWeight: 600
+    letterSpacing: "0.08em"
 rounded:
-  tag: "999px"
+  chip: "6px"
+  button: "10px"
   tile: "14px"
-  panel: "18px"
-  promo: "22px"
+  card: "16px"
+  panel: "20px"
+  avatar: "50%"
 spacing:
-  grid-gap: "16px"
-  gutter: "clamp(16px, 2.5vw, 32px)"
-  section: "3.5rem"
+  gutter: "clamp(16px, 4vw, 56px)"
+  grid-gap: "clamp(12px, 2vw, 22px)"
+  section: "clamp(56px, 10vh, 140px)"
 components:
-  button-sauce:
-    backgroundColor: "{colors.sauce}"
-    textColor: "{colors.sauce-ink}"
-    rounded: "{rounded.tag}"
+  button-primary:
+    backgroundColor: "{colors.lime}"
+    textColor: "{colors.on-lime}"
+    rounded: "{rounded.button}"
     height: "48px"
     padding: "0 20px"
-  button-ghost:
+  button-line:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
-    rounded: "{rounded.tag}"
+    rounded: "{rounded.button}"
     height: "48px"
-  chip-price:
-    backgroundColor: "{colors.sauce}"
-    textColor: "{colors.sauce-ink}"
-    rounded: "{rounded.tag}"
-  menu-tile:
-    backgroundColor: "{colors.tile}"
+  project-card:
+    backgroundColor: "{colors.panel}"
     textColor: "{colors.ink}"
+    rounded: "{rounded.card}"
+  category-chip:
+    rounded: "{rounded.chip}"
+  hud:
+    backgroundColor: "{colors.bg}"
+    textColor: "{colors.ink-2}"
+    height: "64px"
+  profile-tile:
+    backgroundColor: "{colors.panel}"
     rounded: "{rounded.tile}"
-  add-button:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.tile}"
-    rounded: "{rounded.tag}"
-    size: "44px"
-  add-button-active:
-    backgroundColor: "{colors.violet}"
-    textColor: "#ffffff"
-  category-rail:
-    backgroundColor: "{colors.violet}"
-    textColor: "#ffffff"
-  order-bar:
-    backgroundColor: "{colors.violet}"
-    textColor: "#ffffff"
-    rounded: "{rounded.tag}"
-    height: "60px"
-  top-bar:
-    backgroundColor: "{colors.bezel}"
-    textColor: "{colors.bezel-ink}"
-    height: "68px"
 ---
 
 # Design System: Eshaan Dhavala
 
 ## Overview
 
-**Creative North Star: "The Order Kiosk"**
+**Creative North Star: "Select Your Project"**
 
-The site is a self-order touchscreen. A black hardware bar frames a bright screen; a violet rail holds the categories; projects are menu tiles with a picture, a name, one line, and a "price" that is the project's headline number. Tapping a tile opens an item screen; anything can be added to an order and sent as a list. The kiosk lives in the interface, never in the copy: text is short, plain, first person, mostly bullets.
+The site reads like the menus of a sports video game, at night in a stadium. A title screen with the name in huge italic broadcast type sits over parallax stadium lights and a football field receding into perspective. A scrolling highlight ticker sits under it like a broadcast crawl. Projects are cards on a "select a project" screen: the three strongest form the starting lineup as wide cards, then a playable field-goal model, then the rest of the roster. The About section is a player profile.
 
-Density is high but calm: big touch targets, one heavy display face, flat white tiles on a cool grey screen. The theme nods to a high-school newspaper feature about Eshaan's Taco Bell order, but the kiosk is original. No Taco Bell name, logo, bell, or trade dress in the chrome.
+Every number is real and every picture is a real artifact (live tool, app screenshots, a tracking-data play, report figures), or is labeled as a graphic. The theme lives in layout, type and motion; the copy stays plain, short and first person.
 
 **Key Characteristics:**
-- Bezel black / screen light / violet navigation / sauce-orange prices
-- One family (Archivo Variable), expanded and heavy for anything you'd read on a menu board
-- Item pictures drawn from each project's real data on category-colored plates
-- Verbs are kiosk verbs: Add to Order, Review Order, Add Combo
+- Night-stadium ground, lime as the single "selected / primary" colour
+- Barlow Condensed italic caps for anything a broadcast graphic would say; Barlow for reading
+- Category colours (gold / violet / coral) only on stats and chips
+- Motion: smooth scroll, parallax hero, field lines that scroll, batched card reveals, card tilt, count-ups
 
 ## Colors
 
-A neutral kiosk screen with two committed brand colors that each own one job.
+Dark and committed, with one bright accent and three category colours.
 
 ### Primary
-- **Kiosk Violet** (#5b2ee0; dark #6d45ff): navigation and the order. Category rail, Order button, order bar, active add state, chart "positive" series.
+- **Turf Lime** (#c6ff3d): primary buttons, the selected tab underline, the portrait ring, focus rings, text selection, "selected" states. Text on it is #0b1200.
 
-### Secondary
-- **Hot Sauce** (#ff5a1f): prices and the main buy action only. Stat chips, Add to Order buttons, selection highlight, focus ring. Always with dark ink (#16141f) on top.
-
-### Tertiary: category plates
-- **Turf Green** (#0f6b3e): football items and the live FG promo.
-- **Hard-Court Blue** (#2160c4): tennis.
-- **Deep Violet** (#4b22d6): AI & ML.
-- **Brick** (#b8391a): stats.
+### Category
+- **Sports Gold** (#e8c25a), **AI Violet** (#a78bfa), **Stats Coral** (#ff7a59): a card's headline stat, its chip, and its section heading on project pages. Never large fills.
 
 ### Neutral
-- **Bezel** (#0e0d12): top bar.
-- **Screen** (#f2f1f6 / dark #111016): page ground.
-- **Tile** (#ffffff / dark #1b1a22): tiles, panels, sheet.
-- **Ink** (#16141f) and **Ink 2** (#4b4858): text and secondary text.
-- **Line** (#e1dfe9): dividers and tag outlines.
+- **Night** (#06080e) page ground; **Panel** (#0e1320) cards and tiles; **Panel 2** (#151c2e) chips and keycaps.
+- **Ink** (#eef2ff) text; **Ink 2** (#9aa4bd) secondary text (≥ 6.3:1 on panels).
+- **Line** (white at 9%) dividers and 1px insets.
 
 ### Named Rules
-**The One Job Rule.** Violet means navigate or order; orange means price or buy. Neither is used as decoration.
-**The Plate Rule.** Category colors appear only as the ground of item pictures and the promo, never as text or UI chrome.
+**The One Selected Colour Rule.** Lime means "this is the action / this is selected". Nothing else is lime.
+**The Stat Colour Rule.** Category colours belong to numbers and chips, not to borders or backgrounds.
 
 ## Typography
 
-**Display, body and labels:** Archivo Variable (width axis 62–125%), self-hosted.
+**Display:** Barlow Condensed (700, 800 italic, 900 italic), self-hosted.
+**Body and labels:** Barlow (400, 600), self-hosted.
 
-**Character:** a single grotesque pushed wide and heavy for headings reads like a menu board; normal width for reading.
+**Character:** condensed italic caps read like sports broadcast lower-thirds; Barlow keeps the reading text calm.
 
 ### Hierarchy
-- **Display** (800, wdth 125, clamp(2.2rem, 5vw, 3.6rem), 1.04): item-screen names, promo title, About heading.
-- **Headline** (800, wdth 125, clamp(1.7rem, 3.2vw, 2.4rem)): section heads (Everything, Combos).
-- **Title** (800, wdth 112, 1.12rem): tile names, panel heads.
-- **Body** (400, 1rem, 1.5, tabular numerals): bullets and one-liners.
-- **Label** (700, 0.8–0.85rem): metadata terms, control labels.
+- **Display** (900 italic, clamp(3.8rem, 11.5vw, 9.5rem), 0.84): the name in the hero.
+- **Headline** (800 italic, clamp(2.4rem, 5vw, 3.8rem)): section titles.
+- **Title** (800 italic, container-relative): card names and stats; stats scale with the card (`cqi`) so long values never collide.
+- **Body** (400, 1.0625rem, 1.55): one-liners and bullets.
+- **Label** (600, 0.72rem, +0.08em, uppercase): chips, tile labels. Never under 11px.
 
 ### Named Rules
-**The No-Kicker Rule.** No small label above a heading. Metadata goes in the dl below the title.
-**The Short Copy Rule.** One-liners are 8–12 words and never truncated; details go in bullets.
+**The No-Kicker Rule.** No small label above a heading.
+**The Outcome Rule.** The big number on a card is a result (accuracy, AUC, R², a ranking), never a dataset size.
 
 ## Layout
 
-Sticky 68px bezel. Desktop (≥1000px): 216px violet rail + content column. Mobile: the rail becomes a horizontal sticky tab strip under the bezel. Menu grid `repeat(auto-fill, minmax(248px, 1fr))`, 16px gap; under 640px tiles turn horizontal (picture 38% left). Item screen max 1120px: picture + info split at 880px, then bullet panels, chart, figures, related tiles. Content gutter clamp(16px, 2.5vw, 32px); 3.5rem between sections.
+Sticky 64px HUD. Hero capped so the starting lineup peeks above the fold. Content width min(100% − 2·gutter, 1320px). Starting lineup: one wide card, then two (horizontal cards ≥900px). Roster grid `repeat(auto-fill, minmax(272px, 1fr))`. On phones (≤600px) cards turn horizontal (picture 38% left) so all ten scan in about two screens. Project pages: picture + title split at 960px, then meta strip, video, built/results panels (top-aligned), charts, figures (non-wide max 860px), "Up next".
 
 ## Elevation & Depth
 
-Flat tiles lifted by one soft shadow; no borders on elevated surfaces.
-
-### Shadow Vocabulary
-- **Rest** (`0 1px 2px rgba(22,20,31,.06), 0 8px 24px -12px rgba(22,20,31,.22)`): tiles, panels, back button.
-- **Hover** (`0 2px 4px rgba(22,20,31,.06), 0 18px 36px -16px rgba(22,20,31,.35)` + translateY(-3px)): tiles.
-- **Order bar** (`0 12px 32px -12px rgba(67,32,194,.7)`).
+Flat panels separated by 1px insets and long soft drop shadows (`0 18px 36px -24px #000`). Depth in the hero comes from parallax layers, not shadows. No glow halos.
 
 ## Shapes
 
-Pills (999px) for every control, chip, and tag. Tiles 14px, panels 18px, promo and About 22px. Item pictures are 16:10.
+10px buttons, 16px cards, 14px tiles, 20px panels, circular portrait with a solid lime ring. No coloured side or bottom borders on rounded elements.
 
 ## Components
 
-- **Menu tile:** picture on plate, title link stretched over the tile, one-liner, price chip, 44px round add button (ink → violet with a check when added).
-- **Price chip:** orange pill, bold value + smaller label.
-- **Add to Order button:** orange pill, 48px; becomes ink "In Your Order" when added.
-- **Category rail:** violet; active item is a white pill with violet text.
-- **Order sheet:** right-side dialog with order list, Email This List to Eshaan, Copy Links, Clear Order (5s undo).
-- **Order bar:** fixed violet pill with item count and an orange Review Order segment; appears once the order has an item.
-- **FG Live:** big percentage, distance slider, gust and kicker segmented pills, curve; driven by precomputed model predictions.
+- **Project card:** picture (16:10), stat in category colour, name (2-line clamp), one-liner, chips + year. Whole card is one link. Tilt and shine follow the pointer.
+- **Starter card:** the same card in a wide horizontal layout with larger type.
+- **Tabs:** All / Sports / AI & ML / Stats, Q/E to switch, synced to `?cat=`.
+- **Ticker:** broadcast crawl of highlights with a pause button; stops under reduced motion.
+- **FG model:** live widget driven by precomputed predictions from the trained model.
+- **Player profile:** four tiles (Studying, Graduating, Team, Looking for), career table, interests, one-line press mention, contact buttons.
 
 ## Do's and Don'ts
 
-- **Do** pull every number from data, code, or git history.
-- **Do** keep the kiosk in the UI vocabulary; keep descriptions straight.
-- **Don't** use jokes, puns, or "derpy" tone in copy.
-- **Don't** add kickers or eyebrow labels.
-- **Don't** use Taco Bell branding.
-- **Don't** truncate tile one-liners; rewrite them shorter.
+- **Do** use real artifacts for project pictures; label illustrations.
+- **Do** keep every tap target ≥ 44px and every label ≥ 11px.
+- **Don't** use coloured side/bottom borders, glow halos, cyan gradient rings, or gradient text.
+- **Don't** put jokes or game puns in descriptions; the game lives in the UI.
+- **Don't** use real game or league logos.

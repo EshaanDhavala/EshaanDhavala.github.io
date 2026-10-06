@@ -19,7 +19,7 @@ const chartLabel: Record<string, string> = {
     <div><dt>Stack</dt><dd>{e.stack.join(' · ')}</dd></div>
   </dl>
   {e.video && (
-    <figure class="d-video">
+    <figure class="d-video" id="demo">
       <video src={e.video.src} poster={e.video.poster} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
     </figure>
   )}

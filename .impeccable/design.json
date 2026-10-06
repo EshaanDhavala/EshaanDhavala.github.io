@@ -1,18 +1,17 @@
 {
   "name": "Eshaan Dhavala",
-  "northStar": "The Order Kiosk",
-  "shadows": {
-    "rest": "0 1px 2px rgba(22,20,31,.06), 0 8px 24px -12px rgba(22,20,31,.22)",
-    "hover": "0 2px 4px rgba(22,20,31,.06), 0 18px 36px -16px rgba(22,20,31,.35)",
-    "order-bar": "0 12px 32px -12px rgba(67,32,194,.7)"
-  },
-  "focus": "outline: 3px solid #ff5a1f; outline-offset: 2px",
+  "northStar": "Select Your Project",
+  "shadows": { "card": "0 18px 36px -24px #000", "card-hover": "0 26px 48px -24px color-mix(in srgb, var(--c) 45%, #000)", "portrait": "0 24px 48px -24px rgba(0,0,0,.9)" },
+  "focus": "outline: 3px solid #c6ff3d; outline-offset: 3px",
   "motion": {
-    "page": "Astro view transitions; item picture morphs via transition:name pic-<slug>",
-    "bag-bump": "320ms cubic-bezier(0.16, 1, 0.3, 1), scale 1 → 1.3 → 1",
-    "sheet": "260ms cubic-bezier(0.16, 1, 0.3, 1) slide-in",
-    "reducedMotion": "all animation/transition disabled; demo video paused"
+    "scroll": "Lenis smooth scroll (lerp 0.12) synced to GSAP ScrollTrigger",
+    "parallax": "[data-parallax] yPercent scrub 0.6; hero field lines --field-y scrub",
+    "reveal": "ScrollTrigger.batch on [data-reveal] below the fold: y 34 -> 0, opacity, expo.out, stagger .07",
+    "tilt": "gsap.quickTo rotationX/rotationY/z on cards, pointer: fine only",
+    "countup": "[data-countup] numbers count up once, expo.out 1.3s",
+    "ticker": "CSS marquee 48s with pause button",
+    "pages": "@view-transition navigation: auto; card picture shares view-transition-name with project hero",
+    "reducedMotion": "no Lenis, no reveals, no tilt, ticker and video stopped"
   },
-  "selection": "background #ff5a1f, color #16141f",
-  "source": "src/styles/kiosk.css"
+  "source": "src/styles/game.css"
 }

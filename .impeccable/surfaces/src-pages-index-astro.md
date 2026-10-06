@@ -5,24 +5,24 @@ primary_target: "src/pages/index.astro"
 related_targets: ["src/pages/entries"]
 ---
 
-# Surface: home menu + item screens
+# Surface: home + project pages
 
-Mode: Experience (portfolio). Code-led build: no image generation is available on this machine.
+Mode: Experience (portfolio). Code-led build (no image generation on this machine).
 
-Audience: DS/ML recruiters, sports-analytics staff, ML engineers. Job: see what every project does and how good it was in seconds, open one, and leave with links or contact.
+Audience: DS/ML recruiters (30-second skim, often on a phone), sports-analytics staff, ML engineers. Job: see credentials and every project fast, open one, find proof, contact.
 
 ## Direction contract
 
-THESIS: The portfolio is a self-order kiosk. Projects are menu items you scan by picture, name, one-line description and one "price" stat; tap one for its item screen and add it to an order. It refuses both the hero-plus-equal-card-grid personal site and the editorial notebook look it replaces.
+THESIS: The portfolio is a sports video game's menu system: a title screen, a "select a project" screen with a starting lineup and a roster, and a player profile. It refuses the generic dark dev-portfolio card grid by giving the work a hierarchy (starters vs. roster) and real artifacts on every card.
 
-OWN-WORLD: Kiosk touchscreen. Near-black hardware top bar; a cool light screen (#F2F1F6) with white item tiles (radius 14). Electric violet (#5B2EE0) owns the category rail and the order bar. Hot-sauce orange (#FF5A1F) is reserved for stat "price" chips and Add buttons. Type is Archivo Variable: expanded 800 for item names and headings, normal 400–500 for body, tabular numerals. Each item picture is drawn from that project's real data in one shared style, on a per-category colored plate.
+OWN-WORLD: Night stadium ground (#06080e), turf-green field lines in perspective, Barlow Condensed italic caps for broadcast-style headings, lime (#c6ff3d) as the single selected/primary colour, category colours (gold/violet/coral) only on stats and chips, 16px cards with 1px insets and long soft shadows, a broadcast highlight ticker.
 
-STORY: The visitor lands on the menu, filters by category, reads each project's purpose and key number without clicking, opens an item screen for detail and figures, and leaves with an order: copyable links or an email to Eshaan. The About tab explains the theme through the newspaper feature about him.
+STORY: A visitor sees the name, three proof chips (USAA intern, football co-chair, open to 2027 roles), and the starting lineup peeking below. They filter by Sports / AI & ML / Stats, play with the live field-goal model, open a project for real artifacts and bullets, and end at the player profile with contact.
 
-FIRST VIEWPORT: Black top bar with the wordmark "Eshaan Dhavala", "Stats & Data Science · UCLA", Résumé, and an Order button with a count. A violet left rail lists Featured, Football, Tennis, AI & ML, Stats, Combos, About (it becomes a horizontal scroller on mobile). The main area is a featured promo panel, about 40% of the height: the field-goal model live, with a distance slider plus gust and kicker toggles driving a big P(make). The first row of menu tiles shows below it. Every tile has an Add button; a violet order bar is fixed at the bottom once anything is added.
+FIRST VIEWPORT: Sticky HUD (wordmark, Projects, Profile, Résumé, lime Email). Left: huge italic name over parallax stadium lights and receding field lines; one-sentence lede; proof chips; Browse projects (lime) + Résumé. Right: circular tie-up portrait with a lime ring and "UCLA '27". Bottom: highlight ticker with pause. The "Select a project" heading starts at the fold.
 
-FORM: User-pinned "full order kiosk" direction (position 1; pinned by the user, so concept-seed was not rolled; seed key: user-pinned-kiosk).
+FORM: User-pinned sports-game menu (position 1, chosen over arcade and cinematic previews); seed key: user-pinned-sports-game.
 
-Signature interaction: the live FG model promo. Motion grammar: kiosk screen transitions (Astro view transitions between menu and item screen) and an add-to-order fly-to-bag pulse. Nothing else animates.
+Signature interaction: card tilt + shine and the live FG model; motion grammar: smooth scroll, parallax hero, batched reveals, count-ups, view transitions card -> project page.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

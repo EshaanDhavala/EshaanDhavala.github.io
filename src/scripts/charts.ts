@@ -47,19 +47,20 @@ const charts: Record<string, (el: HTMLElement) => Promise<Element>> = {
     const rows = s.insights.by_dow as { dow: string; mood: number; gym_rate: number }[];
     const days = rows.map((r) => r.dow);
     const w = Math.min(width(el), 760);
-    const half = (w - 24) / 2;
-    const common = { height: 220, style: style(), x: { domain: days, label: null, padding: 0.25 } };
+    const narrow = w < 560;
+    const half = narrow ? w : (w - 24) / 2;
+    const common = { height: 220, style: style(), x: { domain: days, label: null, padding: 0.25, tickFormat: (d: string) => (narrow ? d[0] : d) } };
     const mood = Plot.plot({
       ...common, width: half, marginLeft: 32,
       y: { domain: [7, 8.5], label: 'mood', grid: true },
       marks: [Plot.barY(rows, { x: 'dow', y1: 7, y2: 'mood', fill: (d) => (d.mood === Math.max(...rows.map((r) => r.mood)) ? css('--sauce') : css('--violet')), rx: 3 }),
-        Plot.text(rows, { x: 'dow', y: 'mood', text: (d) => d.mood.toFixed(1), dy: -8, fill: css('--ink'), fontWeight: 700 })],
+        Plot.text(rows, { x: 'dow', y: 'mood', text: (d) => d.mood.toFixed(1), dy: -8, fill: css('--ink'), fontWeight: 700, fontSize: narrow ? 10 : 12 })],
     });
     const gym = Plot.plot({
       ...common, width: half, marginLeft: 36,
       y: { domain: [0, 1], label: 'gym days', tickFormat: '%', grid: true },
       marks: [Plot.barY(rows, { x: 'dow', y: 'gym_rate', fill: css('--violet'), rx: 3 }),
-        Plot.text(rows, { x: 'dow', y: 'gym_rate', text: (d) => `${Math.round(d.gym_rate * 100)}%`, dy: -8, fill: css('--ink'), fontWeight: 700 })],
+        Plot.text(rows, { x: 'dow', y: 'gym_rate', text: (d) => `${Math.round(d.gym_rate * 100)}%`, dy: -8, fill: css('--ink'), fontWeight: 700, fontSize: narrow ? 10 : 12 })],
     });
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:24px;justify-content:center';

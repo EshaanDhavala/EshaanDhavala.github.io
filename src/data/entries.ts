@@ -1,8 +1,7 @@
-export type Cat = 'football' | 'tennis' | 'ai' | 'stats';
+export type Cat = 'sports' | 'ai' | 'stats';
 
 export const CATS: { id: Cat; label: string }[] = [
-  { id: 'football', label: 'Football' },
-  { id: 'tennis', label: 'Tennis' },
+  { id: 'sports', label: 'Sports' },
   { id: 'ai', label: 'AI & ML' },
   { id: 'stats', label: 'Stats' },
 ];
@@ -28,11 +27,13 @@ export interface Entry {
   links: Link[];
   figures?: Figure[];
   /** card picture: an inline data drawing (src/assets/thumbs/<slug>.svg) or a photo */
-  pic: { kind: 'svg' } | { kind: 'img'; src: string; alt: string };
+  pic: { kind: 'svg' } | { kind: 'img'; src: string; alt: string; caption?: string };
   /** interactive charts on the detail view */
-  charts?: ('qb' | 'journal' | 'journal-dow' | 'tennis' | 'fg')[];
+  charts?: ('qb' | 'journal' | 'journal-dow' | 'sports' | 'fg')[];
   video?: { src: string; poster: string; label: string };
   note?: string;
+  /** starters get the big cards at the top */
+  starter?: boolean;
 }
 
 export const entries: Entry[] = [
@@ -40,10 +41,11 @@ export const entries: Entry[] = [
     slug: 'ucla-football-ai-assistant',
     name: 'Coach’s AI Assistant',
     what: 'Coaches ask about player data in plain English, get charts and reports.',
-    stat: { value: '~6s', label: 'per answer' },
-    cats: ['football', 'ai'],
+    stat: { value: '100%', label: 'eval fact checks' },
+    starter: true,
+    cats: ['sports', 'ai'],
     plate: 'ai',
-    pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'The AI Assistant answering which O-linemen have the weakest hamstrings, with a bar chart' },
+    pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'The AI Assistant answering which O-linemen have the weakest hamstrings, with a bar chart' , caption: 'Answering a coach’s question with a chart, on synthetic data.' },
     video: { src: '/media/ai-assistant.mp4', poster: '/media/ai-assistant-poster.jpg', label: 'Screen recording of the AI Assistant answering four coach questions with charts and a CSV, on synthetic data' },
     when: '2026',
     where: 'Bruin Sports Analytics × UCLA Football',
@@ -60,16 +62,17 @@ export const entries: Entry[] = [
       'Cheaper model failed the eval on facts, so I kept the bigger one',
       'Demo on synthetic data; real-athlete use waiting on privacy approval',
     ],
-    links: [],
+    links: [{ href: '#demo', label: 'Watch demo' }],
     note: 'Recorded on synthetic data. Every athlete name and number is fake.',
   },
   {
     slug: 'nfl-overtime-4th-down',
     name: '4th-Down OT Engine',
     what: 'Go, punt, or kick in NFL overtime. I built its field-goal model.',
-    stat: { value: '0.78', label: 'AUC' },
-    cats: ['football', 'ai'],
-    plate: 'football',
+    stat: { value: '0.78', label: 'AUC · my FG model' },
+    starter: true,
+    cats: ['sports', 'ai'],
+    plate: 'sports',
     when: 'Feb – Mar 2026',
     where: 'Bruin Sports Analytics · 8-person team',
     stack: ['Python', 'XGBoost', 'scikit-learn', 'nfl_data_py'],
@@ -88,7 +91,7 @@ export const entries: Entry[] = [
       { href: 'https://playbyplay.football', label: 'Live tool' },
       { href: 'https://github.com/Bruin-Sports-Analytics/nfl-ot-4th-down-model/tree/feature/fg-probability-model', label: 'Code' },
     ],
-    pic: { kind: 'svg' },
+    pic: { kind: 'img', src: '/thumbs/nfl-overtime-4th-down.jpg', alt: "The live decision engine recommending a field goal from the opponent's 32, with a 72.1% make probability from my model" , caption: 'The live tool: from the opponent’s 32 it recommends the kick. The 72.1% make probability comes from my model.' },
     charts: ['fg'],
     figures: [
       { src: '/img/fg-explainer.png', alt: 'Four-panel chart of field goal make probability by distance, kicker quality, weather, and game scenario', caption: 'The summary slide I presented.', w: 1600, h: 891, wide: true },
@@ -99,9 +102,10 @@ export const entries: Entry[] = [
     slug: 'qb-clutch-optimality',
     name: 'QB Clutch Ratings',
     what: 'Which QBs beat expectations in close games, from tracking data.',
-    stat: { value: '7,088', label: 'dropbacks' },
-    cats: ['football', 'stats'],
-    plate: 'football',
+    stat: { value: 'Herbert', label: '#1 clutch QB (2021)' },
+    starter: true,
+    cats: ['sports', 'stats'],
+    plate: 'sports',
     when: 'Spring 2026',
     where: 'Bruin Sports Analytics · research team',
     stack: ['Python', 'XGBoost', 'SciPy', 'Big Data Bowl tracking'],
@@ -118,7 +122,7 @@ export const entries: Entry[] = [
       'Small samples (11–41 clutch dropbacks per QB): a first look',
     ],
     links: [{ href: 'https://github.com/Bruin-Sports-Analytics/qb-optimality', label: 'Code' }],
-    pic: { kind: 'svg' },
+    pic: { kind: 'img', src: '/thumbs/qb-clutch-optimality.jpg', alt: "Real 2021 Chargers play from tracking data: the pocket at the snap (dashed) and at the throw (filled), with the nearest rusher 1.2 yards from Herbert" , caption: 'A real play from the data (2021, Chargers at Chiefs, clutch dropback, +2.7 EPA): pocket at the snap (dashed) vs. at the throw (filled). Nearest rusher 1.2 yd from Herbert.' },
     charts: ['qb'],
   },
   {
@@ -141,16 +145,17 @@ export const entries: Entry[] = [
       'Pitched 3 fixes to senior leadership: rep training, a better dropdown, predicting the reason before the call',
     ],
     links: [],
-    pic: { kind: 'svg' },
+    pic: { kind: 'img', src: '/thumbs/usaa-closure-reasons.jpg', alt: "Graphic: a closure-reason dropdown set to No longer needed, 72% of closures, reasons captured 28% to 66%" , caption: 'Graphic of the finding. No company data or screenshots.' },
+    links: [{ href: 'mailto:eshaandhavala@gmail.com?subject=USAA%20project%20walkthrough', label: 'Ask for a walkthrough' }],
     note: 'Internal work. No company data shown.',
   },
   {
     slug: 'playscan',
     name: 'PlayScan',
     what: 'Calls run, pass, or special teams live from a TV broadcast.',
-    stat: { value: '89%', label: 'accuracy' },
-    cats: ['football', 'ai'],
-    plate: 'football',
+    stat: { value: '89%', label: 'accuracy · 37% baseline' },
+    cats: ['sports', 'ai'],
+    plate: 'sports',
     when: 'Jun – Sep 2025',
     where: 'Personal project',
     stack: ['PyTorch', 'ResNet18', 'LSTM', 'OpenCV'],
@@ -159,8 +164,8 @@ export const entries: Entry[] = [
       '16 frames per play → ResNet18 → LSTM → class',
       'Live mode: detects each snap from screen motion, overlays the call',
     ],
-    results: ['89% on held-out validation clips', 'Demo: 6 validation plays it never trained on, with its real probabilities'],
-    links: [{ href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
+    results: ['89% on held-out validation clips (majority-class baseline: 37%)', 'Demo: 6 validation plays it never trained on, with its real probabilities'],
+    links: [{ href: '#demo', label: 'Watch demo' }, { href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
     pic: { kind: 'img', src: '/thumbs/playscan.jpg', alt: 'PlayScan calling a run play over an NFL broadcast' },
     video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg', label: 'PlayScan reading six validation plays and calling pass, run, or special teams with its probabilities' },
   },
@@ -168,7 +173,7 @@ export const entries: Entry[] = [
     slug: 'journal-to-data',
     name: 'JournalToData',
     what: 'An LLM turns my nightly journal into daily metrics.',
-    stat: { value: '131', label: 'nights logged' },
+    stat: { value: '15+', label: 'metrics per entry' },
     cats: ['ai'],
     plate: 'ai',
     when: 'Jan – Jun 2026',
@@ -186,16 +191,16 @@ export const entries: Entry[] = [
       'Sleep and mood barely move together (r = −0.12); gym days and rest days had the same mood',
     ],
     links: [{ href: 'https://github.com/EshaanDhavala/Journal-to-Data-Base', label: 'Code' }],
-    pic: { kind: 'svg' },
+    pic: { kind: 'img', src: '/thumbs/journal-to-data.jpg', alt: "The JournalToData app's Ask Your Data tab" , caption: 'The app’s Ask Your Data tab. Its example question is real.' },
     charts: ['journal-dow', 'journal'],
   },
   {
     slug: 'tennis-scouting',
     name: 'Tennis Scouting',
     what: 'Serve/return analytics, a scouting app, and a travel map.',
-    stat: { value: '26', label: 'matches' },
-    cats: ['tennis', 'stats'],
-    plate: 'tennis',
+    stat: { value: '8', label: 'opponents scouted' },
+    cats: ['sports', 'stats'],
+    plate: 'sports',
     when: 'Mar 2025 – Jun 2026',
     where: 'Bruin Sports Analytics · Tennis',
     stack: ['Python', 'Plotly Dash', 'R Leaflet'],
@@ -207,8 +212,8 @@ export const entries: Entry[] = [
     ],
     results: ['Scouting graphics for 8 opponents', 'Travel map used by players on the road'],
     links: [],
-    pic: { kind: 'img', src: '/thumbs/tennis-scouting.jpg', alt: 'Travel dashboard map with a venue card showing live weather for SMU in Dallas' },
-    charts: ['tennis'],
+    pic: { kind: 'img', src: '/thumbs/tennis-scouting.jpg', alt: 'Travel dashboard map with a venue card showing live weather for SMU in Dallas' , caption: 'The travel dashboard: venue card with live weather.' },
+    charts: ['sports'],
     figures: [{ src: '/img/travel-popup.jpg', alt: 'Leaflet travel dashboard: venue card for SMU in Dallas with travel, conditions, live weather, and nearby tabs', caption: 'Travel dashboard: each away venue has travel time, court conditions, live weather, and what’s nearby.', w: 1280, h: 800, wide: true }],
   },
   {
@@ -229,13 +234,16 @@ export const entries: Entry[] = [
     ],
     results: ['Kaggle test R² 0.888'],
     links: [],
-    pic: { kind: 'svg' },
+    figures: [
+      { src: '/img/house-marginal.jpg', alt: 'Marginal model plots for each predictor', caption: 'Marginal model plots: the model (red) tracks the data smoother (blue) on every predictor.', w: 1344, h: 960, wide: true },
+    ],
+    pic: { kind: 'img', src: '/thumbs/house-prices.jpg', alt: "Report figure: log price vs log square footage by overall quality, showing non-parallel lines" , caption: 'The interaction the model is built on: price climbs faster with size in higher-quality houses.' },
   },
   {
     slug: 'adhd-diagnosis',
     name: 'ADHD Care Gap',
     what: 'How ADHD severity and treatment track family income.',
-    stat: { value: '2,966', label: 'kids' },
+    stat: { value: '1.9×', label: 'severe rate, low vs high income' },
     cats: ['stats'],
     plate: 'stats',
     when: 'Spring 2026',
@@ -249,14 +257,14 @@ export const entries: Entry[] = [
     ],
     results: ['Severe share: 23% in the lowest income group vs 12% in the highest'],
     links: [],
-    pic: { kind: 'svg' },
+    pic: { kind: 'img', src: '/thumbs/adhd-diagnosis.jpg', alt: "Stacked bars of ADHD severity by household income" },
     figures: [{ src: '/img/adhd-income.png', alt: 'Stacked bar chart of ADHD severity by household income', caption: 'Severity by household income.', w: 1600, h: 1062 }],
   },
   {
     slug: 'souschef',
     name: 'SousChef',
     what: 'Tell it what’s in your kitchen, get recipes you can make.',
-    stat: { value: '2024', label: 'first agent' },
+    stat: { value: 'Vertex AI', label: 'recipe agent' },
     cats: ['ai'],
     plate: 'ai',
     when: 'Apr – Jun 2024',
@@ -269,7 +277,8 @@ export const entries: Entry[] = [
     ],
     results: [],
     links: [],
-    pic: { kind: 'svg' },
+    note: 'The original app wasn’t preserved, so the picture is an illustration of the flow, not a screenshot.',
+    pic: { kind: 'img', src: '/thumbs/souschef.jpg', alt: "Illustration: a pantry question, ingredient chips, and three matching recipes" , caption: 'Illustration of the flow; the original app wasn’t preserved.' },
   },
 ];
 

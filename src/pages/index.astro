@@ -1,215 +1,222 @@
 ---
-import Kiosk from '../layouts/Kiosk.astro';
-import MenuTile from '../components/MenuTile.astro';
+import Game from '../layouts/Game.astro';
+import Card from '../components/game/Card.astro';
 import FgLive from '../components/FgLive.astro';
-import Icon from '../components/Icon.astro';
 import { entries, CATS } from '../data/entries';
 
-const experience = [
-  ['Data Science Intern', 'USAA', 'May – Aug 2026'],
-  ['Co-Chair & Research Analyst', 'Bruin Sports Analytics · Football', 'Jan 2026 – now'],
-  ['Data Analyst', 'Bruin Sports Analytics · Tennis', 'Mar 2025 – Jun 2026'],
-  ['Lead Host', 'Mystic Lake Casino Steakhouse', 'Apr 2024 – Apr 2026'],
+const career = [
+  ['Summer 2026', 'USAA', 'Data Science Intern'],
+  ['2026 – now', 'Bruin Sports Analytics', 'Football Co-Chair & Research Analyst'],
+  ['2025 – 2026', 'Bruin Sports Analytics', 'Tennis Data Analyst'],
+  ['2024 – 2026', 'Mystic Lake Casino Steakhouse', 'Lead Host'],
 ];
-const interests = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history', 'Astronomy'];
+const traits = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history', 'Astronomy'];
+const starters = entries.filter((e) => e.starter);
+const bench = entries.filter((e) => !e.starter);
+const ticker = [
+  ['USAA', 'Data Science Intern, summer 2026'],
+  ['playbyplay.football', 'live NFL overtime decision engine'],
+  ['UCLA Football', 'AI assistant for the strength staff'],
+  ['1,174 clips', 'hand-labeled for PlayScan'],
+  ['131 nights', 'of journal entries turned into data'],
+  ['26 matches', 'of UCLA Tennis data'],
+  ['Bruin Sports Analytics', 'football co-chair'],
+];
 ---
-<Kiosk>
-  <h1 class="visually-hidden">Eshaan Dhavala: projects</h1>
-  <div class="shell">
-    <nav class="rail" aria-label="Menu categories">
-      <div class="rail-inner">
-        <button type="button" class="cat" data-filter="all" aria-pressed="true">All <span>{entries.length}</span></button>
-        {CATS.map((c) => (
-          <button type="button" class="cat" data-filter={c.id} aria-pressed="false">
-            {c.label} <span>{entries.filter((e) => e.cats.includes(c.id)).length}</span>
-          </button>
-        ))}
-        <a class="cat" href="#about">About</a>
+<Game>
+  <section class="hero" data-parallax-root aria-labelledby="hero-title">
+    <div class="lights" data-parallax="0.25" aria-hidden="true"></div>
+    <div class="field" data-field aria-hidden="true"></div>
+    <div class="hero-inner wrap">
+      <div class="hero-text">
+        <h1 id="hero-title" data-parallax="0.12"><span data-hero-in>Eshaan</span><span data-hero-in>Dhavala</span></h1>
+        <p class="lede" data-hero-in>Stats &amp; Data Science at UCLA. I build sports models and AI tools, most recently an AI assistant for UCLA Football’s strength staff and the field-goal model in a live NFL overtime tool.</p>
+        <ul class="proof" data-hero-in>
+          <li>USAA Data Science Intern ’26</li>
+          <li>Football co-chair, Bruin Sports Analytics</li>
+          <li>Open to 2027 roles in DS, ML, sports analytics</li>
+        </ul>
+        <p class="cta" data-hero-in>
+          <a class="btn btn-lime" href="#projects">Browse projects</a>
+          <a class="btn btn-line" href="/resume.pdf">Résumé</a>
+        </p>
       </div>
-    </nav>
-
-    <div class="content">
-      <section class="promo" aria-labelledby="promo-title">
-        <div class="promo-head">
-          <div>
-            <h2 id="promo-title">4th-Down OT Engine</h2>
-            <p>My NFL field-goal model, live. Move the kick.</p>
-          </div>
-          <div class="promo-actions">
-            <span class="chip">0.78 <small>AUC</small></span>
-            <a class="btn btn-onplate" href="/entries/nfl-overtime-4th-down/">Details <Icon name="arrow-right" size={18} /></a>
-          </div>
-        </div>
-        <FgLive />
-      </section>
-
-      <section id="menu" aria-labelledby="menu-title">
-        <div class="sec-head">
-          <h2 id="menu-title" data-menu-title>Everything</h2>
-          <p class="count" data-menu-count>{entries.length} items</p>
-        </div>
-        <div class="grid">
-          {entries.map((e, i) => <MenuTile e={e} eager={i < 4} />)}
-        </div>
-      </section>
-
-      <section id="about" class="about" aria-labelledby="about-title">
-        <img class="photo" src="/img/eshaan.jpg" alt="Eshaan Dhavala" width="900" height="900" loading="lazy" />
-        <div class="about-body">
-          <h2 id="about-title">Hi, I’m Eshaan.</h2>
-          <ul class="facts">
-            <li>Stats &amp; Data Science at UCLA, graduating Dec 2027</li>
-            <li>Co-chair of Bruin Sports Analytics football</li>
-            <li>Data science intern at USAA, summer 2026</li>
-            <li>Looking for 2027 roles in data science, ML, and sports analytics</li>
-          </ul>
-          <div class="about-cta">
-            <a class="btn btn-sauce" href="mailto:eshaandhavala@gmail.com"><Icon name="mail" size={18} /> Email</a>
-            <a class="btn btn-ghost" href="/resume.pdf"><Icon name="file" size={18} /> Résumé</a>
-            <a class="btn btn-ghost" href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
-            <a class="btn btn-ghost" href="https://github.com/EshaanDhavala">GitHub</a>
-          </div>
-
-          <h3>Experience</h3>
-          <ul class="exp">
-            {experience.map(([role, org, when]) => (<li><b>{role}</b><span>{org}</span><span class="when">{when}</span></li>))}
-          </ul>
-
-          <h3>In the paper</h3>
-          <a class="press" href="https://plhswave.org/4411/features/study-hard-crunch-harder/">
-            <span class="press-title">“Study hard, crunch harder”</span>
-            <span class="press-text">My high school paper ran a feature on me and my Taco Bell order. That’s why this site is a kiosk.</span>
-            <span class="press-quote">“The closest one is 10 minutes away and 7 minutes if I’m really hungry.”</span>
-            <span class="press-meta">The Wave, Prior Lake High School, April 2024</span>
-            <span class="press-link">Read the article <Icon name="external" size={16} /></span>
-          </a>
-
-          <h3>Outside of this</h3>
-          <ul class="interests">{interests.map((i) => <li class="tag">{i}</li>)}</ul>
-        </div>
-      </section>
+      <figure class="portrait" data-hero-in>
+        <div class="ring"><img src="/img/eshaan-circle.jpg" alt="Eshaan Dhavala" width="800" height="800" fetchpriority="high" /></div>
+        <figcaption><b>UCLA ’27</b><span>Bruin Sports Analytics co-chair</span></figcaption>
+      </figure>
     </div>
-  </div>
-</Kiosk>
+    <div class="ticker" aria-label="Highlights">
+      <ul class="tick" data-tick>
+        {[0, 1].map((k) => ticker.map(([n, s]) => <li aria-hidden={k === 1 ? 'true' : undefined}><b>{n}</b> {s}</li>))}
+      </ul>
+      <button type="button" class="tick-pause" data-tick-toggle aria-pressed="false" aria-label="Pause highlights"><span></span></button>
+    </div>
+  </section>
 
-<script>
-  function setupFilter() {
-    const btns = document.querySelectorAll<HTMLButtonElement>('.rail [data-filter]');
-    const tiles = document.querySelectorAll<HTMLElement>('#menu .tile');
-    const title = document.querySelector<HTMLElement>('[data-menu-title]');
-    const count = document.querySelector<HTMLElement>('[data-menu-count]');
-    function apply(b: HTMLButtonElement, scroll: boolean) {
-        const f = b.dataset.filter!;
-        btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-        let n = 0;
-        tiles.forEach((t) => {
-          const show = f === 'all' || t.dataset.cats!.split(' ').includes(f);
-          t.hidden = !show;
-          if (show) n++;
-        });
-        if (title) title.textContent = f === 'all' ? 'Everything' : b.firstChild!.textContent!.trim();
-        if (count) count.textContent = `${n} ${n === 1 ? 'item' : 'items'}`;
-        const url = new URL(location.href);
-        f === 'all' ? url.searchParams.delete('cat') : url.searchParams.set('cat', f);
-        history.replaceState(history.state, '', url);
-        if (scroll) document.getElementById('menu')!.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-    }
-    btns.forEach((b) => b.addEventListener('click', () => apply(b, true)));
-    const initial = new URL(location.href).searchParams.get('cat');
-    const start = [...btns].find((b) => b.dataset.filter === initial);
-    if (start) apply(start, false);
-  }
-  document.addEventListener('astro:page-load', setupFilter);
-</script>
+  <section id="projects" class="projects wrap" aria-labelledby="projects-title">
+    <div class="phead">
+      <div>
+        <h2 id="projects-title">Select a project</h2>
+        <p class="count" data-count-label>{entries.length} projects</p>
+      </div>
+      <div class="tabs" role="group" aria-label="Filter projects">
+        <span class="kbd hint" aria-hidden="true">Q</span>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        {CATS.map((c) => <button type="button" data-filter={c.id} aria-pressed="false" style={`--c: var(--k-${c.id})`}>{c.label}</button>)}
+        <span class="kbd hint" aria-hidden="true">E</span>
+        <span class="hint-txt hint" aria-hidden="true">to switch</span>
+      </div>
+    </div>
+    <h3 class="group" data-group="starters">Starting lineup</h3>
+    <div class="grid starters" data-list>
+      {starters.map((e, i) => <div class="cell" data-reveal><Card e={e} big eager={i < 2} /></div>)}
+    </div>
+  </section>
+
+  <section class="spot wrap" aria-labelledby="spot-title" data-reveal data-spot>
+    <div class="spot-head">
+      <h2 id="spot-title">Try the field-goal model</h2>
+      <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick.</p>
+      <a class="btn btn-line" href="/entries/nfl-overtime-4th-down/">See the project</a>
+    </div>
+    <div class="spot-panel"><FgLive /></div>
+  </section>
+
+  <section class="wrap roster" aria-labelledby="roster-title">
+    <h3 id="roster-title" class="group" data-group="bench">Rest of the roster</h3>
+    <div class="grid" data-list>
+      {bench.map((e) => <div class="cell" data-reveal><Card e={e} /></div>)}
+    </div>
+  </section>
+
+  <section id="profile" class="profile wrap" aria-labelledby="profile-title">
+    <div class="p-main">
+      <h2 id="profile-title" data-reveal>Player profile</h2>
+      <ul class="tiles">
+        <li data-reveal><small>Studying</small><b>Statistics &amp; Data Science, UCLA</b></li>
+        <li data-reveal><small>Graduating</small><b>December 2027</b></li>
+        <li data-reveal><small>Team</small><b>Bruin Sports Analytics, football co-chair</b></li>
+        <li data-reveal><small>Looking for</small><b>2027 roles in data science, ML, sports analytics</b></li>
+      </ul>
+      <h3 data-reveal>Career</h3>
+      <table class="career" data-reveal>
+        <tbody>{career.map(([y, t, r], i) => <tr class:list={{ minor: i === career.length - 1 }}><td>{y}</td><td>{t}</td><td>{r}</td></tr>)}</tbody>
+      </table>
+      <h3 data-reveal>Off the field</h3>
+      <ul class="traits" data-reveal>{traits.map((t) => <li>{t}</li>)}</ul>
+      <a class="news" href="https://plhswave.org/4411/features/study-hard-crunch-harder/" data-reveal>
+        <span class="n-src">In the news</span>
+        <span>My high school paper ran a feature on me and my Taco Bell order: <b>“Study hard, crunch harder”</b> (The Wave, 2024).</span>
+      </a>
+      <p class="contact" data-reveal>
+        <a class="btn btn-lime" href="mailto:eshaandhavala@gmail.com">Email me</a>
+        <a class="btn btn-line" href="/resume.pdf">Résumé</a>
+        <a class="btn btn-line" href="https://www.linkedin.com/in/eDhavala">LinkedIn</a>
+        <a class="btn btn-line" href="https://github.com/EshaanDhavala">GitHub</a>
+      </p>
+    </div>
+  </section>
+</Game>
 
 <style>
-  .shell { display: grid; grid-template-columns: minmax(0, 1fr); }
-  @media (min-width: 1000px) { .shell { grid-template-columns: 216px minmax(0, 1fr); } }
-
-  .rail { position: sticky; top: 68px; z-index: 10; background: var(--violet); color: var(--violet-ink); }
-  .rail-inner { display: flex; gap: 0.4rem; padding: 0.6rem 16px; overflow-x: auto; scrollbar-width: none; }
-  .rail-inner::-webkit-scrollbar { display: none; }
-  .cat {
-    flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: 0.6rem;
-    min-height: 44px; padding: 0 1rem; border-radius: 999px; border: 0; cursor: pointer; text-decoration: none;
-    background: transparent; color: inherit; font-weight: 800; font-stretch: 112%; font-size: 1rem;
+  /* ---------- hero ---------- */
+  .hero { position: relative; min-height: min(calc(100svh - 64px - 140px), 760px); display: flex; flex-direction: column; overflow: hidden; isolation: isolate; }
+  .lights { position: absolute; inset: -20% -10% 30%; z-index: -2; background:
+      radial-gradient(40% 50% at 18% 20%, rgba(198, 255, 61, 0.13), transparent 70%),
+      radial-gradient(45% 55% at 85% 10%, rgba(167, 139, 250, 0.14), transparent 70%); }
+  .field {
+    --field-y: 0px;
+    position: absolute; left: -40%; right: -40%; bottom: 48px; height: 115%; z-index: -1;
+    transform: perspective(900px) rotateX(58deg); transform-origin: 50% 100%;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 3px, transparent 3px 84px),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 16.8px),
+      linear-gradient(180deg, #0f3a22, #0c2a19);
+    background-position: 0 var(--field-y);
+    mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
   }
-  .cat span { font-size: 0.8rem; font-weight: 700; opacity: 0.7; }
-  .cat:hover { background: rgba(255, 255, 255, 0.14); }
-  .cat[aria-pressed='true'] { background: #fff; color: var(--violet-2); }
-  .cat[aria-pressed='true'] span { opacity: 1; }
-  @media (min-width: 1000px) {
-    .rail { height: calc(100dvh - 68px); }
-    .rail-inner { flex-direction: column; padding: 1.25rem 0.85rem; overflow: visible; }
-    .cat { min-height: 52px; font-size: 1.08rem; padding: 0 1rem; border-radius: 12px; }
-    .cat[href='#about'] { margin-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.22); border-radius: 0 0 12px 12px; padding-top: 1.25rem; min-height: 64px; }
-  }
+  .hero-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 2rem; padding: clamp(32px, 6vh, 72px) 0; }
+  @media (min-width: 900px) { .hero-inner { grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); } }
+  h1 { display: flex; flex-direction: column; font-weight: 900; font-size: clamp(3.8rem, 11.5vw, 9.5rem); line-height: 0.84; letter-spacing: -0.005em; }
+  h1 span { display: block; }
+  h1 span:last-child { color: var(--lime); }
+  .lede { margin-top: 1.4rem; max-width: 34rem; font-size: clamp(1.1rem, 1.6vw, 1.3rem); color: #c9d0e2; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.6rem; }
+  .proof { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.2rem; }
+  .proof li { font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px var(--line); }
+  .proof li:first-child { color: var(--lime); box-shadow: inset 0 0 0 1px rgba(198, 255, 61, 0.35); }
+  .portrait { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .ring { position: relative; width: clamp(200px, 26vw, 320px); aspect-ratio: 1; border-radius: 50%; padding: 5px; background: var(--lime); box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.9); }
+  .ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 5px solid var(--bg); }
+  .portrait figcaption { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+  .portrait figcaption b { font: italic 900 1.6rem/1 var(--display); text-transform: uppercase; }
+  .portrait figcaption span { color: var(--ink-2); font-size: 0.95rem; }
+  @media (max-width: 899px) { .portrait { order: -1; } .ring { width: 168px; } .hero-inner { gap: 1.2rem; } }
 
-  .content { padding: clamp(16px, 2.5vw, 32px); padding-bottom: 0; display: flex; flex-direction: column; gap: 3.5rem; min-width: 0; }
+  .ticker { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(6, 8, 14, 0.7); overflow: hidden; }
+  .tick-pause { position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border: 0; cursor: pointer; background: linear-gradient(90deg, transparent, var(--bg) 40%); display: grid; place-items: center; }
+  .tick-pause span { width: 12px; height: 14px; border-left: 4px solid var(--ink-2); border-right: 4px solid var(--ink-2); }
+  .tick-pause[aria-pressed='true'] span { width: 0; height: 0; border-left: 12px solid var(--lime); border-right: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+  .ticker:has([aria-pressed='true']) .tick { animation-play-state: paused; }
+  .tick { display: flex; width: max-content; list-style: none; animation: tick 48s linear infinite; }
+  .ticker:hover .tick { animation-play-state: paused; }
+  .tick li { display: flex; align-items: baseline; gap: 10px; padding: 12px 28px; white-space: nowrap; color: var(--ink-2); font-weight: 600; font-size: 0.95rem; border-right: 1px solid var(--line); }
+  .tick b { font: italic 800 1.15rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
+  @keyframes tick { to { transform: translateX(-50%); } }
 
-  .promo {
-    --fg-ink: #fff; --fg-accent: #ff5a1f; --fg-on-ink: #0f3d25;
-    background: var(--football); color: #fff; border-radius: 22px; padding: clamp(18px, 3vw, 32px);
-    display: flex; flex-direction: column; gap: 1.5rem;
-    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-    background-size: 10% 100%;
-  }
-  .promo-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; }
-  .promo h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); font-stretch: 125%; }
-  .promo-head p { margin-top: 0.4rem; font-size: 1.05rem; opacity: 0.88; font-weight: 500; }
-  .promo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
-  .promo .chip { font-size: 1.05rem; }
-  @media (max-width: 640px) {
-    .promo { gap: 1rem; padding: 18px; }
-    .promo-head p { display: none; }
-    .promo-actions .btn { min-height: 44px; padding: 0 1rem; font-size: 0.95rem; }
-    .promo :global(.curve) { display: none; }
-    .promo :global(.pct) { font-size: 3.2rem; }
-    .promo :global(.controls) { gap: 0.6rem; }
-    .promo :global(.controls fieldset) { display: none; }
-    .promo-head { gap: 0.75rem; }
-    .promo-actions { gap: 0.4rem; }
-    .promo-actions .btn { min-height: 40px; padding: 0 0.85rem; font-size: 0.9rem; }
-  }
-  .promo .btn-sauce[aria-pressed='true'] { background: #fff; color: #0f3d25; }
-  .btn-onplate { color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45); background: transparent; }
-  .btn-onplate:hover { box-shadow: inset 0 0 0 2px #fff; }
+  /* ---------- projects ---------- */
+  .projects { padding-top: clamp(56px, 9vh, 104px); }
+  .phead { position: sticky; top: 64px; z-index: 20; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding: 14px 0; margin-bottom: 20px; background: linear-gradient(var(--bg) 70%, transparent); }
+  .phead h2 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+  .count { color: var(--ink-2); font-weight: 600; margin-top: 4px; }
+  .tabs { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .tabs button { flex: none; font: italic 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); background: none; border: 0; padding: 12px 14px; cursor: pointer; border-bottom: 3px solid transparent; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--c, var(--lime)); }
+  .hint { display: none; }
+  @media (pointer: fine) and (min-width: 900px) { .hint { display: inline-grid; } }
+  @media (max-width: 560px) { .phead { top: 58px; } }
+  .group { font-size: 1.5rem; color: var(--ink-2); margin: 6px 0 14px; }
+  .roster { margin-top: clamp(56px, 9vh, 104px); }
+  .hint-txt { color: var(--ink-2); font-size: 0.8rem; margin-left: 2px; }
+  .starters { grid-template-columns: minmax(0, 1fr) !important; }
+  @media (min-width: 1200px) { .starters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .starters .cell:first-child { grid-column: 1 / -1; } }
+  .grid { display: grid; gap: clamp(12px, 2vw, 22px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)); align-items: stretch; }
+  .cell { display: flex; min-width: 0; }
+  .cell :global(.card) { flex: 1; }
+  .cell:has(:global(.card[hidden])) { display: none; }
 
-  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; }
-  .sec-head h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-stretch: 125%; }
-  .count { color: var(--ink-2); font-weight: 700; }
-  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 248px), 1fr)); }
-  .grid :global(.tile[hidden]) { display: none; }
+  /* ---------- spotlight ---------- */
+  .spot { margin-top: clamp(72px, 12vh, 140px); display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: center; }
+  @media (min-width: 1000px) { .spot { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } }
+  .spot-head { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  .spot-head h2 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); }
+  .spot-head p { color: var(--ink-2); font-size: 1.1rem; max-width: 30rem; }
+  .spot-panel { --fg-ink: #eef2ff; --fg-accent: var(--lime); --fg-on-ink: #06080e; background: linear-gradient(160deg, #0f2a1a, #0b1a12); border-radius: 20px; padding: clamp(20px, 3vw, 32px); box-shadow: inset 0 0 0 1px rgba(232, 194, 90, 0.25), 0 30px 60px -30px #000; font-family: var(--body); }
 
-
-  .about {
-    display: grid; gap: clamp(1.25rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr);
-    background: var(--tile); border-radius: 22px; padding: clamp(18px, 3vw, 36px); box-shadow: var(--shadow);
-  }
-  @media (min-width: 820px) { .about { grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr); align-items: start; } }
-  .photo { width: 100%; max-width: 300px; aspect-ratio: 1; object-fit: cover; border-radius: 16px; background: var(--screen); }
-  @media (min-width: 820px) { .photo { position: sticky; top: 100px; } }
-  .about-body { display: flex; flex-direction: column; gap: 1rem; max-width: 46rem; }
-  .about h2 { font-size: clamp(2rem, 4vw, 2.8rem); font-stretch: 125%; }
-  .about h3 { font-size: 1.15rem; font-stretch: 118%; margin-top: 1.25rem; }
-  .facts { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; font-size: 1.05rem; }
-  .facts li { padding-left: 1.1rem; position: relative; }
-  .facts li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 7px; height: 7px; border-radius: 2px; background: var(--sauce); }
-  .about-cta { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .exp { list-style: none; display: flex; flex-direction: column; }
-  .exp li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1rem; padding: 0.65rem 0; border-bottom: 1px solid var(--line); }
-  @media (min-width: 640px) { .exp li { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; align-items: baseline; } }
-  .exp span { color: var(--ink-2); }
-  .exp .when { font-size: 0.9rem; }
-  .press {
-    display: flex; flex-direction: column; gap: 0.35rem; text-decoration: none;
-    background: var(--screen); border-radius: var(--r); padding: 1.1rem 1.2rem; transition: background-color 140ms ease-out;
-  }
-  .press:hover { background: color-mix(in srgb, var(--violet) 10%, var(--screen)); }
-  .press-meta { font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
-  .press-title { font-weight: 800; font-stretch: 118%; font-size: 1.3rem; }
-  .press-text { color: var(--ink-2); }
-  .press-quote { font-weight: 600; }
-  .press-link { display: inline-flex; gap: 0.35rem; align-items: center; font-weight: 800; color: var(--violet); }
-  .interests { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  /* ---------- profile ---------- */
+  .profile { margin-top: clamp(80px, 14vh, 160px); max-width: 1000px; }
+  .p-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .p-main h2 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+  .p-main h3 { font-size: 1.5rem; color: var(--lime); margin-top: 22px; }
+  .tiles { list-style: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+  .tiles li { background: var(--panel); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 1px var(--line); }
+  .tiles small { color: var(--ink-2); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
+  .tiles b { font-weight: 600; line-height: 1.3; }
+  .career { border-collapse: collapse; width: 100%; }
+  .career td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  .career td:first-child { font: italic 800 1.05rem/1.2 var(--display); text-transform: uppercase; color: var(--ink-2); white-space: nowrap; width: 9rem; }
+  .career td:nth-child(2) { font-weight: 600; }
+  .career td:last-child { color: var(--ink-2); }
+  @media (max-width: 640px) { .career tr { display: grid; grid-template-columns: 1fr; padding: 10px 0; border-bottom: 1px solid var(--line); } .career td { border: 0; padding: 1px 0; width: auto; } }
+  .news { display: flex; flex-direction: column; gap: 4px; text-decoration: none; margin-top: 18px; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink-2); }
+  .news:hover { color: var(--ink); }
+  .n-src { color: var(--lime); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .news b { color: var(--ink); font-weight: 600; }
+  .career tr.minor td { color: var(--ink-2); font-weight: 400; opacity: 0.8; }
+  .traits { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .traits li { padding: 7px 13px; border-radius: 8px; background: var(--panel-2); font-weight: 600; font-size: 0.95rem; }
+  .contact { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 </style>

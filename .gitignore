@@ -24,3 +24,5 @@ pnpm-debug.log*
 .idea/
 .impeccable/review/
 scripts/data/
+.claude/
+skills-lock.json
