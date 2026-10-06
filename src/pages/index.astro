@@ -81,6 +81,8 @@ const ticker = [
 
   <section class="spot wrap" aria-labelledby="spot-title" data-reveal data-spot>
     <Ambient kind="kick" class="amb-kick" />
+    <Ambient kind="playscan" class="amb-playscan" />
+    <Ambient kind="closure" class="amb-closure" />
     <div class="spot-head">
       <h2 id="spot-title">Try the field-goal model</h2>
       <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick.</p>
@@ -90,6 +92,7 @@ const ticker = [
   </section>
 
   <section class="wrap roster" aria-labelledby="roster-title">
+    <Ambient kind="chat" class="amb-chat" />
     <h3 id="roster-title" class="group" data-group="bench">More projects</h3>
     <div class="grid" data-list="roster">
       {bench.map((e) => <div class="cell" data-bench data-reveal><Card e={e} /></div>)}
@@ -99,6 +102,7 @@ const ticker = [
   <section id="profile" class="profile wrap" aria-labelledby="profile-title">
     <Ambient kind="journal" class="amb-journal" />
     <Ambient kind="tennis" class="amb-tennis" />
+    <Ambient kind="adhd" class="amb-adhd" />
     <div class="p-main">
       <h2 id="profile-title" data-reveal>About me</h2>
       <ul class="tiles">
@@ -137,6 +141,12 @@ const ticker = [
   .profile :global(.amb-tennis) { left: -200px; top: 140px; width: 180px; height: 220px; }
   @media (max-width: 1439px) { .profile :global(.amb-tennis) { display: none; } }
   .profile :global(.amb-journal) { right: 0; top: -10px; width: 380px; height: 120px; }
+  .spot :global(.amb-playscan) { left: 330px; top: -10px; width: 150px; height: 64px; }
+  .spot :global(.amb-closure) { right: 0; top: -120px; width: 240px; height: 80px; }
+  .roster :global(.amb-chat) { right: 0; top: -58px; width: 230px; height: 84px; }
+  .profile :global(.amb-adhd) { right: -190px; top: 300px; width: 150px; height: 110px; }
+  @media (max-width: 1439px) { .profile :global(.amb-adhd) { right: 0; top: auto; bottom: 170px; } }
+  @media (max-width: 999px) { .spot :global(.amb-playscan), .spot :global(.amb-closure) { display: none; } }
   @media (max-width: 900px) { .phead :global(.amb-bars) { left: auto; right: 0; top: 4px; width: 160px; height: 60px; } }
 
   /* ---------- hero ---------- */

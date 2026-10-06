@@ -4,7 +4,7 @@
 <div class="hero-play" aria-hidden="true">
   <canvas data-hero-play></canvas>
 </div>
-<p class="hero-play-cap">Real tracking data: Herbert dropback, 2021 Wk 3 at KC. Blue = offense, outline = the pocket.</p>
+<p class="hero-play-cap">Real tracking data: Herbert dropback, 2021 Wk 3 at KC, played forward and back. Blue = offense, outline = the pocket.</p>
 
 <script>
   type P = [number, number, string];
@@ -66,22 +66,21 @@
       }
       ctx.restore();
     }
-    // Seamless loop: fade in at the pre-snap frame, play at real speed, hold on the throw,
-    // fade out to empty, start again. No hard cut.
-    const FADE = 0.7, HOLD = 1.0, PRE = 0.6;
+    // Boomerang: play forward at real speed, pause on the throw, run it back to the line, pause, repeat.
+    const HOLD_END = 0.6, HOLD_START = 0.5;
+    const smooth = (x: number) => x * x * (3 - 2 * x); // ease in/out at both turnarounds
     function loop(now: number) {
       if (!data) return;
       const n = data.frames.length;
       const play = (n - 1) / 10;
-      const period = FADE + PRE + play + HOLD + FADE;
+      const period = play + HOLD_END + play + HOLD_START;
       const t = ((now - t0) / 1000) % period;
-      let ft = 0, alpha = 1;
-      if (t < FADE) { alpha = t / FADE; }
-      else if (t < FADE + PRE) { ft = 0; }
-      else if (t < FADE + PRE + play) { ft = (t - FADE - PRE) * 10; }
-      else { ft = n - 1.001; const out = t - (FADE + PRE + play + HOLD); if (out > 0) alpha = 1 - out / FADE; }
-      ctx.globalAlpha = 1;
-      draw(Math.min(n - 1.001, ft), Math.max(0, Math.min(1, alpha)));
+      let u: number;
+      if (t < play) u = smooth(t / play);
+      else if (t < play + HOLD_END) u = 1;
+      else if (t < play + HOLD_END + play) u = 1 - smooth((t - play - HOLD_END) / play);
+      else u = 0;
+      draw(u * (n - 1.001), 1);
       if (visible) raf = requestAnimationFrame(loop);
     }
     fetch('/data/hero-play.json').then((r) => r.json()).then((d) => {

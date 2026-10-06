@@ -40,6 +40,7 @@ const path = Astro.url.pathname;
         <a class="mail" href="mailto:eshaandhavala@gmail.com">Email</a>
       </nav>
     </header>
+    <div class="yard-progress" aria-hidden="true"><i data-yard-fill></i></div>
     <main id="main">
       <slot />
     </main>
@@ -58,6 +59,11 @@ const path = Astro.url.pathname;
           <li><b>Under the field-goal model:</b> make probability by kick distance for an average kicker (blue), with elite and struggling kickers (gray). The gold dot rides the curve.</li>
           <li><b>Beside “About me” (wide screens):</b> where one UCLA tennis player’s returns landed in a match, appearing one at a time. Gold marks returns that missed.</li>
           <li><b>By “About me”:</b> my weekly average mood from 131 days of journal entries (JournalToData).</li>
+          <li><b>Above the field-goal model:</b> the USAA closure-reason capture rate climbing from 28% to 66%.</li>
+          <li><b>Next to the field-goal title:</b> PlayScan’s pass / run / special-teams probabilities on the 6 plays in its demo video.</li>
+          <li><b>Next to “More projects”:</b> the UCLA Football AI assistant: a question, typing dots, then the answer’s bars (synthetic demo data).</li>
+          <li><b>In “About me”:</b> share of severe (blue), moderate and mild ADHD cases by household income, from the DataLearn project.</li>
+          <li><b>The bar under the top menu:</b> how far down the page you are, marked every 10 like yard lines.</li>
         </ul>
         <p>Each one draws in, holds, fades out, and loops. They stop when you scroll away and stay still if your device asks for reduced motion.</p>
       </details>
@@ -71,6 +77,10 @@ const path = Astro.url.pathname;
 </html>
 
 <style>
+  .yard-progress { position: fixed; left: 0; right: 0; top: 64px; height: 4px; z-index: 39; pointer-events: none;
+    background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(169, 180, 198, 0.35) calc(10% - 1px) 10%); }
+  .yard-progress i { display: block; height: 100%; width: 100%; background: var(--blue); transform: scaleX(var(--p, 0)); transform-origin: 0 50%; }
+  @media (max-width: 560px) { .yard-progress { top: 58px; } }
   .skip:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; clip: auto; z-index: 60; background: var(--lime); color: var(--on-lime); padding: 10px 14px; border-radius: 8px; }
   .hud {
     position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 1rem;

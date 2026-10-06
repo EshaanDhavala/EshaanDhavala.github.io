@@ -6,8 +6,12 @@
  *   bars    : QB clutch ratings, 15 quarterbacks
  *   tennis  : where one UCLA player's returns landed in a match
  *   journal : weekly average mood, Jan–Jun 2026
+ *   playscan: PlayScan's pass / run / special-teams probabilities on its 6 demo plays
+ *   adhd    : share of severe / moderate / mild ADHD by household income
+ *   closure : USAA closure-reason capture rate, 28% → 66%
+ *   chat    : the AI assistant: a question, typing dots, then the answer's bars (synthetic demo data)
  */
-interface Props { kind: 'kick' | 'bars' | 'tennis' | 'journal'; class?: string }
+interface Props { kind: 'kick' | 'bars' | 'tennis' | 'journal' | 'playscan' | 'adhd' | 'closure' | 'chat'; class?: string }
 const { kind, class: cls } = Astro.props;
 ---
 <div class:list={['ambient', cls]} aria-hidden="true"><canvas data-ambient={kind}></canvas></div>
@@ -68,6 +72,61 @@ const { kind, class: cls } = Astro.props;
           ctx.beginPath(); ctx.arc(X(d.x), Y(Math.max(-0.8, d.y)), i === show - 1 ? 5 : 3.5, 0, Math.PI * 2);
           ctx.fillStyle = d.ok ? blue : gold; ctx.fill();
         });
+      };
+    }
+    if (kind === 'playscan') {
+      const d = await get('/data/playscan-demo.json');
+      const plays = d.plays as number[][];
+      return (ctx, w, h, p) => {
+        const k = Math.min(plays.length - 1, Math.floor(p * plays.length * 0.999));
+        const local = ease((p * plays.length) % 1 * 1.6);
+        const pr = plays[k], bh = h / 4.2;
+        pr.forEach((v, i) => {
+          const y = i * (bh + h * 0.08) + h * 0.08;
+          ctx.fillStyle = ink2; ctx.globalAlpha *= 0.35; ctx.fillRect(0, y, w, bh); ctx.globalAlpha /= 0.35;
+          ctx.fillStyle = v > 0.5 ? blue : ink2; ctx.fillRect(0, y, w * v * local, bh);
+        });
+      };
+    }
+    if (kind === 'adhd') {
+      const sev = [[23.1, 47.1, 29.8], [19.0, 50.3, 30.6], [17.9, 48.8, 33.2], [12.2, 53.0, 34.8]];
+      return (ctx, w, h, p) => {
+        const bw = w / sev.length;
+        sev.forEach((col, i) => {
+          let y = h; const k = ease(p * 1.5 - i * 0.15);
+          col.forEach((v, j) => {
+            const hh = (v / 100) * h * k; y -= hh;
+            ctx.fillStyle = j === 0 ? blue : ink2; ctx.globalAlpha *= j === 0 ? 1 : j === 1 ? 0.55 : 0.25;
+            ctx.fillRect(i * bw + bw * 0.18, y, bw * 0.64, hh - 1);
+            ctx.globalAlpha /= j === 0 ? 1 : j === 1 ? 0.55 : 0.25;
+          });
+        });
+      };
+    }
+    if (kind === 'closure') {
+      return (ctx, w, h, p) => {
+        const v = 28 + (66 - 28) * ease(p), bh = h * 0.28, y = h * 0.55;
+        ctx.fillStyle = ink2; ctx.globalAlpha *= 0.3; ctx.fillRect(0, y, w, bh); ctx.globalAlpha /= 0.3;
+        ctx.fillStyle = ink2; ctx.fillRect(0, y, w * 0.28, bh);
+        ctx.fillStyle = blue; ctx.fillRect(w * 0.28, y, w * (v - 28) / 100, bh);
+        ctx.fillStyle = blue; ctx.font = `800 ${Math.round(h * 0.42)}px 'Big Shoulders Display', sans-serif`;
+        ctx.fillText(`${Math.round(v)}%`, 0, y - h * 0.08);
+      };
+    }
+    if (kind === 'chat') {
+      const vals = [372, 383, 387, 394, 401, 402, 407, 409, 409, 414];
+      return (ctx, w, h, p) => {
+        const bub = Math.min(1, p * 4);
+        ctx.fillStyle = blue; ctx.globalAlpha *= 0.85;
+        const bw = w * 0.62 * ease(bub), bx = w - bw;
+        ctx.beginPath(); ctx.roundRect(bx, 0, bw, h * 0.18, 6); ctx.fill(); ctx.globalAlpha /= 0.85;
+        if (p > 0.25 && p < 0.45) {
+          for (let i = 0; i < 3; i++) { const a = 0.4 + 0.6 * Math.abs(Math.sin((p * 30) + i)); ctx.globalAlpha *= a; ctx.beginPath(); ctx.arc(10 + i * 12, h * 0.33, 3.5, 0, Math.PI * 2); ctx.fillStyle = ink2; ctx.fill(); ctx.globalAlpha /= a; }
+        }
+        if (p >= 0.45) {
+          const k = ease((p - 0.45) / 0.55), n = vals.length, cw = w / n;
+          vals.forEach((v, i) => { const hh = ((v - 300) / 120) * h * 0.55 * ease(k * 1.4 - i * 0.04); ctx.fillStyle = i < 3 ? gold : blue; ctx.fillRect(i * cw + cw * 0.2, h - hh, cw * 0.6, hh); });
+        }
       };
     }
     // journal
