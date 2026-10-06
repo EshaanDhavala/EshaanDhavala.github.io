@@ -1,0 +1,99 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Note from '../../components/Note.astro';
+import Plate from '../../components/Plate.astro';
+import Specimen from '../../components/Specimen.astro';
+---
+<Entry slug="tennis-scouting">
+  <h2><span class="label">The question</span>What does a coach need to know before the first serve?</h2>
+  <p>
+    College tennis scouting is mostly memory and gut feel. On the Bruin Sports Analytics tennis team, our job was
+    to turn match data into something a player could read in five minutes before warm-up: where an opponent
+    serves under pressure, how they return, and what the road trip looks like.
+  </p>
+
+  <h2><span class="label">What I built</span>Three tools for one team</h2>
+  <Note>For 12 away matches nobody had tracked, I built the dataset by rewatching the video point by point.</Note>
+  <ul>
+    <li>
+      <strong>Season ETL in Python:</strong> functions for serve accuracy, court time, service time, and
+      return-in / return-won rates across all <mark>26 matches</mark> of the season, which feed the team’s season report.
+    </li>
+    <li>
+      <strong>Serve-return scouting app (Plotly Dash):</strong> every return plotted where it bounced, with
+      filters for 1st vs. 2nd serve, deuce vs. ad side, stroke, spin, depth, result, and the score at the time.
+      Our player and the opponent each get a tab.
+    </li>
+    <li>
+      <strong>Travel dashboard (R Leaflet):</strong> a map of away venues with live weather and wind, court
+      conditions, and things to do nearby. Players actually opened it on the road.
+    </li>
+    <li><strong>Scouting graphics</strong> for 8 opponents, built from their match data.</li>
+  </ul>
+
+  <Plate fig="1">
+    <div slot="media" id="court" class="chart" role="img" aria-label="Tennis court diagram showing where one player's service returns bounced, colored by whether they landed in, out, or in the net"></div>
+    Where one UCLA player’s returns landed in one match, a re-drawing of the scouting app’s court view.
+    Names left off. 16 of 24 landed in, most of them deep. Down the line was the most common direction, and three of the four misses flew long.
+  </Plate>
+
+  <Specimen rows={[
+    ['Season matches analyzed', '26'],
+    ['Away matches sourced from video', '12'],
+    ['Opponents scouted', '8'],
+    ['Tools shipped', '3'],
+  ]} />
+</Entry>
+
+<script>
+  import * as Plot from '@observablehq/plot';
+
+  type R = { Bounce_x: string; Bounce_y: string; Bounce_Side: string; Result: string; Type: string; Direction: string; Stroke: string };
+  const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const raw: R[] = await fetch('/data/returns.json').then((r) => r.json());
+  // far-side bounces are the UCLA player's returns; flip so they travel "up" the page from the bottom baseline
+  const Y_FAR = 23.77, W = 4.115, WD = 5.485, NET = 11.885, SVC = 6.4;
+  const pts = raw
+    .filter((d) => d.Bounce_Side === 'far')
+    .map((d) => ({ ...d, x: -+d.Bounce_x, y: Y_FAR - +d.Bounce_y }));
+  const el = document.getElementById('court')!;
+
+  function draw() {
+    const ink = css('--ink'), pen = css('--pen'), rule = css('--rule'), pencil = css('--pencil');
+    const lines = [
+      // singles + doubles outlines (half court beyond the net, shown top)
+      { x1: -W, y1: 0, x2: -W, y2: NET }, { x1: W, y1: 0, x2: W, y2: NET },
+      { x1: -WD, y1: 0, x2: -WD, y2: NET }, { x1: WD, y1: 0, x2: WD, y2: NET },
+      { x1: -WD, y1: 0, x2: WD, y2: 0 },
+      { x1: -W, y1: NET - SVC, x2: W, y2: NET - SVC },
+      { x1: 0, y1: NET - SVC, x2: 0, y2: NET },
+    ];
+    const h = Math.min(el.clientWidth || 420, 460) * 1.4;
+    el.replaceChildren(
+      Plot.plot({
+        width: Math.min(el.clientWidth || 420, 460),
+        height: h,
+        x: { domain: [-6.5, 6.5], axis: null },
+        y: { domain: [-4.8, NET + 0.6], axis: null, reverse: true },
+        style: { background: 'transparent', color: ink, fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px' },
+        color: { domain: ['In', 'Out', 'Net'], range: [pen, rule, pencil], legend: true },
+        marks: [
+          Plot.link(lines, { x1: 'x1', y1: 'y1', x2: 'x2', y2: 'y2', stroke: ink, strokeOpacity: 0.55 }),
+          Plot.ruleY([NET], { stroke: ink, strokeWidth: 3, strokeDasharray: '2 2' }),
+          Plot.text([{ x: 0, y: NET + 0.45 }], { x: 'x', y: 'y', text: () => 'net (returner hits from beyond it)', fill: pencil }),
+          Plot.text([{ x: 0, y: -0.6 }], { x: 'x', y: 'y', text: () => 'opponent’s baseline', fill: pencil }),
+          Plot.dot(pts.filter((d) => d.Result === 'In'), { x: 'x', y: 'y', fill: 'Result', r: 5.5, stroke: css('--paper'), strokeWidth: 1 }),
+          Plot.dot(pts.filter((d) => d.Result !== 'In'), { x: 'x', y: 'y', stroke: 'Result', symbol: 'times', r: 6, strokeWidth: 2.4 }),
+          Plot.tip(pts, Plot.pointer({ x: 'x', y: 'y', title: (d: any) => `${d.Type.replace('_', ' ')} · ${d.Stroke.toLowerCase()}\n${d.Direction} · ${d.Result}` })),
+        ],
+      }),
+    );
+  }
+  draw();
+  window.addEventListener('themechange', draw);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+</script>
+
+<style>
+  .chart { display: grid; justify-items: center; }
+</style>

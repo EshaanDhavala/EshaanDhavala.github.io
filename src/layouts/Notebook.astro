@@ -1,0 +1,164 @@
+---
+import '@fontsource/fraunces/latin-400.css';
+import '@fontsource/fraunces/latin-500.css';
+import '@fontsource/fraunces/latin-500-italic.css';
+import '@fontsource/source-serif-4/latin-400.css';
+import '@fontsource/source-serif-4/latin-400-italic.css';
+import '@fontsource/source-serif-4/latin-600.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/kalam/latin-400.css';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+const {
+  title,
+  description = 'Eshaan Dhavala — Statistics & Data Science at UCLA. Models and tools for football, tennis, and everyday data.',
+  image = '/img/eshaan.jpg',
+} = Astro.props;
+const fullTitle = title ? `${title} · Eshaan Dhavala` : 'Eshaan Dhavala — field notebook';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/#entries', label: 'Entries' },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/#clippings', label: 'Clippings' },
+  { href: '/#off-the-clock', label: 'Off the clock' },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#f3ecdc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1c21" media="(prefers-color-scheme: dark)" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('theme');
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="visually-hidden" href="#main">Skip to content</a>
+    <header class="page topbar">
+      <a class="sig" href="/" aria-label="Home">E. Dhavala<span class="sig-sub">field notebook</span></a>
+      <nav aria-label="Primary">
+        {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+        <a href="/resume.pdf" class="resume">Résumé ↓</a>
+        <button class="theme" type="button" aria-label="Toggle light / dark">
+          <span class="lamp" aria-hidden="true"></span>
+        </button>
+      </nav>
+    </header>
+
+    <main id="main" class="page">
+      <slot />
+    </main>
+
+    <footer class="page foot">
+      <p class="hand">— end of notebook (for now). Last updated {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.</p>
+      <p class="mono">
+        <a href="mailto:eshaandhavala@gmail.com">eshaandhavala@gmail.com</a> ·
+        <a href="https://www.linkedin.com/in/eDhavala">LinkedIn</a> ·
+        <a href="https://github.com/EshaanDhavala">GitHub</a>
+      </p>
+      {path !== '/' && <p><a href="/#entries">← back to the table of contents</a></p>}
+    </footer>
+
+    <script>
+      const btn = document.querySelector('.theme');
+      btn?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const dark = root.dataset.theme
+          ? root.dataset.theme === 'dark'
+          : matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+        window.dispatchEvent(new Event('themechange'));
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
+  }
+  .sig {
+    font-family: var(--hand);
+    font-size: 1.5rem;
+    color: var(--ink);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .sig-sub {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pencil);
+    margin-top: 0.3rem;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+  nav a { color: var(--ink-soft); text-decoration: none; }
+  nav a:hover { color: var(--pen); text-decoration: underline; }
+  nav .resume { color: var(--pen); }
+  .theme {
+    background: none;
+    border: 1px solid var(--pencil);
+    border-radius: 50%;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+  }
+  .lamp {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+    border: 1px solid var(--ink);
+  }
+  .foot {
+    margin-top: 6rem;
+    padding-bottom: 3rem;
+    border-top: 1px dashed var(--pencil);
+    padding-top: 1.5rem;
+    color: var(--ink-soft);
+  }
+  .foot .hand { font-size: 1.15rem; }
+  .visually-hidden:focus {
+    position: fixed; top: 8px; left: 8px; width: auto; height: auto; clip: auto;
+    background: var(--paper); padding: 0.5rem 0.75rem; z-index: 10;
+  }
+</style>

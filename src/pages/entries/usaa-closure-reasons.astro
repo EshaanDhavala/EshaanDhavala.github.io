@@ -1,0 +1,38 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Note from '../../components/Note.astro';
+import Specimen from '../../components/Specimen.astro';
+---
+<Entry slug="usaa-closure-reasons">
+  <h2><span class="label">The question</span>Why are members closing their cards?</h2>
+  <p>
+    Retention teams can only make a good offer if they know why someone is leaving. When I pulled a year of
+    credit-card closure records in Snowflake, <mark>72% of closures</mark> were logged under a single code,
+    <em>“No longer needed.”</em> More than 25,000 closures carried essentially no reason at all.
+  </p>
+
+  <h2><span class="label">What I did</span>Let the phone calls say what the dropdown couldn’t</h2>
+  <Note>The dropdown wasn’t wrong, just too coarse. Reps picked the closest option because the real one didn’t exist.</Note>
+  <ul>
+    <li>Found and sized the gap in SQL, then traced it to the closure-reason dropdown reps use during the call.</li>
+    <li>Embedded the unstructured call transcripts and clustered them with <strong>BERTopic</strong> in Python.</li>
+    <li>Labeled the clusters into reasons the code was hiding, such as financial hardship, a competitor’s rate offer, and fraud-related closures.</li>
+  </ul>
+
+  <Specimen rows={[
+    ['Closures under one vague code', '72%'],
+    ['Reason capture rate', '28% → 66%'],
+    ['Closures without a reason', '25,000+'],
+    ['Recommendations to leadership', '3'],
+  ]} />
+
+  <h2><span class="label">What came of it</span>Three recommendations</h2>
+  <ol>
+    <li><strong>Retrain reps</strong> on accurate reason capture.</li>
+    <li><strong>Redesign the dropdown</strong>: declutter it and add the missing reasons the clusters surfaced.</li>
+    <li><strong>Predict the reason before the call starts</strong>, so the rep opens with the right retention offer.</li>
+  </ol>
+  <p class="mono" style="color: var(--pencil); font-size: 0.8rem;">
+    Internal work. No company data, code, or transcripts are shown here.
+  </p>
+</Entry>

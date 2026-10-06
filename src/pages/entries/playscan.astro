@@ -1,0 +1,44 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Note from '../../components/Note.astro';
+import Plate from '../../components/Plate.astro';
+import Specimen from '../../components/Specimen.astro';
+---
+<Entry
+  slug="playscan"
+  image="/media/playscan-poster.jpg"
+  links={[{ href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code on GitHub' }]}
+>
+  <h2><span class="label">The question</span>Can a model call the play just by watching TV?</h2>
+  <p>
+    Play-type data usually comes from someone charting every snap by hand. I wanted to see whether a model
+    could do it from the same broadcast feed fans watch: no tracking chips, no All-22 film.
+  </p>
+
+  <Plate fig="1" wide>
+    <video slot="media" src="/media/playscan.mp4" poster="/media/playscan-poster.jpg" autoplay muted loop playsinline aria-label="Screen recording of PlayScan labeling a live NFL broadcast play with its predicted type and confidence"></video>
+    PlayScan running live over a broadcast. The overlay shows the play number, the predicted type, and the
+    model’s confidence.
+  </Plate>
+
+  <h2><span class="label">What I built</span>Frames in, play type out</h2>
+  <Note>Labeling was the real project: every clip cut and tagged by hand.</Note>
+  <ul>
+    <li><strong>Data:</strong> I cut and labeled <mark>1,174 clips</mark> from full game broadcasts myself (326 pass, 419 run, 429 special teams), with scripts to auto-segment plays and speed up tagging.</li>
+    <li><strong>Model:</strong> each clip is sampled to 16 frames. A pretrained ResNet18 turns each frame into a feature vector, an LSTM reads them in order (a fake then a dropback looks different from a mesh then a handoff), and a linear head picks the class. Training uses inverse-frequency class weights.</li>
+    <li><strong>Live mode:</strong> it watches a region of the screen, detects when motion starts and stops to find each snap, classifies it, and logs the probabilities.</li>
+  </ul>
+
+  <Specimen rows={[
+    ['Held-out accuracy', '89%'],
+    ['Labeled clips', '1,174'],
+    ['Classes', 'run · pass · special teams'],
+    ['Frames per play', '16'],
+  ]} />
+
+  <h2><span class="label">Next</span>What I’d do with more time</h2>
+  <p>
+    A temporal-attention head instead of the LSTM, better scene-cut handling around replays, and extra
+    heads for formation and motion, which should also help the main task.
+  </p>
+</Entry>

@@ -1,0 +1,29 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Note from '../../components/Note.astro';
+import Specimen from '../../components/Specimen.astro';
+---
+<Entry slug="house-prices">
+  <h2><span class="label">The question</span>How few numbers do you need to price a house?</h2>
+  <p>
+    The STATS 101A Kaggle competition graded on two things: prediction accuracy on hidden test houses, and
+    <em>model complexity</em>. Every extra coefficient cost points. So the goal wasn’t the most powerful
+    model. It was the most honest one.
+  </p>
+
+  <h2><span class="label">What we did</span>Baseline → intermediate → final</h2>
+  <Note>The interaction term says quality matters more in a bigger house. One coefficient instead of a dozen.</Note>
+  <ul>
+    <li>Screened every numeric variable by its correlation with sale price, then modeled <strong>log(price)</strong> so errors are proportional.</li>
+    <li>Engineered <strong>log total square footage</strong> (basement + above ground), centered year built, and log lot area.</li>
+    <li>Added one interaction, <strong>overall quality × log(square footage)</strong>, instead of a dozen extra predictors.</li>
+    <li>Compared three nested models on adjusted R², AIC, and BIC, and checked residual, leverage, and Cook’s-distance plots before submitting.</li>
+  </ul>
+
+  <Specimen rows={[
+    ['Kaggle test R²', '0.888'],
+    ['Predictors', '7'],
+    ['Model', 'linear regression, log price'],
+    ['Team', '3 (with S. Joshi, B. Lim)'],
+  ]} />
+</Entry>

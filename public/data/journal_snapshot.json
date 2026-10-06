@@ -1,0 +1,232 @@
+{
+  "range": {
+    "start": "2026-01-25",
+    "end": "2026-06-05"
+  },
+  "totals": {
+    "days_logged": 131,
+    "gym_days": 57,
+    "avg_sleep_hours": 8.24,
+    "avg_mood": 7.8
+  },
+  "halves": {
+    "gym_rate": {
+      "first_half": 0.46,
+      "second_half": 0.41
+    },
+    "screen_time_hours": {
+      "first_half": 7.77,
+      "second_half": 7.38
+    },
+    "sleep_hours": {
+      "first_half": 8.2,
+      "second_half": 8.28
+    },
+    "mood_1_10": {
+      "first_half": 7.71,
+      "second_half": 7.89
+    }
+  },
+  "weeks": [
+    {
+      "week": "2026-01-19",
+      "sleep_hours": 8.0,
+      "sleep_quality_1_10": null,
+      "mood_1_10": 7.0,
+      "workout_minutes": null,
+      "screen_time_hours": null,
+      "gym_days": 0.0,
+      "days_logged": 1.0
+    },
+    {
+      "week": "2026-01-26",
+      "sleep_hours": 8.57,
+      "sleep_quality_1_10": null,
+      "mood_1_10": 7.71,
+      "workout_minutes": null,
+      "screen_time_hours": null,
+      "gym_days": 4.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-02-02",
+      "sleep_hours": 8.71,
+      "sleep_quality_1_10": null,
+      "mood_1_10": 7.29,
+      "workout_minutes": null,
+      "screen_time_hours": null,
+      "gym_days": 0.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-02-09",
+      "sleep_hours": 6.79,
+      "sleep_quality_1_10": 6.86,
+      "mood_1_10": 8.47,
+      "workout_minutes": 22.86,
+      "screen_time_hours": 7.46,
+      "gym_days": 2.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-02-16",
+      "sleep_hours": 8.43,
+      "sleep_quality_1_10": 7.04,
+      "mood_1_10": 7.96,
+      "workout_minutes": 32.14,
+      "screen_time_hours": 6.71,
+      "gym_days": 5.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-02-23",
+      "sleep_hours": 9.93,
+      "sleep_quality_1_10": 7.43,
+      "mood_1_10": 8.19,
+      "workout_minutes": 35.0,
+      "screen_time_hours": 7.04,
+      "gym_days": 5.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-03-02",
+      "sleep_hours": 8.57,
+      "sleep_quality_1_10": 7.0,
+      "mood_1_10": 7.71,
+      "workout_minutes": 25.0,
+      "screen_time_hours": 6.29,
+      "gym_days": 4.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-03-09",
+      "sleep_hours": 7.93,
+      "sleep_quality_1_10": 7.43,
+      "mood_1_10": 7.13,
+      "workout_minutes": 32.14,
+      "screen_time_hours": 8.82,
+      "gym_days": 5.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-03-16",
+      "sleep_hours": 4.64,
+      "sleep_quality_1_10": 5.64,
+      "mood_1_10": 7.31,
+      "workout_minutes": 24.29,
+      "screen_time_hours": 8.55,
+      "gym_days": 4.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-03-23",
+      "sleep_hours": 10.0,
+      "sleep_quality_1_10": 7.57,
+      "mood_1_10": 7.81,
+      "workout_minutes": 2.86,
+      "screen_time_hours": 8.96,
+      "gym_days": 1.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-03-30",
+      "sleep_hours": 9.0,
+      "sleep_quality_1_10": 7.43,
+      "mood_1_10": 8.33,
+      "workout_minutes": 20.71,
+      "screen_time_hours": 8.31,
+      "gym_days": 3.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-04-06",
+      "sleep_hours": 9.57,
+      "sleep_quality_1_10": 7.71,
+      "mood_1_10": 7.91,
+      "workout_minutes": 18.57,
+      "screen_time_hours": 6.54,
+      "gym_days": 3.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-04-13",
+      "sleep_hours": 9.58,
+      "sleep_quality_1_10": 7.33,
+      "mood_1_10": 7.37,
+      "workout_minutes": 38.33,
+      "screen_time_hours": 7.17,
+      "gym_days": 1.0,
+      "days_logged": 6.0
+    },
+    {
+      "week": "2026-04-20",
+      "sleep_hours": 9.75,
+      "sleep_quality_1_10": 6.86,
+      "mood_1_10": 7.36,
+      "workout_minutes": 25.71,
+      "screen_time_hours": 7.0,
+      "gym_days": 4.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-04-27",
+      "sleep_hours": 7.86,
+      "sleep_quality_1_10": 6.43,
+      "mood_1_10": 7.69,
+      "workout_minutes": 32.86,
+      "screen_time_hours": 7.69,
+      "gym_days": 3.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-05-04",
+      "sleep_hours": 8.5,
+      "sleep_quality_1_10": 7.0,
+      "mood_1_10": 7.57,
+      "workout_minutes": 35.71,
+      "screen_time_hours": 8.29,
+      "gym_days": 3.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-05-11",
+      "sleep_hours": 8.21,
+      "sleep_quality_1_10": 6.0,
+      "mood_1_10": 7.87,
+      "workout_minutes": 28.57,
+      "screen_time_hours": 7.57,
+      "gym_days": 3.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-05-18",
+      "sleep_hours": 7.57,
+      "sleep_quality_1_10": 7.0,
+      "mood_1_10": 8.53,
+      "workout_minutes": 15.71,
+      "screen_time_hours": 6.82,
+      "gym_days": 2.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-05-25",
+      "sleep_hours": 6.75,
+      "sleep_quality_1_10": 7.0,
+      "mood_1_10": 8.54,
+      "workout_minutes": 10.0,
+      "screen_time_hours": 7.75,
+      "gym_days": 2.0,
+      "days_logged": 7.0
+    },
+    {
+      "week": "2026-06-01",
+      "sleep_hours": 5.7,
+      "sleep_quality_1_10": 6.8,
+      "mood_1_10": 7.44,
+      "workout_minutes": 24.0,
+      "screen_time_hours": 7.25,
+      "gym_days": 3.0,
+      "days_logged": 5.0
+    }
+  ]
+}

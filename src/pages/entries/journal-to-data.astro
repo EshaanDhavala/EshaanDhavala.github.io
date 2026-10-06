@@ -1,0 +1,128 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Note from '../../components/Note.astro';
+import Plate from '../../components/Plate.astro';
+import Specimen from '../../components/Specimen.astro';
+import snap from '../../../public/data/journal_snapshot.json';
+
+const t = snap.totals;
+---
+<Entry
+  slug="journal-to-data"
+  links={[{ href: 'https://github.com/EshaanDhavala/Journal-to-Data-Base', label: 'Code on GitHub' }]}
+>
+  <h2><span class="label">The question</span>What happens if you treat your own life as a dataset?</h2>
+  <p>
+    Habit trackers ask you to tap twenty buttons a day, so you stop. Writing a few sentences before bed
+    is easier. JournalToData lets me write normally and does the bookkeeping: an LLM reads the entry and
+    pulls out structured, validated numbers.
+  </p>
+
+  <h2><span class="label">What I built</span>A diary that fills in its own spreadsheet</h2>
+  <Note>If the entry doesn’t say how long I slept, the app asks me, instead of letting the model guess.</Note>
+  <ul>
+    <li><strong>Extraction:</strong> the OpenAI API returns JSON for 15+ fields: sleep, training type and minutes, cardio, water, screen time, study hours, food items with estimated calories and protein, mood, and a favorite moment.</li>
+    <li><strong>Validation:</strong> Pydantic checks types and ranges, and known foods override the model’s macro guesses. Anything missing triggers a follow-up question.</li>
+    <li><strong>Storage:</strong> one row per day in Google Sheets, upserted by date so re-logging a day fixes it rather than duplicating it.</li>
+    <li><strong>App:</strong> a Streamlit app with four tabs. <em>Log Entry</em>, <em>Dashboard</em> (trends and streaks), <em>Weekly Review</em>, and <em>Ask Your Data</em>, where you chat with your own metrics and journal history. There’s also a daily photo and a generated timelapse.</li>
+  </ul>
+
+  <h2><span class="label">The data</span>{t.days_logged} of 132 nights logged</h2>
+  <p>
+    I logged all but one night from {new Date(snap.range.start + 'T12:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} to {new Date(snap.range.end + 'T12:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+    These charts are a weekly-average snapshot exported from the real sheet. No raw entries are published.
+  </p>
+
+  <Specimen rows={[
+    ['Days logged', `${t.days_logged}`],
+    ['Gym days', `${t.gym_days}`],
+    ['Avg sleep', `${t.avg_sleep_hours.toFixed(1)} h`],
+    ['Avg mood', `${t.avg_mood.toFixed(1)} / 10`],
+  ]} />
+
+  <Plate fig="1" wide>
+    <div slot="media" id="j-mood" class="chart" role="img" aria-label="Weekly average mood and sleep hours from January to June 2026"></div>
+    Weekly averages: mood (1–10, ink) and hours of sleep (pencil). Mood stays in a narrow band. Sleep
+    swings much more, and its lowest week lands in mid-March, finals week.
+  </Plate>
+
+  <Plate fig="2" tilt={0.5}>
+    <div slot="media" id="j-gym" class="chart" role="img" aria-label="Gym days per week from January to June 2026"></div>
+    Gym days per week. Highlighted weeks hit 4 or more.
+  </Plate>
+
+  <h2><span class="label">Why the charts are here, not on Streamlit</span>A fix for the app that keeps falling asleep</h2>
+  <p>
+    Streamlit Community Cloud puts apps to sleep after 12 hours without visitors, and a plain uptime ping
+    doesn’t wake them. The app only boots when a real browser opens a WebSocket. For a portfolio, that
+    meant a “wake this app up” screen. Since the project is finished, I export an aggregate snapshot once (<code>scripts/export_snapshot.py</code>) and draw it here as a static page that never sleeps and needs no API keys.
+  </p>
+</Entry>
+
+<script>
+  import * as Plot from '@observablehq/plot';
+
+  type Week = { week: string; mood_1_10: number | null; sleep_hours: number | null; gym_days: number; days_logged: number };
+  const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const snap = await fetch('/data/journal_snapshot.json').then((r) => r.json());
+  // skip partial first week (1 day logged)
+  const weeks: (Week & { date: Date })[] = snap.weeks
+    .filter((w: Week) => w.days_logged >= 5)
+    .map((w: Week) => ({ ...w, date: new Date(w.week + 'T12:00') }));
+
+  const moodEl = document.getElementById('j-mood')!;
+  const gymEl = document.getElementById('j-gym')!;
+
+  function base(el: HTMLElement) {
+    return {
+      width: Math.min(el.clientWidth || 640, 820),
+      style: { background: 'transparent', color: css('--ink'), fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px' },
+    };
+  }
+
+  function draw() {
+    const ink = css('--ink'), pen = css('--pen'), pencil = css('--pencil'), hl = css('--highlight');
+    moodEl.replaceChildren(
+      Plot.plot({
+        ...base(moodEl),
+        height: 300,
+        marginLeft: 40,
+        marginRight: 70,
+        y: { domain: [4, 10.5], grid: true, label: null },
+        x: { label: null, type: 'utc' },
+        marks: [
+          Plot.lineY(weeks, { x: 'date', y: 'sleep_hours', stroke: pencil, strokeWidth: 1.5, strokeDasharray: '4 3', curve: 'monotone-x' }),
+          Plot.lineY(weeks, { x: 'date', y: 'mood_1_10', stroke: pen, strokeWidth: 2.4, curve: 'monotone-x' }),
+          Plot.dot(weeks, { x: 'date', y: 'mood_1_10', fill: pen, r: 2.5 }),
+          Plot.text(weeks.slice(-1), { x: 'date', y: 'mood_1_10', text: () => 'mood', dx: 6, dy: -8, fill: pen, textAnchor: 'start' }),
+          Plot.text(weeks.slice(-1), { x: 'date', y: 'sleep_hours', text: () => 'sleep (h)', dx: 6, dy: 10, fill: pencil, textAnchor: 'start' }),
+          Plot.tip(weeks, Plot.pointerX({ x: 'date', y: 'mood_1_10', title: (d: Week) => `week of ${d.week}\nmood ${d.mood_1_10?.toFixed(1)}\nsleep ${d.sleep_hours?.toFixed(1)} h` })),
+        ],
+      }),
+    );
+    gymEl.replaceChildren(
+      Plot.plot({
+        ...base(gymEl),
+        height: 220,
+        marginLeft: 32,
+        y: { domain: [0, 7], grid: true, label: 'days', ticks: 7 },
+        x: { label: null, type: 'band', tickFormat: (d: string) => new Date(d + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), tickRotate: -40 },
+        marginBottom: 46,
+        marks: [
+          Plot.barY(weeks, { x: 'week', y: 'gym_days', fill: (d: Week) => (d.gym_days >= 4 ? hl : 'none'), stroke: ink, strokeWidth: 1.2, inset: 3 }),
+          Plot.ruleY([0], { stroke: ink }),
+        ],
+      }),
+    );
+  }
+  draw();
+  window.addEventListener('themechange', draw);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  let tm: number;
+  window.addEventListener('resize', () => { clearTimeout(tm); tm = window.setTimeout(draw, 150); });
+</script>
+
+<style>
+  .chart { overflow-x: auto; }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--paper-deep); padding: 0.05rem 0.3rem; }
+</style>
