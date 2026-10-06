@@ -39,8 +39,8 @@ export interface Entry {
 export const entries: Entry[] = [
   {
     slug: 'ucla-football-ai-assistant',
-    name: 'Coach’s AI Assistant',
-    what: 'Coaches ask about player data in plain English, get charts and reports.',
+    name: 'UCLA Football AI Assistant',
+    what: 'Built for UCLA Football’s strength staff: coaches ask about player data in plain English and get charts and reports.',
     stat: { value: '100%', label: 'eval fact checks' },
     starter: true,
     cats: ['sports', 'ai'],
@@ -48,10 +48,10 @@ export const entries: Entry[] = [
     pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'The AI Assistant answering which O-linemen have the weakest hamstrings, with a bar chart' , caption: 'Answering a coach’s question with a chart, on synthetic data.' },
     video: { src: '/media/ai-assistant.mp4', poster: '/media/ai-assistant-poster.jpg', label: 'Screen recording of the AI Assistant answering four coach questions with charts and a CSV, on synthetic data' },
     when: '2026',
-    where: 'Bruin Sports Analytics × UCLA Football',
+    where: 'UCLA Football strength staff, via Bruin Sports Analytics',
     stack: ['R / Shiny', 'Anthropic API', 'Tool use', 'dplyr'],
     built: [
-      'AI tab inside the strength staff’s Shiny dashboard (7 data feeds)',
+      'AI tab inside UCLA Football’s strength-and-conditioning dashboard (7 data feeds)',
       '17 R tools the model calls to query real data instead of guessing',
       'Fallback: model writes an allow-listed dplyr pipeline, R runs it',
       'Metric dictionary for 60+ measurements and which direction is better',
