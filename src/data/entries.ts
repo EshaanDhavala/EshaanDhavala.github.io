@@ -1,133 +1,262 @@
-export type Tag = 'Football' | 'Tennis' | 'ML & AI' | 'Stats';
+export type Cat = 'football' | 'tennis' | 'ai' | 'stats';
+
+export const CATS: { id: Cat; label: string }[] = [
+  { id: 'football', label: 'Football' },
+  { id: 'tennis', label: 'Tennis' },
+  { id: 'ai', label: 'AI & ML' },
+  { id: 'stats', label: 'Stats' },
+];
+
+export interface Link { href: string; label: string }
+export interface Figure { src: string; alt: string; caption: string; w: number; h: number; wide?: boolean }
 
 export interface Entry {
   slug: string;
-  no: number;
-  title: string;
-  /** one line, plain words — what it is */
-  blurb: string;
-  /** the number a reader should remember */
-  hook: string;
+  name: string;
+  /** one line: what it does */
+  what: string;
+  /** the "price" */
+  stat: { value: string; label: string };
+  cats: Cat[];
+  /** plate colour family for the item picture */
+  plate: Cat;
   when: string;
-  tags: Tag[];
+  where: string;
   stack: string[];
-  /** where the work happened */
-  context: string;
+  built: string[];
+  results: string[];
+  links: Link[];
+  figures?: Figure[];
+  /** interactive chart on the item screen */
+  chart?: 'qb' | 'journal' | 'tennis' | 'fg';
+  video?: { src: string; poster: string };
+  note?: string;
 }
-
-export const TAGS: Tag[] = ['Football', 'Tennis', 'ML & AI', 'Stats'];
 
 export const entries: Entry[] = [
   {
     slug: 'ucla-football-ai-assistant',
-    no: 1,
-    title: 'An AI assistant for UCLA Football’s strength staff',
-    blurb: 'Coaches ask questions about player testing data in plain English and get a chart, table, or report back, built on 17 tools that query the real data instead of guessing.',
-    hook: '~6 s per answer',
+    name: 'Coach’s AI Assistant',
+    what: 'Coaches ask about player data in plain English, get charts and reports.',
+    stat: { value: '~6s', label: 'per answer' },
+    cats: ['football', 'ai'],
+    plate: 'ai',
     when: '2026',
-    tags: ['Football', 'ML & AI'],
-    stack: ['R / Shiny', 'Anthropic API', 'tool use', 'GitHub Actions'],
-    context: 'Bruin Sports Analytics · co-chair',
+    where: 'Bruin Sports Analytics × UCLA Football',
+    stack: ['R / Shiny', 'Anthropic API', 'Tool use', 'dplyr'],
+    built: [
+      'AI tab inside the strength staff’s Shiny dashboard (7 data feeds)',
+      '17 R tools the model calls to query real data instead of guessing',
+      'Fallback: model writes an allow-listed dplyr pipeline, R runs it',
+      'Metric dictionary for 60+ measurements and which direction is better',
+      'Answers as charts, tables, CSVs, or a downloadable HTML report',
+    ],
+    results: [
+      '32-question eval, all factual checks pass',
+      'Cheaper model failed the eval on facts, so I kept the bigger one',
+      'Demo on synthetic data; real-athlete use waiting on privacy approval',
+    ],
+    links: [],
+    figures: [{ src: '/img/ucla-dashboard.jpg', alt: 'UCLA Performance Database dashboard with a roster table ranked by Athleticism Score', caption: 'The dashboard it lives in. Synthetic data: every name and number is fake.', w: 1440, h: 900, wide: true }],
   },
   {
     slug: 'nfl-overtime-4th-down',
-    no: 2,
-    title: 'Overtime 4th-down decision engine',
-    blurb: 'Go for it, punt, or kick? A live tool that compares win probability for each choice in NFL overtime. I built the field-goal make-probability model inside it.',
-    hook: '0.78 AUC · live at playbyplay.football',
+    name: '4th-Down OT Engine',
+    what: 'Go, punt, or kick in NFL overtime. I built its field-goal model.',
+    stat: { value: '0.78', label: 'AUC' },
+    cats: ['football', 'ai'],
+    plate: 'football',
     when: 'Feb – Mar 2026',
-    tags: ['Football', 'ML & AI'],
+    where: 'Bruin Sports Analytics · 8-person team',
     stack: ['Python', 'XGBoost', 'scikit-learn', 'nfl_data_py'],
-    context: 'Bruin Sports Analytics · 8-person team',
+    built: [
+      'Every unblocked NFL field goal 2016–2024 (8,742 kicks)',
+      '15 features: distance, wind gusts, temperature, surface, altitude, kicker form, game pressure',
+      'XGBoost tuned on Brier score, then isotonic-calibrated so 70% means 70%',
+      'Feeds the live decision engine with three other sub-models',
+    ],
+    results: [
+      'Held-out ROC-AUC 0.78',
+      'Brier 0.104 vs 0.122 for guessing the league rate',
+      'Live at playbyplay.football',
+    ],
+    links: [
+      { href: 'https://playbyplay.football', label: 'Live tool' },
+      { href: 'https://github.com/Bruin-Sports-Analytics/nfl-ot-4th-down-model/tree/feature/fg-probability-model', label: 'Code' },
+    ],
+    chart: 'fg',
+    figures: [
+      { src: '/img/fg-explainer.png', alt: 'Four-panel chart of field goal make probability by distance, kicker quality, weather, and game scenario', caption: 'The summary slide I presented.', w: 1600, h: 891, wide: true },
+      { src: '/img/fg-heatmap.png', alt: 'Heatmap of make probability by kick distance and wind gust speed', caption: 'Distance × wind gust, league-average kicker.', w: 1600, h: 1002 },
+    ],
   },
   {
     slug: 'qb-clutch-optimality',
-    no: 3,
-    title: 'Which quarterbacks make better decisions under pressure?',
-    blurb: 'Player-tracking features of the pocket (how fast it collapses, how close the rushers are) feed a model of expected play value, then compared in clutch vs. normal moments.',
-    hook: '7,088 dropbacks',
+    name: 'QB Clutch Ratings',
+    what: 'Which QBs beat expectations in close games, from tracking data.',
+    stat: { value: '7,088', label: 'dropbacks' },
+    cats: ['football', 'stats'],
+    plate: 'football',
     when: 'Spring 2026',
-    tags: ['Football', 'Stats'],
-    stack: ['Python', 'XGBoost', 'SciPy convex hulls', 'NFL Big Data Bowl tracking'],
-    context: 'Bruin Sports Analytics · research team',
+    where: 'Bruin Sports Analytics · research team',
+    stack: ['Python', 'XGBoost', 'SciPy', 'Big Data Bowl tracking'],
+    built: [
+      'Pipeline joining 10 Hz NFL tracking (2021, wks 1–8) to play-by-play',
+      'Pass-rusher features; fixed data leakage across the team’s code',
+      'XGBoost predicts EPA per dropback from pocket, pressure, QB, and game state',
+      'Clutch rating = vs. expected in close games (40–60% win prob), minus the QB’s average',
+    ],
+    results: [
+      'Leave-one-week-out RMSE 1.57 EPA',
+      'Top: Herbert, Goff, L. Jackson. Bottom: Brady, Wentz',
+      'Small samples (11–41 clutch dropbacks per QB): a first look',
+    ],
+    links: [{ href: 'https://github.com/Bruin-Sports-Analytics/qb-optimality', label: 'Code' }],
+    chart: 'qb',
   },
   {
     slug: 'usaa-closure-reasons',
-    no: 4,
-    title: 'Why people actually closed their credit cards',
-    blurb: '72% of closures were logged as “No longer needed.” Topic-modeling the call transcripts recovered the real reasons.',
-    hook: '28% → 66% reasons captured',
+    name: 'Card Closure Reasons',
+    what: 'Why members really closed their cards, mined from call transcripts.',
+    stat: { value: '28→66%', label: 'captured' },
+    cats: ['ai', 'stats'],
+    plate: 'stats',
     when: 'Summer 2026',
-    tags: ['ML & AI', 'Stats'],
-    stack: ['SQL / Snowflake', 'Python', 'BERTopic', 'clustering'],
-    context: 'USAA · data science intern',
+    where: 'USAA · Data Science Intern',
+    stack: ['SQL', 'Snowflake', 'Python', 'BERTopic'],
+    built: [
+      'Found 72% of a year’s closures logged as “No longer needed” (25,000+ cards)',
+      'BERTopic + clustering on call transcripts',
+      'Surfaced hidden reasons: financial hardship, competitor rates, fraud',
+    ],
+    results: [
+      'Reason capture rate 28% → 66%',
+      'Pitched 3 fixes to senior leadership: rep training, a better dropdown, predicting the reason before the call',
+    ],
+    links: [],
+    note: 'Internal work. No company data shown.',
   },
   {
     slug: 'playscan',
-    no: 5,
-    title: 'PlayScan: calling the play from the broadcast',
-    blurb: 'A ResNet-LSTM watches TV footage frame by frame and labels each snap as a run, pass, or special-teams play, live on screen.',
-    hook: '89% held-out accuracy',
+    name: 'PlayScan',
+    what: 'Calls run, pass, or special teams live from a TV broadcast.',
+    stat: { value: '89%', label: 'accuracy' },
+    cats: ['football', 'ai'],
+    plate: 'football',
     when: 'Jun – Sep 2025',
-    tags: ['Football', 'ML & AI'],
+    where: 'Personal project',
     stack: ['PyTorch', 'ResNet18', 'LSTM', 'OpenCV'],
-    context: 'Personal project',
+    built: [
+      'Cut and hand-labeled 1,174 clips (326 pass, 419 run, 429 special teams)',
+      '16 frames per play → ResNet18 → LSTM → class',
+      'Live mode: detects each snap from screen motion, overlays the call',
+    ],
+    results: ['89% on held-out validation clips'],
+    links: [{ href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
+    video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg' },
   },
   {
     slug: 'journal-to-data',
-    no: 6,
-    title: 'JournalToData: turning a diary into a dataset',
-    blurb: 'I wrote a journal entry nearly every night; an LLM turned each one into 15+ validated daily metrics (sleep, mood, training, food) in a Google Sheet with a dashboard on top.',
-    hook: '131 of 132 nights logged',
+    name: 'JournalToData',
+    what: 'An LLM turns my nightly journal into daily metrics.',
+    stat: { value: '131', label: 'nights logged' },
+    cats: ['ai'],
+    plate: 'ai',
     when: 'Jan – Jun 2026',
-    tags: ['ML & AI'],
-    stack: ['Python', 'Streamlit', 'OpenAI API', 'Google Sheets API', 'Pydantic'],
-    context: 'Personal project',
+    where: 'Personal project',
+    stack: ['Python', 'Streamlit', 'OpenAI API', 'Google Sheets', 'Pydantic'],
+    built: [
+      'Extracts 15+ fields per entry: sleep, training, food, screen time, mood',
+      'Pydantic validation; asks a follow-up when something’s missing',
+      'Streamlit app: log, dashboard, weekly review, chat with your data',
+    ],
+    results: ['131 of 132 nights logged', '57 gym days · 8.2 h avg sleep · 7.8/10 avg mood'],
+    links: [{ href: 'https://github.com/EshaanDhavala/Journal-to-Data-Base', label: 'Code' }],
+    chart: 'journal',
   },
   {
     slug: 'tennis-scouting',
-    no: 7,
-    title: 'Scouting for UCLA Tennis',
-    blurb: 'Serve and shot-selection pipelines across a full season, a serve-return scouting app, and a travel dashboard players used on the road.',
-    hook: '26 matches analyzed',
+    name: 'Tennis Scouting',
+    what: 'Serve/return analytics, a scouting app, and a travel map.',
+    stat: { value: '26', label: 'matches' },
+    cats: ['tennis', 'stats'],
+    plate: 'tennis',
     when: 'Mar 2025 – Jun 2026',
-    tags: ['Tennis', 'Stats'],
-    stack: ['Python', 'Plotly Dash', 'R Leaflet', 'D3'],
-    context: 'Bruin Sports Analytics · tennis consulting',
+    where: 'Bruin Sports Analytics · Tennis',
+    stack: ['Python', 'Plotly Dash', 'R Leaflet'],
+    built: [
+      'Python ETL: serve accuracy, shot selection, return rates over 26 matches',
+      'Dash app plotting every return by serve, side, stroke, spin, and score',
+      'Leaflet travel map: venues, live weather, court conditions',
+      'Built data for 12 untracked away matches from video',
+    ],
+    results: ['Scouting graphics for 8 opponents'],
+    links: [],
+    chart: 'tennis',
   },
   {
     slug: 'house-prices',
-    no: 8,
-    title: 'Pricing houses with seven predictors',
-    blurb: 'A Kaggle competition for STATS 101A: a deliberately small linear model that still explains most of the variance in sale price.',
-    hook: 'test R² = 0.888',
+    name: 'House Price Model',
+    what: '7-predictor regression for a Kaggle class competition.',
+    stat: { value: '0.888', label: 'test R²' },
+    cats: ['stats'],
+    plate: 'stats',
     when: 'Mar 2026',
-    tags: ['Stats'],
-    stack: ['R', 'linear regression', 'diagnostics'],
-    context: 'UCLA STATS 101A · team of 3',
+    where: 'UCLA STATS 101A · team of 3',
+    stack: ['R', 'Linear regression'],
+    built: [
+      'log(price) on 7 predictors',
+      'Engineered log total sq ft, centered year built, log lot area',
+      'One interaction: quality × log(sq ft)',
+      'Compared 3 nested models on adj. R², AIC, BIC; checked diagnostics',
+    ],
+    results: ['Kaggle test R² 0.888'],
+    links: [],
   },
   {
     slug: 'adhd-diagnosis',
-    no: 9,
-    title: 'Who gets diagnosed with ADHD, and who gets treated?',
-    blurb: 'CDC survey data on 2,966 kids: how ADHD severity, co-occurring conditions, and access to treatment change with household income.',
-    hook: 'severe cases: 23% → 12% by income',
+    name: 'ADHD Care Gap',
+    what: 'How ADHD severity and treatment track family income.',
+    stat: { value: '2,966', label: 'kids' },
+    cats: ['stats'],
+    plate: 'stats',
     when: 'Spring 2026',
-    tags: ['Stats'],
-    stack: ['Python', 'logistic regression', 'CDC NS-DATA'],
-    context: 'DataLearn · team of 3',
+    where: 'DataLearn · team of 3',
+    stack: ['Python', 'Logistic regression', 'CDC NS-DATA'],
+    built: [
+      'My part: severity and co-occurring conditions',
+      'Severity by household income',
+      'Co-occurrence across 13 conditions',
+      'Team logistic regression on who gets treated',
+    ],
+    results: ['Severe share: 23% in the lowest income group vs 12% in the highest'],
+    links: [],
+    figures: [{ src: '/img/adhd-income.png', alt: 'Stacked bar chart of ADHD severity by household income', caption: 'Severity by household income.', w: 1600, h: 1062 }],
   },
   {
     slug: 'souschef',
-    no: 10,
-    title: 'SousChef: what can I cook with what I have?',
-    blurb: 'A recipe agent that reads what’s in your kitchen and recommends meals from a knowledge base built out of PDF cookbooks.',
-    hook: 'my first AI agent',
+    name: 'SousChef',
+    what: 'Tell it what’s in your kitchen, get recipes you can make.',
+    stat: { value: '2024', label: 'first agent' },
+    cats: ['ai'],
+    plate: 'ai',
     when: 'Apr – Jun 2024',
-    tags: ['ML & AI'],
-    stack: ['Google Vertex AI', 'Python', 'PDF scraping', 'intent recognition'],
-    context: 'Personal project',
+    where: 'Personal project',
+    stack: ['Google Vertex AI', 'Python'],
+    built: [
+      'Scraped recipes from PDF cookbooks into a knowledge base',
+      'Vertex AI agent with intent recognition for messy ingredient lists',
+      'Matches what you have to recipes you can make',
+    ],
+    results: [],
+    links: [],
   },
+];
+
+export const COMBOS = [
+  { id: 'football', name: 'Football Combo', slugs: ['nfl-overtime-4th-down', 'qb-clutch-optimality', 'playscan', 'ucla-football-ai-assistant'] },
+  { id: 'ai', name: 'AI Combo', slugs: ['ucla-football-ai-assistant', 'journal-to-data', 'playscan', 'usaa-closure-reasons'] },
+  { id: 'stats', name: 'Stats Combo', slugs: ['usaa-closure-reasons', 'house-prices', 'adhd-diagnosis', 'qb-clutch-optimality'] },
 ];
 
 export const bySlug = (slug: string) => {

@@ -1,0 +1,117 @@
+---
+/** The field-goal model, live: precomputed predictions from the trained model, driven by three controls. */
+---
+<div class="fg" data-fg>
+  <div class="readout" aria-live="polite">
+    <span class="pct" data-fg-pct>78%</span>
+    <span class="cap">chance it’s good</span>
+  </div>
+  <div class="controls">
+    <label class="slider">
+      <span class="ctl-label">Distance <b data-fg-dist>50 yd</b></span>
+      <input type="range" min="18" max="66" value="50" step="1" data-fg-range aria-label="Kick distance in yards" />
+    </label>
+    <fieldset>
+      <legend class="ctl-label">Wind gusts</legend>
+      <div class="seg" data-fg-seg="gust">
+        <button type="button" data-v="0" aria-pressed="true">Calm</button>
+        <button type="button" data-v="10" aria-pressed="false">10 mph</button>
+        <button type="button" data-v="20" aria-pressed="false">20</button>
+        <button type="button" data-v="30" aria-pressed="false">30</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="ctl-label">Kicker</legend>
+      <div class="seg" data-fg-seg="kicker">
+        <button type="button" data-v="elite" aria-pressed="false">Elite</button>
+        <button type="button" data-v="average" aria-pressed="true">Average</button>
+        <button type="button" data-v="struggling" aria-pressed="false">Struggling</button>
+      </div>
+    </fieldset>
+  </div>
+  <div class="curve" data-fg-curve aria-hidden="true"></div>
+</div>
+
+<script>
+  import * as Plot from '@observablehq/plot';
+
+  let grid: any;
+  async function setup() {
+    const root = document.querySelector<HTMLElement>('[data-fg]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = '1';
+    grid ??= await fetch('/data/fg_grid.json').then((r) => r.json());
+    const state = { d: 50, gust: '0', kicker: 'average' };
+    const pct = root.querySelector<HTMLElement>('[data-fg-pct]')!;
+    const dist = root.querySelector<HTMLElement>('[data-fg-dist]')!;
+    const range = root.querySelector<HTMLInputElement>('[data-fg-range]')!;
+    const curve = root.querySelector<HTMLElement>('[data-fg-curve]')!;
+
+    const series = () => grid.grid[`${state.kicker}|${state.gust}`] as number[];
+    function update() {
+      const p = series()[state.d - 18];
+      pct.textContent = `${Math.round(p * 100)}%`;
+      dist.textContent = `${state.d} yd`;
+      const rows = grid.distances.map((d: number, i: number) => ({ d, p: series()[i] }));
+      const ink = getComputedStyle(root!).getPropertyValue('--fg-ink').trim() || '#fff';
+      curve.replaceChildren(
+        Plot.plot({
+          width: Math.min(curve.clientWidth || 420, 560), height: 120, marginLeft: 0, marginRight: 8, marginTop: 8, marginBottom: 22,
+          style: { background: 'transparent', color: ink, fontFamily: 'Archivo Variable, sans-serif', fontSize: '11px' },
+          x: { domain: [18, 66], ticks: [20, 30, 40, 50, 60], tickFormat: (d: number) => `${d}`, label: null },
+          y: { domain: [0.4, 1], axis: null },
+          marks: [
+            Plot.areaY(rows, { x: 'd', y1: 0.4, y2: 'p', fill: ink, fillOpacity: 0.14, curve: 'monotone-x' }),
+            Plot.lineY(rows, { x: 'd', y: 'p', stroke: ink, strokeWidth: 2.5, curve: 'monotone-x' }),
+            Plot.ruleX([state.d], { stroke: ink, strokeDasharray: '3 3' }),
+            Plot.dot([{ d: state.d, p: series()[state.d - 18] }], { x: 'd', y: 'p', r: 7, fill: '#ff5a1f', stroke: ink, strokeWidth: 2 }),
+          ],
+        }),
+      );
+    }
+    range.addEventListener('input', () => { state.d = +range.value; update(); });
+    root.querySelectorAll<HTMLElement>('[data-fg-seg]').forEach((seg) =>
+      seg.querySelectorAll<HTMLButtonElement>('button').forEach((b) =>
+        b.addEventListener('click', () => {
+          seg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          (state as any)[seg.dataset.fgSeg!] = b.dataset.v!;
+          update();
+        }),
+      ),
+    );
+    let t: number | undefined;
+    window.addEventListener('resize', () => { clearTimeout(t); t = window.setTimeout(update, 150); });
+    update();
+  }
+  document.addEventListener('astro:page-load', setup);
+</script>
+
+<style>
+  .fg {
+    --fg-ink: #ffffff;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; color: var(--fg-ink);
+  }
+  .readout { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
+  .pct { font-size: clamp(3.6rem, 9vw, 5.6rem); font-weight: 800; font-stretch: 125%; line-height: 0.9; letter-spacing: -0.03em; min-width: 3.2ch; }
+  .cap { font-weight: 700; font-size: 1rem; opacity: 0.85; }
+  .controls { display: grid; gap: 0.9rem; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .ctl-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; opacity: 0.85; margin-bottom: 0.4rem; padding: 0; }
+  .ctl-label b { font-weight: 800; opacity: 1; }
+  .slider { display: block; }
+  input[type='range'] { width: 100%; accent-color: #ff5a1f; height: 28px; cursor: pointer; }
+  .seg { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+  .seg button {
+    min-height: 40px; padding: 0 0.9rem; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.12); color: var(--fg-ink); border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+  .seg button:hover { background: rgba(255, 255, 255, 0.22); }
+  .seg button[aria-pressed='true'] { background: #fff; color: #0f3d25; border-color: #fff; }
+  .curve { min-height: 120px; }
+  @media (min-width: 900px) {
+    .fg { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: end; column-gap: 2rem; }
+    .readout { grid-column: 1; grid-row: 1; }
+    .curve { grid-column: 1; grid-row: 2; }
+    .controls { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  }
+</style>
