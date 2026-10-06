@@ -69,7 +69,8 @@ const charts: Record<string, (el: HTMLElement) => Promise<Element>> = {
   },
   async tennis(el) {
     const raw = await get('/data/returns.json');
-    const pts = raw.filter((d: any) => d.Bounce_Side === 'far').map((d: any) => ({ ...d, x: -+d.Bounce_x, y: 23.77 - +d.Bounce_y }));
+    const f = (window as any).__tennisFilter || 'all';
+    const pts = raw.filter((d: any) => d.Bounce_Side === 'far' && (f === 'all' || d.Type === f || d.Stroke === f)).map((d: any) => ({ ...d, x: -+d.Bounce_x, y: 23.77 - +d.Bounce_y }));
     const W = 4.115, WD = 5.485, NET = 11.885, SVC = 6.4;
     const lines = [[-W, 0, -W, NET], [W, 0, W, NET], [-WD, 0, -WD, NET], [WD, 0, WD, NET], [-WD, 0, WD, 0], [-W, NET - SVC, W, NET - SVC], [0, NET - SVC, 0, NET]].map(([x1, y1, x2, y2]) => ({ x1, y1, x2, y2 }));
     const w = Math.min(width(el), 420);

@@ -1,0 +1,112 @@
+---
+/** Interactive replay of one real dropback from the 2021 Big Data Bowl tracking data. */
+---
+<div class="replay" data-replay>
+  <canvas data-replay-canvas aria-label="Replay of Justin Herbert's dropback against Kansas City, 2021 Week 3, from player-tracking data"></canvas>
+  <div class="rp-controls">
+    <button type="button" class="rp-play" data-rp-play aria-label="Pause">Pause</button>
+    <input type="range" min="0" max="1000" value="0" data-rp-scrub aria-label="Scrub through the play" />
+    <span class="rp-time" data-rp-time>0.0 s</span>
+  </div>
+  <div class="rp-opts" role="group" aria-label="Options">
+    <span>Speed</span>
+    <button type="button" data-rp-speed="0.5" aria-pressed="false">0.5×</button>
+    <button type="button" data-rp-speed="1" aria-pressed="true">1×</button>
+    <label><input type="checkbox" data-rp-snap /> Show pocket at the snap</label>
+    <label><input type="checkbox" data-rp-trails checked /> Trails</label>
+  </div>
+  <p class="rp-legend"><i class="o"></i>Pass blockers <i class="r"></i>Pass rushers <i class="w"></i>Receivers <i class="d"></i>Coverage <i class="q"></i>QB</p>
+</div>
+
+<script>
+  type P = [number, number, string];
+  document.querySelectorAll<HTMLElement>('[data-replay]').forEach(async (root) => {
+    const cv = root.querySelector<HTMLCanvasElement>('[data-replay-canvas]')!;
+    const ctx = cv.getContext('2d')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-rp-play]')!;
+    const scrub = root.querySelector<HTMLInputElement>('[data-rp-scrub]')!;
+    const timeEl = root.querySelector<HTMLElement>('[data-rp-time]')!;
+    const snapBox = root.querySelector<HTMLInputElement>('[data-rp-snap]')!;
+    const trailBox = root.querySelector<HTMLInputElement>('[data-rp-trails]')!;
+    const d = await fetch('/data/hero-play.json').then((r) => r.json());
+    const F: P[][] = d.frames, n = F.length;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let ft = 0, speed = 1, playing = !reduce, last = performance.now(), w = 0, h = 0;
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const COL: Record<string, string> = {};
+    const colors = () => { COL.o = css('--blue'); COL.w = css('--blue'); COL.q = css('--ink'); COL.r = css('--lime'); COL.d = css('--ink-2'); COL.b = css('--lime'); };
+    colors();
+    const size = () => { const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1); w = r.width; h = r.height; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    const hull = (pts: number[][]) => {
+      if (pts.length < 3) return pts;
+      pts = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const x = (o: number[], a: number[], b: number[]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+      const lo: number[][] = [], up: number[][] = [];
+      for (const p of pts) { while (lo.length >= 2 && x(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+      for (const p of [...pts].reverse()) { while (up.length >= 2 && x(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    };
+    const at = (f: number) => { f = Math.max(0, f); const i = Math.min(n - 2, Math.floor(f)), a = f - i; return F[i].map((p, k) => { const q = F[i + 1][k] ?? p; return [p[0] + (q[0] - p[0]) * a, p[1] + (q[1] - p[1]) * a, p[2]] as P; }); };
+    function poly(ring: number[][], fill: string, stroke: string, dash: number[] = []) {
+      if (ring.length < 3) return;
+      ctx.beginPath(); ring.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
+      ctx.fillStyle = fill; ctx.fill(); ctx.setLineDash(dash); ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+    }
+    function draw() {
+      const s = Math.min(w / 34, h / 22), ox = w * 0.38, oy = h / 2;
+      const X = (x: number) => ox + x * s, Y = (y: number) => oy + y * s;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(169,180,198,0.15)'; ctx.lineWidth = 1;
+      for (let yl = -15; yl <= 35; yl += 5) { ctx.beginPath(); ctx.moveTo(X(yl), 0); ctx.lineTo(X(yl), h); ctx.stroke(); }
+      const pos = at(ft);
+      if (trailBox.checked) {
+        for (let k = 0; k < pos.length; k++) {
+          ctx.beginPath();
+          for (let f = 0; f <= Math.floor(ft); f++) { const p = F[f][k]; if (!p) continue; f ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); }
+          ctx.strokeStyle = COL[pos[k][2]] || COL.d; ctx.globalAlpha = 0.25; ctx.lineWidth = 1.5; ctx.stroke(); ctx.globalAlpha = 1;
+        }
+      }
+      if (snapBox.checked) poly(hull(F[d.snapIndex].filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(169,180,198,0.06)', css('--ink-2'), [5, 4]);
+      if (ft >= d.snapIndex) poly(hull(pos.filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(127,178,229,0.14)', COL.o);
+      for (const [x, y, k] of pos) { ctx.beginPath(); ctx.arc(X(x), Y(y), k === 'b' ? 4 : k === 'q' ? 9 : 7, 0, Math.PI * 2); ctx.fillStyle = COL[k] || COL.d; ctx.fill(); }
+      const qb = pos.find((p) => p[2] === 'q');
+      if (qb) { ctx.fillStyle = COL.q; ctx.font = "600 13px Barlow, sans-serif"; ctx.fillText('Herbert', X(qb[0]) - 24, Y(qb[1]) - 14); }
+      const secs = Math.max(0, (ft - d.snapIndex) / 10);
+      timeEl.textContent = ft < d.snapIndex ? 'pre-snap' : ft >= d.releaseIndex ? `throw · ${((d.releaseIndex - d.snapIndex) / 10).toFixed(1)} s` : `${secs.toFixed(1)} s after snap`;
+      scrub.value = String(Math.round((ft / (n - 1)) * 1000));
+    }
+    function tick(now: number) {
+      const dt = Math.max(0, Math.min(0.1, (now - last) / 1000)); last = now;
+      if (playing) { ft += dt * 10 * speed; if (ft >= n - 1) ft = 0; }
+      draw(); requestAnimationFrame(tick);
+    }
+    const setPlaying = (v: boolean) => { playing = v; playBtn.textContent = v ? 'Pause' : 'Play'; playBtn.setAttribute('aria-label', v ? 'Pause' : 'Play'); };
+    playBtn.addEventListener('click', () => setPlaying(!playing));
+    scrub.addEventListener('input', () => { setPlaying(false); ft = (+scrub.value / 1000) * (n - 1.001); });
+    root.querySelectorAll<HTMLButtonElement>('[data-rp-speed]').forEach((b) => b.addEventListener('click', () => {
+      speed = +b.dataset.rpSpeed!; root.querySelectorAll('[data-rp-speed]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    }));
+    setPlaying(playing); size(); addEventListener('resize', size); requestAnimationFrame(tick);
+  });
+</script>
+
+<style>
+  .replay { display: flex; flex-direction: column; gap: 12px; }
+  .replay canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: var(--bg); border-radius: 10px; }
+  .rp-controls { display: flex; align-items: center; gap: 12px; }
+  .rp-controls input[type='range'] { flex: 1; accent-color: var(--lime); height: 44px; }
+  .rp-play { min-width: 76px; min-height: 44px; border-radius: 8px; border: 0; cursor: pointer; background: var(--lime); color: var(--on-lime); font: 800 1.05rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; }
+  .rp-time { min-width: 9rem; text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .rp-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; color: var(--ink-2); font-size: 0.95rem; }
+  .rp-opts button { min-height: 40px; padding: 0 12px; border-radius: 8px; background: transparent; color: var(--ink-2); border: 1px solid var(--line); cursor: pointer; font-weight: 600; }
+  .rp-opts button[aria-pressed='true'] { color: var(--on-lime); background: var(--lime); border-color: var(--lime); }
+  .rp-opts label { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; cursor: pointer; }
+  .rp-opts input[type='checkbox'] { accent-color: var(--lime); width: 18px; height: 18px; }
+  .rp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink-2); font-size: 0.88rem; margin: 0; }
+  .rp-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .rp-legend .o, .rp-legend .w { background: var(--blue); }
+  .rp-legend .r { background: var(--lime); }
+  .rp-legend .d { background: var(--ink-2); }
+  .rp-legend .q { background: var(--ink); }
+  @media (max-width: 600px) { .rp-time { min-width: 0; font-size: 0.8rem; } }
+</style>

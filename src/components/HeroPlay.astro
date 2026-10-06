@@ -35,6 +35,7 @@
     function draw(ft: number, env = 1) {
       if (!data) return;
       const F = data.frames, n = F.length;
+      ft = Math.max(0, ft);
       const i = Math.min(n - 2, Math.floor(ft)), a = ft - i;
       const A = F[i], B = F[i + 1];
       // scale: 30 yards across the canvas width, centered on the backfield
@@ -74,7 +75,7 @@
       const n = data.frames.length;
       const play = (n - 1) / 10;
       const period = play + HOLD_END + play + HOLD_START;
-      const t = ((now - t0) / 1000) % period;
+      const t = Math.max(0, (now - t0) / 1000) % period;
       let u: number;
       if (t < play) u = smooth(t / play);
       else if (t < play + HOLD_END) u = 1;

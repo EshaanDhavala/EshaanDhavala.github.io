@@ -72,3 +72,7 @@ h2 .w > span { display: inline-block; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   @view-transition { navigation: none; }
 }
+
+/* Observable Plot tooltips: dark box so light text stays readable */
+svg[class^="plot-"], figure[class^="plot-"] { --plot-background: #16233a; }
+svg[class^="plot-"] [aria-label="tip"] path { stroke: #2a3b58; }

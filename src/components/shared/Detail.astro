@@ -2,6 +2,7 @@
 /** Theme-neutral project detail: media, charts, bullets, figures, links. Themes style it via the .d-* classes. */
 import type { Entry } from '../../data/entries';
 import FgLive from '../FgLive.astro';
+import QbReplay from '../QbReplay.astro';
 import { asset } from '../../lib/asset';
 interface Props { e: Entry; headingLevel?: 2 | 3 }
 const { e, headingLevel = 3 } = Astro.props;
@@ -22,6 +23,11 @@ const chartLabel: Record<string, string> = {
   {e.video && (
     <figure class="d-video" id="demo">
       <video src={asset(e.video.src)} poster={asset(e.video.poster)} muted loop playsinline controls preload="none" data-autoplay aria-label={e.video.label}></video>
+      {e.chapters && (
+        <div class="d-chapters" role="group" aria-label="Jump to a play">
+          {e.chapters.map((c) => <button type="button" data-chapter={c.t}>{c.label}</button>)}
+        </div>
+      )}
     </figure>
   )}
   <div class="d-cols">
@@ -38,10 +44,23 @@ const chartLabel: Record<string, string> = {
   </div>
   {e.note && <p class="d-note">{e.note}</p>}
   {e.charts?.map((c) =>
-    c === 'fg' ? (
+    c === 'replay' ? (
+      <figure class="d-chart d-replay"><QbReplay /><figcaption>The same Herbert dropback, from the tracking data: scrub it, slow it down, or compare the pocket at the snap with the pocket at the throw.</figcaption></figure>
+    ) : c === 'fg' ? (
       <figure class="d-fg"><FgLive /><figcaption>Predictions from the trained model: outdoor, 55°F, no rain, sea level, tie game. Kicker tiers are relative to league average at each distance. Gusts above 15 mph are too rare in the data to separate.</figcaption></figure>
     ) : (
-      <figure class="d-chart"><div class="chart" data-chart={c} role="img" aria-label={chartLabel[c]}></div><figcaption>{chartLabel[c]}</figcaption></figure>
+      <figure class="d-chart">
+        {c === 'tennis' && (
+          <div class="d-filters" role="group" aria-label="Filter returns">
+            <button type="button" data-tennis="all" aria-pressed="true">All returns</button>
+            <button type="button" data-tennis="first_return" aria-pressed="false">vs 1st serve</button>
+            <button type="button" data-tennis="second_return" aria-pressed="false">vs 2nd serve</button>
+            <button type="button" data-tennis="Forehand" aria-pressed="false">Forehand</button>
+            <button type="button" data-tennis="Backhand" aria-pressed="false">Backhand</button>
+          </div>
+        )}
+        <div class="chart" data-chart={c} role="img" aria-label={chartLabel[c]}></div><figcaption>{chartLabel[c]}</figcaption>
+      </figure>
     ),
   )}
   {e.figures?.map((f) => (
@@ -52,3 +71,15 @@ const chartLabel: Record<string, string> = {
   ))}
   {e.links.length > 0 && <p class="d-links">{e.links.map((l) => <a href={l.href} rel="noopener">{l.label}</a>)}</p>}
 </div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-chapter]').forEach((b) => b.addEventListener('click', () => {
+    const v = b.closest('figure')!.querySelector('video')!;
+    v.currentTime = +b.dataset.chapter! + 0.05; v.play().catch(() => {});
+  }));
+  document.querySelectorAll<HTMLButtonElement>('[data-tennis]').forEach((b) => b.addEventListener('click', () => {
+    b.parentElement!.querySelectorAll('[data-tennis]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    (window as any).__tennisFilter = b.dataset.tennis;
+    window.dispatchEvent(new Event('resize'));
+  }));
+</script>

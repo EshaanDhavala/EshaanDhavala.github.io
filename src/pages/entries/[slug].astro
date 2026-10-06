@@ -89,6 +89,11 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .body :global(.d-fg) { --fg-ink: #f3efe6; --fg-accent: var(--lime); --fg-on-ink: #0f1724; padding: clamp(18px, 3vw, 30px); }
   .body :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
   .body :global(.d-links) { display: none; }
+  .body :global(.d-chapters), .body :global(.d-filters) { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .body :global(.d-filters) { margin: 0 0 12px; }
+  .body :global(.d-chapters button), .body :global(.d-filters button) { min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .body :global(.d-chapters button:hover), .body :global(.d-filters button:hover) { color: var(--ink); border-color: var(--ink-2); }
+  .body :global(.d-filters button[aria-pressed='true']) { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
 
   .nextup { margin-top: clamp(56px, 10vh, 110px); }
   .nextup h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 18px; }

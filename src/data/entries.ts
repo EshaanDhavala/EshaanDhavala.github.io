@@ -29,7 +29,9 @@ export interface Entry {
   /** card picture: an inline data drawing (src/assets/thumbs/<slug>.svg) or a photo */
   pic: { kind: 'svg' } | { kind: 'img'; src: string; alt: string; caption?: string };
   /** interactive charts on the detail view */
-  charts?: ('qb' | 'journal' | 'journal-dow' | 'sports' | 'fg')[];
+  charts?: ('qb' | 'journal' | 'journal-dow' | 'tennis' | 'fg' | 'replay')[];
+  /** jump points in the demo video */
+  chapters?: { t: number; label: string }[];
   video?: { src: string; poster: string; label: string };
   note?: string;
   /** starters get the big cards at the top */
@@ -125,7 +127,7 @@ export const entries: Entry[] = [
     ],
     links: [{ href: 'https://github.com/Bruin-Sports-Analytics/qb-optimality', label: 'Code' }],
     pic: { kind: 'img', src: '/thumbs/qb-clutch-optimality.jpg', alt: "Real 2021 Chargers play from tracking data: the pocket at the snap (dashed) and at the throw (filled), with the nearest rusher 1.2 yards from Herbert" , caption: 'A real play from the data (2021, Chargers at Chiefs, clutch dropback, +2.7 EPA): pocket at the snap (dashed) vs. at the throw (filled). Nearest rusher 1.2 yd from Herbert.' },
-    charts: ['qb'],
+    charts: ['replay', 'qb'],
   },
   {
     slug: 'usaa-closure-reasons',
@@ -147,7 +149,8 @@ export const entries: Entry[] = [
       'Pitched 3 fixes to senior leadership: rep training, a better dropdown, predicting the reason before the call',
     ],
     links: [],
-    pic: { kind: 'img', src: '/thumbs/usaa-closure-reasons.jpg', alt: "Graphic: a closure-reason dropdown set to No longer needed, 72% of closures, reasons captured 28% to 66%" , caption: 'Graphic of the finding. No company data or screenshots.' },
+    pic: { kind: 'img', src: '/thumbs/usaa-closure-reasons-photo.jpg', alt: 'Eshaan at USAA headquarters in San Antonio during his data science internship', caption: 'At USAA in San Antonio, summer 2026.' },
+    figures: [{ src: '/thumbs/usaa-closure-reasons.jpg', alt: 'Graphic: a closure-reason dropdown set to No longer needed, 72% of closures, reasons captured 28% to 66%', caption: 'The finding in one picture (a graphic, not company data).', w: 1280, h: 800 }],
     links: [{ href: 'mailto:eshaandhavala@gmail.com?subject=USAA%20project%20walkthrough', label: 'Ask for a walkthrough' }],
     note: 'Internal work. No company data shown.',
   },
@@ -170,6 +173,10 @@ export const entries: Entry[] = [
     links: [{ href: '#demo', label: 'Watch demo' }, { href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
     pic: { kind: 'img', src: '/thumbs/playscan.jpg', alt: 'PlayScan calling a run play over an NFL broadcast' },
     video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg', label: 'PlayScan reading six validation plays and calling pass, run, or special teams with its probabilities' },
+    chapters: [
+      { t: 0, label: 'Play 1 · Pass 98%' }, { t: 5.6, label: 'Play 2 · Run 100%' }, { t: 11.2, label: 'Play 3 · Special teams 100%' },
+      { t: 16.8, label: 'Play 4 · Pass 100%' }, { t: 22.4, label: 'Play 5 · Run 100%' }, { t: 28.0, label: 'Play 6 · Special teams 99%' },
+    ],
   },
   {
     slug: 'journal-to-data',
@@ -215,7 +222,7 @@ export const entries: Entry[] = [
     results: ['Scouting graphics for 8 opponents', 'Travel map used by players on the road'],
     links: [],
     pic: { kind: 'img', src: '/thumbs/tennis-scouting.jpg', alt: 'Travel dashboard map with a venue card showing live weather for SMU in Dallas' , caption: 'The travel dashboard: venue card with live weather.' },
-    charts: ['sports'],
+    charts: ['tennis'],
     figures: [{ src: '/img/travel-popup.jpg', alt: 'Leaflet travel dashboard: venue card for SMU in Dallas with travel, conditions, live weather, and nearby tabs', caption: 'Travel dashboard: each away venue has travel time, court conditions, live weather, and what’s nearby.', w: 1280, h: 800, wide: true }],
   },
   {
