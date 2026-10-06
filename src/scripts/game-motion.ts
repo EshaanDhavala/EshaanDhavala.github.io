@@ -19,12 +19,18 @@ function setupFilter() {
     let n = 0;
     cards.forEach((c) => { const show = f === 'all' || c.dataset.cats!.split(' ').includes(f); c.hidden = !show; if (show) n++; });
     if (count) count.textContent = `${n} ${n === 1 ? 'project' : 'projects'}`;
-    document.querySelectorAll<HTMLElement>('[data-list]').forEach((list) => {
-      const any = [...list.querySelectorAll<HTMLElement>('[data-card]')].some((c) => !c.hidden);
-      list.hidden = !any;
-      const head = list.previousElementSibling as HTMLElement | null;
-      if (head?.matches('[data-group]')) head.hidden = !any;
-    });
+    // Filtered: one grid of every match right under the tabs (no lineup/roster split, no widget in between).
+    const filtered = f !== 'all';
+    document.documentElement.toggleAttribute('data-filtered', filtered);
+    const starters = document.querySelector<HTMLElement>('[data-list="starters"]');
+    const roster = document.querySelector<HTMLElement>('[data-list="roster"]');
+    if (starters && roster) {
+      const home = filtered ? starters : roster;
+      roster.querySelectorAll<HTMLElement>('.cell').forEach((c) => { if (filtered) starters.append(c); });
+      if (!filtered) starters.querySelectorAll<HTMLElement>('.cell[data-bench]').forEach((c) => roster.append(c));
+      void home;
+    }
+    document.querySelectorAll<HTMLElement>('[data-group], [data-spot], .roster').forEach((el) => (el.hidden = filtered));
     if (push) { const u = new URL(location.href); f === 'all' ? u.searchParams.delete('cat') : u.searchParams.set('cat', f); history.replaceState(null, '', u); }
     if (!reduce) gsap.fromTo(cards.filter((c) => !c.hidden), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'expo.out', stagger: 0.04, overwrite: true });
     ScrollTrigger.refresh();

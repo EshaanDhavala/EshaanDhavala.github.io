@@ -1,19 +1,20 @@
-/* Sports-game theme: warm charcoal, stadium-signage type, one solid accent for actions only. */
+/* Sports-game theme: night navy, stadium-signage type, gold for actions, blue for numbers. */
 :root {
-  --bg: #141311;
-  --bg-2: #1a1916;
-  --panel: #1c1b18;
-  --panel-2: #26241f;
-  --line: #34312b;
-  --ink: #f1ede4;
-  --ink-2: #a9a397;
-  --lime: #e2572b;
-  --on-lime: #fffaf2;
+  --bg: #0f1724;
+  --bg-2: #132034;
+  --panel: #16233a;
+  --panel-2: #1d2d48;
+  --line: #2a3b58;
+  --ink: #f3efe6;
+  --ink-2: #a9b4c6;
+  --lime: #f2b33d;        /* gold: actions + selected only */
+  --on-lime: #14110a;
+  --blue: #7fb2e5;        /* blue: numbers + highlights */
   --k-sports: var(--ink);
   --k-ai: var(--ink);
   --k-stats: var(--ink);
   /* chart + widget hooks used by shared components */
-  --violet: var(--ink);
+  --violet: var(--blue);
   --sauce: var(--lime);
   --r: 16px;
   --display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
@@ -23,6 +24,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); scroll-padding-top: 80px; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1.0625rem; line-height: 1.55; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; overflow-x: clip; }
@@ -47,7 +49,7 @@ ul, ol { padding: 0; }
 }
 .btn:active { transform: scale(0.97); }
 .btn-lime { background: var(--lime); color: var(--on-lime); }
-.btn-lime:hover { background: #f06a3f; }
+.btn-lime:hover { background: #f7c25e; }
 .btn-line { color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); background: rgba(255, 255, 255, 0.02); }
 .btn-line:hover { box-shadow: inset 0 0 0 2px var(--lime); }
 
@@ -58,7 +60,7 @@ ul, ol { padding: 0; }
 [data-reveal] { will-change: transform, opacity; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #3a372f; border-radius: 10px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb { background: #2a3b58; border-radius: 10px; border: 2px solid var(--bg); }
 ::-webkit-scrollbar-track { background: transparent; }
 
 @view-transition { navigation: auto; }

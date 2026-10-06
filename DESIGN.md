@@ -2,15 +2,16 @@
 name: Eshaan Dhavala
 description: Portfolio styled like a sports video game's menus. Title screen, project select, player profile.
 colors:
-  bg: "#141311"
-  bg-2: "#1a1916"
-  panel: "#1c1b18"
-  panel-2: "#26241f"
-  line: "#34312b"
-  ink: "#f1ede4"
-  ink-2: "#a9a397"
-  accent: "#e2572b"
-  on-accent: "#fffaf2"
+  bg: "#0f1724"
+  bg-2: "#132034"
+  panel: "#16233a"
+  panel-2: "#1d2d48"
+  line: "#2a3b58"
+  ink: "#f3efe6"
+  ink-2: "#a9b4c6"
+  accent: "#f2b33d"
+  on-accent: "#14110a"
+  blue: "#7fb2e5"
 typography:
   display:
     fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
@@ -82,14 +83,16 @@ components:
 
 **Creative North Star: "Select Your Project"**
 
-A sports game's menu system (title screen, project select with a starting lineup and roster, player profile), drawn with restraint: warm charcoal ground, warm off-white type, upright stadium-signage display face, and one solid accent used only for actions. Real artifacts carry the color; the chrome does not. No glows, gradients, neon, or per-category colour coding (removed Oct 2026 at Eshaan's request: they read as generic AI design).
+A sports game's menu system (title screen, project select with a starting lineup and roster, player profile), drawn with restraint: night-navy ground, warm off-white type, upright stadium-signage display face, gold for actions and blue for numbers. Real artifacts carry the color; the chrome does not. No glows, gradients, neon, or per-category colour coding (removed Oct 2026 at Eshaan's request: they read as generic AI design).
 
 ## Colors
-- **Charcoal** #141311 ground; **Panel** #1c1b18; **Line** #34312b dividers and 1px insets.
-- **Ink** #f1ede4 text and headline numbers; **Ink 2** #a9a397 secondary text.
-- **Signal Orange** #e2572b: primary buttons, the selected tab underline, the results bullet. Nothing else.
+Muted team palette: night navy with two roles, never more.
+- **Night** #0f1724 ground; **Panel** #16233a; **Line** #2a3b58.
+- **Ink** #f3efe6 text; **Ink 2** #a9b4c6 secondary.
+- **Gold** #f2b33d: actions and the selected tab only.
+- **Blue** #7fb2e5: big numbers, the second word of the name, section highlights, chart bars, field lines.
 
-**The One Accent Rule.** Orange means "act here". Categories, stats and headings stay ink.
+**The Two Roles Rule.** Gold = do something. Blue = look at this number. No per-category colours, no glow, no gradients.
 
 ## Typography
 - **Display:** Big Shoulders Display 700–900, upright, uppercase. Name, section heads, card names, big numbers.

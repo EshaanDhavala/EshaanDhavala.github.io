@@ -62,7 +62,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   h1 { font-weight: 900; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 0.9; }
   .what { color: var(--ink); font-size: 1.15rem; max-width: 34rem; }
   .stat { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .stat b { font: 900 clamp(3.2rem, 6vw, 4.8rem)/0.9 var(--display); color: var(--ink); }
+  .stat b { font: 900 clamp(3.2rem, 6vw, 4.8rem)/0.9 var(--display); color: var(--blue); }
   .stat span { color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; }
   .links { display: flex; flex-wrap: wrap; gap: 10px; }
 
@@ -74,7 +74,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .body :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
   .body :global(.d-cols) { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
   .body :global(.d-cols > div) { background: var(--panel); border-radius: 18px; padding: 22px 24px; box-shadow: inset 0 0 0 1px var(--line); }
-  .body :global(.d-h) { font-size: 1.9rem; margin-bottom: 14px; color: var(--ink); }
+  .body :global(.d-h) { font-size: 1.9rem; margin-bottom: 14px; color: var(--blue); }
   .body :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .body :global(.d-list li) { position: relative; padding-left: 20px; line-height: 1.45; }
   .body :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.62em; width: 8px; height: 2px; background: var(--ink-2); }
@@ -85,7 +85,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .body :global(.d-fig a) { display: block; border-radius: 10px; overflow: hidden; background: #000; }
   .body :global(.d-fig img) { width: 100%; max-height: 74vh; object-fit: contain; margin-inline: auto; }
   .body :global(.d-fig:not(.wide)) { max-width: 860px; width: 100%; margin-inline: auto; }
-  .body :global(.d-fg) { --fg-ink: #f1ede4; --fg-accent: var(--lime); --fg-on-ink: #141311; padding: clamp(18px, 3vw, 30px); }
+  .body :global(.d-fg) { --fg-ink: #f3efe6; --fg-accent: var(--lime); --fg-on-ink: #0f1724; padding: clamp(18px, 3vw, 30px); }
   .body :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
   .body :global(.d-links) { display: none; }
 

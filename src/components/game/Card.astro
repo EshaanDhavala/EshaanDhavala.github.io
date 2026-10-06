@@ -39,7 +39,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .card:hover .pic img { transform: scale(1.04); }
   .body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 16px; flex: 1; }
   .stat { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; line-height: 1; }
-  .stat b { font: 800 clamp(1.8rem, 15cqi, 2.7rem)/0.95 var(--display); color: var(--ink); letter-spacing: 0.01em; }
+  .stat b { font: 800 clamp(1.8rem, 15cqi, 2.7rem)/0.95 var(--display); color: var(--blue); letter-spacing: 0.01em; }
   .stat span { font: 600 0.78rem/1.2 var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
   .name { font-size: clamp(1.35rem, 9cqi, 1.7rem); line-height: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .name a { text-decoration: none; }
@@ -50,12 +50,12 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .yr { margin-left: auto; font: 700 1.05rem/1 var(--display); color: var(--ink-2); }
   /* starters: wide horizontal card with larger type */
   @media (min-width: 900px) {
-    .big { flex-direction: row; }
-    .big .pic { flex: none; width: 56%; aspect-ratio: 16 / 10; }
-    .big .body { padding: 22px 24px; gap: 10px; justify-content: center; }
-    .big .stat b { font-size: clamp(2.4rem, 7cqi, 3.4rem); }
-    .big .name { font-size: clamp(1.8rem, 4.6cqi, 2.4rem); }
-    .big .what { font-size: 1.05rem; }
+    :global(html:not([data-filtered])) .big { flex-direction: row; }
+    :global(html:not([data-filtered])) .big .pic { flex: none; width: 56%; aspect-ratio: 16 / 10; }
+    :global(html:not([data-filtered])) .big .body { padding: 22px 24px; gap: 10px; justify-content: center; }
+    :global(html:not([data-filtered])) .big .stat b { font-size: clamp(2.4rem, 7cqi, 3.4rem); }
+    :global(html:not([data-filtered])) .big .name { font-size: clamp(1.8rem, 4.6cqi, 2.4rem); }
+    :global(html:not([data-filtered])) .big .what { font-size: 1.05rem; }
   }
   /* phones: compact side-by-side card so the whole list scans quickly */
   @media (max-width: 600px) {

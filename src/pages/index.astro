@@ -70,7 +70,7 @@ const ticker = [
       </div>
     </div>
     <h3 class="group" data-group="starters">Starting lineup</h3>
-    <div class="grid starters" data-list>
+    <div class="grid starters" data-list="starters">
       {starters.map((e, i) => <div class="cell" data-reveal><Card e={e} big eager={i < 2} /></div>)}
     </div>
   </section>
@@ -86,8 +86,8 @@ const ticker = [
 
   <section class="wrap roster" aria-labelledby="roster-title">
     <h3 id="roster-title" class="group" data-group="bench">Rest of the roster</h3>
-    <div class="grid" data-list>
-      {bench.map((e) => <div class="cell" data-reveal><Card e={e} /></div>)}
+    <div class="grid" data-list="roster">
+      {bench.map((e) => <div class="cell" data-bench data-reveal><Card e={e} /></div>)}
     </div>
   </section>
 
@@ -128,7 +128,7 @@ const ticker = [
     position: absolute; left: -40%; right: -40%; bottom: 48px; height: 115%; z-index: -1;
     transform: perspective(900px) rotateX(58deg); transform-origin: 50% 100%;
     background:
-      repeating-linear-gradient(0deg, rgba(241, 237, 228, 0.07) 0 2px, transparent 2px 84px),
+      repeating-linear-gradient(0deg, rgba(127, 178, 229, 0.12) 0 2px, transparent 2px 84px),
       var(--bg-2);
     background-position: 0 var(--field-y);
     mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
@@ -138,15 +138,15 @@ const ticker = [
   @media (min-width: 900px) { .hero-inner { grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); } }
   h1 { display: flex; flex-direction: column; font-weight: 900; font-size: clamp(4rem, 12vw, 10rem); line-height: 0.82; letter-spacing: 0; }
   h1 span { display: block; }
-  h1 span:last-child { color: var(--ink-2); }
+  h1 span:last-child { color: var(--blue); }
   .lede { margin-top: 1.4rem; max-width: 34rem; font-size: clamp(1.1rem, 1.6vw, 1.3rem); color: var(--ink); }
   .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.6rem; }
   .proof { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.2rem; }
   .proof li { font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
-  .proof li:first-child { color: var(--ink); }
+  .proof li:first-child { color: var(--ink); box-shadow: inset 0 0 0 1px var(--blue); }
   .portrait { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .ring { position: relative; width: clamp(200px, 26vw, 320px); aspect-ratio: 1; border-radius: 50%; padding: 0; background: var(--panel); }
-  .ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .ring { position: relative; width: clamp(200px, 26vw, 320px); aspect-ratio: 1; border-radius: 50%; padding: 4px; background: var(--blue); }
+  .ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 4px solid var(--bg); }
   .portrait figcaption { text-align: center; display: flex; flex-direction: column; gap: 2px; }
   .portrait figcaption b { font: 800 1.7rem/1 var(--display); text-transform: uppercase; }
   .portrait figcaption span { color: var(--ink-2); font-size: 0.95rem; }
@@ -160,7 +160,7 @@ const ticker = [
   .tick { display: flex; width: max-content; list-style: none; animation: tick 48s linear infinite; }
   .ticker:hover .tick { animation-play-state: paused; }
   .tick li { display: flex; align-items: baseline; gap: 10px; padding: 12px 28px; white-space: nowrap; color: var(--ink-2); font-weight: 600; font-size: 0.95rem; border-right: 1px solid var(--line); }
-  .tick b { font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
+  .tick b { color: var(--blue) !important; font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
   @keyframes tick { to { transform: translateX(-50%); } }
 
   /* ---------- projects ---------- */
@@ -180,6 +180,8 @@ const ticker = [
   .hint-txt { color: var(--ink-2); font-size: 0.8rem; margin-left: 2px; }
   .starters { grid-template-columns: minmax(0, 1fr) !important; }
   @media (min-width: 1200px) { .starters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .starters .cell:first-child { grid-column: 1 / -1; } }
+  :global(html[data-filtered]) .starters { grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)) !important; }
+  :global(html[data-filtered]) .starters .cell { grid-column: auto !important; }
   .grid { display: grid; gap: clamp(12px, 2vw, 22px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)); align-items: stretch; }
   .cell { display: flex; min-width: 0; }
   .cell :global(.card) { flex: 1; }
@@ -191,13 +193,13 @@ const ticker = [
   .spot-head { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
   .spot-head h2 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); }
   .spot-head p { color: var(--ink-2); font-size: 1.1rem; max-width: 30rem; }
-  .spot-panel { --fg-ink: #f1ede4; --fg-accent: var(--lime); --fg-on-ink: #141311; background: var(--panel); border-radius: 16px; padding: clamp(20px, 3vw, 32px); box-shadow: inset 0 0 0 1px var(--line); font-family: var(--body); }
+  .spot-panel { --fg-ink: #f3efe6; --fg-accent: var(--lime); --fg-on-ink: #0f1724; background: var(--panel); border-radius: 16px; padding: clamp(20px, 3vw, 32px); box-shadow: inset 0 0 0 1px var(--line); font-family: var(--body); }
 
   /* ---------- profile ---------- */
   .profile { margin-top: clamp(80px, 14vh, 160px); max-width: 1000px; }
   .p-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .p-main h2 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
-  .p-main h3 { font-size: 1.6rem; color: var(--ink); margin-top: 22px; }
+  .p-main h3 { font-size: 1.6rem; color: var(--blue); margin-top: 22px; }
   .tiles { list-style: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
   .tiles li { background: var(--panel); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 1px var(--line); }
   .tiles small { color: var(--ink-2); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
