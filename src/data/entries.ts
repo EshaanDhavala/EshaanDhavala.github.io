@@ -34,7 +34,7 @@ export const entries: Entry[] = [
     no: 2,
     title: 'Overtime 4th-down decision engine',
     blurb: 'Go for it, punt, or kick? A live tool that compares win probability for each choice in NFL overtime. I built the field-goal make-probability model inside it.',
-    hook: 'live at playbyplay.football',
+    hook: '0.78 AUC · live at playbyplay.football',
     when: 'Feb – Mar 2026',
     tags: ['Football', 'ML & AI'],
     stack: ['Python', 'XGBoost', 'scikit-learn', 'nfl_data_py'],
