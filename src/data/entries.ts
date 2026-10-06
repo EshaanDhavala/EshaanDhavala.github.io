@@ -45,7 +45,7 @@ export const entries: Entry[] = [
     starter: true,
     cats: ['sports', 'ai'],
     plate: 'ai',
-    pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'The AI Assistant answering which O-linemen have the weakest hamstrings, with a bar chart' , caption: 'Answering a coach’s question with a chart, on synthetic data.' },
+    pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'UCLA Performance Assistant answering a jump-height comparison by position group with a table and bar chart' , caption: 'Asked live: “Compare countermovement jump height across position groups and show me a chart.” Answered in 8 s, on synthetic data.' },
     video: { src: '/media/ai-assistant.mp4', poster: '/media/ai-assistant-poster.jpg', label: 'Screen recording of the AI Assistant answering four coach questions with charts and a CSV, on synthetic data' },
     when: '2026',
     where: 'UCLA Football strength staff, via Bruin Sports Analytics',
@@ -64,6 +64,7 @@ export const entries: Entry[] = [
     ],
     links: [{ href: '#demo', label: 'Watch demo' }],
     note: 'Recorded on synthetic data. Every athlete name and number is fake.',
+    figures: [{ src: '/img/ai-assistant-answer.jpg', alt: 'Full Performance Assistant screen: the question, a table of jump height by position group, and a bar chart', caption: 'The full answer screen.', w: 1600, h: 1278, wide: true }],
   },
   {
     slug: 'nfl-overtime-4th-down',
@@ -86,7 +87,7 @@ export const entries: Entry[] = [
       'Held-out ROC-AUC 0.78',
       'Brier 0.104 vs 0.122 for guessing the league rate',
       'Live at playbyplay.football',
-      'Known limit: past ~57 yd the model flattens out (only 77 NFL attempts from 60+ since 2016), so long kicks come out too optimistic',
+      'Monotone constraints so a longer kick, stronger wind, or worse kicker never raises the odds; a fitted taper past 57 yd, where only 77 NFL attempts exist',
     ],
     links: [
       { href: 'https://playbyplay.football', label: 'Live tool' },

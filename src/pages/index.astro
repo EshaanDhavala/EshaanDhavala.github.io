@@ -10,6 +10,7 @@ const career = [
   ['2025 – 2026', 'Bruin Sports Analytics', 'Tennis Data Analyst'],
   ['2024 – 2026', 'Mystic Lake Casino Steakhouse', 'Lead Host'],
   ['2022 – 2023', 'Tokyo Sushi and Grill', 'Host & Cashier'],
+  ['2020 – 2021', 'Kumon', 'Tutor'],
 ];
 const traits = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history', 'Astronomy'];
 const starters = entries.filter((e) => e.starter);
@@ -26,7 +27,6 @@ const ticker = [
 ---
 <Game>
   <section class="hero" data-parallax-root aria-labelledby="hero-title">
-    <div class="lights" data-parallax="0.25" aria-hidden="true"></div>
     <div class="field" data-field aria-hidden="true"></div>
     <div class="hero-inner wrap">
       <div class="hero-text">
@@ -64,7 +64,7 @@ const ticker = [
       <div class="tabs" role="group" aria-label="Filter projects">
         <span class="kbd hint" aria-hidden="true">Q</span>
         <button type="button" data-filter="all" aria-pressed="true">All</button>
-        {CATS.map((c) => <button type="button" data-filter={c.id} aria-pressed="false" style={`--c: var(--k-${c.id})`}>{c.label}</button>)}
+        {CATS.map((c) => <button type="button" data-filter={c.id} aria-pressed="false">{c.label}</button>)}
         <span class="kbd hint" aria-hidden="true">E</span>
         <span class="hint-txt hint" aria-hidden="true">to switch</span>
       </div>
@@ -78,7 +78,7 @@ const ticker = [
   <section class="spot wrap" aria-labelledby="spot-title" data-reveal data-spot>
     <div class="spot-head">
       <h2 id="spot-title">Try the field-goal model</h2>
-      <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick. It stops at 57 yards: past that there are too few NFL attempts for the model to be trusted.</p>
+      <p>Real predictions from my XGBoost model (0.78 AUC). Move the kick.</p>
       <a class="btn btn-line" href="/entries/nfl-overtime-4th-down/">See the project</a>
     </div>
     <div class="spot-panel"><FgLive /></div>
@@ -123,40 +123,36 @@ const ticker = [
 <style>
   /* ---------- hero ---------- */
   .hero { position: relative; min-height: min(calc(100svh - 64px - 140px), 760px); display: flex; flex-direction: column; overflow: hidden; isolation: isolate; }
-  .lights { position: absolute; inset: -20% -10% 30%; z-index: -2; background:
-      radial-gradient(40% 50% at 18% 20%, rgba(198, 255, 61, 0.13), transparent 70%),
-      radial-gradient(45% 55% at 85% 10%, rgba(167, 139, 250, 0.14), transparent 70%); }
   .field {
     --field-y: 0px;
     position: absolute; left: -40%; right: -40%; bottom: 48px; height: 115%; z-index: -1;
     transform: perspective(900px) rotateX(58deg); transform-origin: 50% 100%;
     background:
-      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 3px, transparent 3px 84px),
-      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 16.8px),
-      linear-gradient(180deg, #0f3a22, #0c2a19);
+      repeating-linear-gradient(0deg, rgba(241, 237, 228, 0.07) 0 2px, transparent 2px 84px),
+      var(--bg-2);
     background-position: 0 var(--field-y);
     mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
     -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%);
   }
   .hero-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 2rem; padding: clamp(32px, 6vh, 72px) 0; }
   @media (min-width: 900px) { .hero-inner { grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); } }
-  h1 { display: flex; flex-direction: column; font-weight: 900; font-size: clamp(3.8rem, 11.5vw, 9.5rem); line-height: 0.84; letter-spacing: -0.005em; }
+  h1 { display: flex; flex-direction: column; font-weight: 900; font-size: clamp(4rem, 12vw, 10rem); line-height: 0.82; letter-spacing: 0; }
   h1 span { display: block; }
-  h1 span:last-child { color: var(--lime); }
-  .lede { margin-top: 1.4rem; max-width: 34rem; font-size: clamp(1.1rem, 1.6vw, 1.3rem); color: #c9d0e2; }
+  h1 span:last-child { color: var(--ink-2); }
+  .lede { margin-top: 1.4rem; max-width: 34rem; font-size: clamp(1.1rem, 1.6vw, 1.3rem); color: var(--ink); }
   .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.6rem; }
   .proof { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.2rem; }
-  .proof li { font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px var(--line); }
-  .proof li:first-child { color: var(--lime); box-shadow: inset 0 0 0 1px rgba(198, 255, 61, 0.35); }
+  .proof li { font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
+  .proof li:first-child { color: var(--ink); }
   .portrait { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .ring { position: relative; width: clamp(200px, 26vw, 320px); aspect-ratio: 1; border-radius: 50%; padding: 5px; background: var(--lime); box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.9); }
-  .ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 5px solid var(--bg); }
+  .ring { position: relative; width: clamp(200px, 26vw, 320px); aspect-ratio: 1; border-radius: 50%; padding: 0; background: var(--panel); }
+  .ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
   .portrait figcaption { text-align: center; display: flex; flex-direction: column; gap: 2px; }
-  .portrait figcaption b { font: italic 900 1.6rem/1 var(--display); text-transform: uppercase; }
+  .portrait figcaption b { font: 800 1.7rem/1 var(--display); text-transform: uppercase; }
   .portrait figcaption span { color: var(--ink-2); font-size: 0.95rem; }
   @media (max-width: 899px) { .portrait { order: -1; } .ring { width: 168px; } .hero-inner { gap: 1.2rem; } }
 
-  .ticker { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(6, 8, 14, 0.7); overflow: hidden; }
+  .ticker { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); overflow: hidden; }
   .tick-pause { position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border: 0; cursor: pointer; background: linear-gradient(90deg, transparent, var(--bg) 40%); display: grid; place-items: center; }
   .tick-pause span { width: 12px; height: 14px; border-left: 4px solid var(--ink-2); border-right: 4px solid var(--ink-2); }
   .tick-pause[aria-pressed='true'] span { width: 0; height: 0; border-left: 12px solid var(--lime); border-right: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
@@ -164,18 +160,18 @@ const ticker = [
   .tick { display: flex; width: max-content; list-style: none; animation: tick 48s linear infinite; }
   .ticker:hover .tick { animation-play-state: paused; }
   .tick li { display: flex; align-items: baseline; gap: 10px; padding: 12px 28px; white-space: nowrap; color: var(--ink-2); font-weight: 600; font-size: 0.95rem; border-right: 1px solid var(--line); }
-  .tick b { font: italic 800 1.15rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
+  .tick b { font: 800 1.2rem/1 var(--display); text-transform: uppercase; color: var(--ink); }
   @keyframes tick { to { transform: translateX(-50%); } }
 
   /* ---------- projects ---------- */
   .projects { padding-top: clamp(56px, 9vh, 104px); }
-  .phead { position: sticky; top: 64px; z-index: 20; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding: 14px 0; margin-bottom: 20px; background: linear-gradient(var(--bg) 70%, transparent); }
+  .phead { position: sticky; top: 64px; z-index: 20; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding: 14px 0; margin-bottom: 20px; background: var(--bg); }
   .phead h2 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
   .count { color: var(--ink-2); font-weight: 600; margin-top: 4px; }
   .tabs { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
-  .tabs button { flex: none; font: italic 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); background: none; border: 0; padding: 12px 14px; cursor: pointer; border-bottom: 3px solid transparent; }
+  .tabs button { flex: none; font: 800 1.15rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); background: none; border: 0; padding: 12px 14px; cursor: pointer; border-bottom: 3px solid transparent; }
   .tabs button:hover { color: var(--ink); }
-  .tabs button[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--c, var(--lime)); }
+  .tabs button[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--lime); }
   .hint { display: none; }
   @media (pointer: fine) and (min-width: 900px) { .hint { display: inline-grid; } }
   @media (max-width: 560px) { .phead { top: 58px; } }
@@ -195,26 +191,26 @@ const ticker = [
   .spot-head { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
   .spot-head h2 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); }
   .spot-head p { color: var(--ink-2); font-size: 1.1rem; max-width: 30rem; }
-  .spot-panel { --fg-ink: #eef2ff; --fg-accent: var(--lime); --fg-on-ink: #06080e; background: linear-gradient(160deg, #0f2a1a, #0b1a12); border-radius: 20px; padding: clamp(20px, 3vw, 32px); box-shadow: inset 0 0 0 1px rgba(232, 194, 90, 0.25), 0 30px 60px -30px #000; font-family: var(--body); }
+  .spot-panel { --fg-ink: #f1ede4; --fg-accent: var(--lime); --fg-on-ink: #141311; background: var(--panel); border-radius: 16px; padding: clamp(20px, 3vw, 32px); box-shadow: inset 0 0 0 1px var(--line); font-family: var(--body); }
 
   /* ---------- profile ---------- */
   .profile { margin-top: clamp(80px, 14vh, 160px); max-width: 1000px; }
   .p-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .p-main h2 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
-  .p-main h3 { font-size: 1.5rem; color: var(--lime); margin-top: 22px; }
+  .p-main h3 { font-size: 1.6rem; color: var(--ink); margin-top: 22px; }
   .tiles { list-style: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
   .tiles li { background: var(--panel); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 1px var(--line); }
   .tiles small { color: var(--ink-2); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
   .tiles b { font-weight: 600; line-height: 1.3; }
   .career { border-collapse: collapse; width: 100%; }
   .career td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
-  .career td:first-child { font: italic 800 1.05rem/1.2 var(--display); text-transform: uppercase; color: var(--ink-2); white-space: nowrap; width: 9rem; }
+  .career td:first-child { font: 700 1.1rem/1.2 var(--display); text-transform: uppercase; color: var(--ink-2); white-space: nowrap; width: 9rem; }
   .career td:nth-child(2) { font-weight: 600; }
   .career td:last-child { color: var(--ink-2); }
   @media (max-width: 640px) { .career tr { display: grid; grid-template-columns: 1fr; padding: 10px 0; border-bottom: 1px solid var(--line); } .career td { border: 0; padding: 1px 0; width: auto; } }
   .news { display: flex; flex-direction: column; gap: 4px; text-decoration: none; margin-top: 18px; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink-2); }
   .news:hover { color: var(--ink); }
-  .n-src { color: var(--lime); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .n-src { color: var(--ink-2); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
   .news b { color: var(--ink); font-weight: 600; }
   .career tr.minor td { color: var(--ink-2); font-weight: 400; opacity: 0.8; }
   .traits { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }

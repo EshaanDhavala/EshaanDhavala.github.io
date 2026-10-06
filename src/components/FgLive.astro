@@ -9,15 +9,15 @@
   <div class="controls">
     <label class="slider">
       <span class="ctl-label">Distance <b data-fg-dist>50 yd</b></span>
-      <input type="range" min="18" max="57" value="50" step="1" data-fg-range aria-label="Kick distance in yards, 18 to 57" />
+      <input type="range" min="18" max="66" value="50" step="1" data-fg-range aria-label="Kick distance in yards, 18 to 66" />
     </label>
     <fieldset>
       <legend class="ctl-label">Wind gusts</legend>
       <div class="seg" data-fg-seg="gust">
         <button type="button" data-v="0" aria-pressed="true">Calm</button>
-        <button type="button" data-v="10" aria-pressed="false">10 mph</button>
-        <button type="button" data-v="20" aria-pressed="false">20</button>
-        <button type="button" data-v="30" aria-pressed="false">30</button>
+        <button type="button" data-v="5" aria-pressed="false">5 mph</button>
+        <button type="button" data-v="10" aria-pressed="false">10</button>
+        <button type="button" data-v="15" aria-pressed="false">15+</button>
       </div>
     </fieldset>
     <fieldset>
@@ -56,7 +56,7 @@
       const p = series()[state.d - 18];
       pct.textContent = `${Math.round(p * 100)}%`;
       dist.textContent = `${state.d} yd`;
-      const rows = grid.distances.map((d: number, i: number) => ({ d, p: series()[i] })).filter((r: { d: number }) => r.d <= 57);
+      const rows = grid.distances.map((d: number, i: number) => ({ d, p: series()[i] }));
       const cs = getComputedStyle(root);
       const ink = cs.getPropertyValue('--fg-ink').trim() || '#fff';
       const accent = cs.getPropertyValue('--fg-accent').trim() || '#ff5a1f';
@@ -65,7 +65,7 @@
         Plot.plot({
           width: Math.min(curve.clientWidth || 420, 560), height: 120, marginLeft: 0, marginRight: 8, marginTop: 8, marginBottom: 22,
           style: { background: 'transparent', color: ink, fontFamily: font, fontSize: '11px' },
-          x: { domain: [18, 57], ticks: [20, 30, 40, 50], tickFormat: (d: number) => `${d}`, label: null },
+          x: { domain: [18, 66], ticks: [20, 30, 40, 50, 60], tickFormat: (d: number) => `${d}`, label: null },
           y: { domain: [0.4, 1], axis: null },
           marks: [
             Plot.areaY(rows, { x: 'd', y1: 0.4, y2: 'p', fill: ink, fillOpacity: 0.14, curve: 'monotone-x' }),

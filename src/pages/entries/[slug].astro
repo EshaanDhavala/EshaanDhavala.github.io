@@ -23,7 +23,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
         {e.pic.kind === 'img' && e.pic.caption && <figcaption>{e.pic.caption}</figcaption>}
       </figure>
       <div class="info">
-        <p class="cats">{e.cats.map((c) => <span class="cat" style={`--c: var(--k-${c})`}>{CATS.find((x) => x.id === c)!.label}</span>)}</p>
+        <p class="cats">{e.cats.map((c) => <span class="cat">{CATS.find((x) => x.id === c)!.label}</span>)}</p>
         <h1>{e.name}</h1>
         <p class="what">{e.what}</p>
         <p class="stat"><b data-countup>{e.stat.value}</b><span>{e.stat.label}</span></p>
@@ -49,20 +49,20 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
 
 <style>
   .item { padding-top: 28px; }
-  .back { display: inline-flex; align-items: center; gap: 8px; font: italic 800 1.05rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); text-decoration: none; min-height: 44px; }
+  .back { display: inline-flex; align-items: center; gap: 8px; font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); text-decoration: none; min-height: 44px; }
   .back::before { content: ''; width: 10px; height: 10px; border-left: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg); }
   .back:hover { color: var(--lime); }
   .hero { display: grid; gap: clamp(20px, 4vw, 48px); grid-template-columns: minmax(0, 1fr); align-items: center; margin: 12px 0 clamp(32px, 6vh, 64px); }
   @media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
-  .pic { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent), 0 40px 80px -40px #000; }
+  .pic { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px var(--line); }
   .pic img { width: 100%; height: 100%; object-fit: cover; }
   .pic-wrap figcaption { margin-top: 10px; color: var(--ink-2); font-size: 0.9rem; }
   .info { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; min-width: 0; }
   .cats { display: flex; gap: 6px; flex-wrap: wrap; }
   h1 { font-weight: 900; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 0.9; }
-  .what { color: #c9d0e2; font-size: 1.15rem; max-width: 34rem; }
+  .what { color: var(--ink); font-size: 1.15rem; max-width: 34rem; }
   .stat { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .stat b { font: italic 900 clamp(3rem, 6vw, 4.6rem)/0.9 var(--display); color: var(--c); }
+  .stat b { font: 900 clamp(3.2rem, 6vw, 4.8rem)/0.9 var(--display); color: var(--ink); }
   .stat span { color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; }
   .links { display: flex; flex-wrap: wrap; gap: 10px; }
 
@@ -74,10 +74,10 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .body :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
   .body :global(.d-cols) { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
   .body :global(.d-cols > div) { background: var(--panel); border-radius: 18px; padding: 22px 24px; box-shadow: inset 0 0 0 1px var(--line); }
-  .body :global(.d-h) { font-size: 1.8rem; margin-bottom: 14px; color: var(--c); }
+  .body :global(.d-h) { font-size: 1.9rem; margin-bottom: 14px; color: var(--ink); }
   .body :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .body :global(.d-list li) { position: relative; padding-left: 20px; line-height: 1.45; }
-  .body :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.5em; width: 8px; height: 8px; background: var(--c); transform: skewX(-14deg); }
+  .body :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.62em; width: 8px; height: 2px; background: var(--ink-2); }
   .body :global(.d-results li) { font-weight: 600; }
   .body :global(.d-results li::before) { background: var(--lime); }
   .body :global(.d-note) { color: var(--ink-2); font-size: 0.95rem; padding: 0 4px; }
@@ -85,7 +85,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .body :global(.d-fig a) { display: block; border-radius: 10px; overflow: hidden; background: #000; }
   .body :global(.d-fig img) { width: 100%; max-height: 74vh; object-fit: contain; margin-inline: auto; }
   .body :global(.d-fig:not(.wide)) { max-width: 860px; width: 100%; margin-inline: auto; }
-  .body :global(.d-fg) { --fg-ink: #eef2ff; --fg-accent: var(--lime); --fg-on-ink: #06080e; background: linear-gradient(160deg, #0f2a1a, #0b1a12); padding: clamp(18px, 3vw, 30px); }
+  .body :global(.d-fg) { --fg-ink: #f1ede4; --fg-accent: var(--lime); --fg-on-ink: #141311; padding: clamp(18px, 3vw, 30px); }
   .body :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
   .body :global(.d-links) { display: none; }
 

@@ -11,14 +11,13 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
 <article class:list={['card', { big }]} data-cats={e.cats.join(' ')} data-card style={`--c: var(--k-${e.plate})`}>
   <div class="pic" style={`view-transition-name: pic-${e.slug}`}>
     <img src={src} alt={alt} width="1280" height="800" loading={eager ? 'eager' : 'lazy'} decoding="async" />
-    <span class="shine" aria-hidden="true"></span>
   </div>
   <div class="body">
     <p class="stat"><b>{e.stat.value}</b> <span>{e.stat.label}</span></p>
     <H class="name"><a href={`/entries/${e.slug}/`}>{e.name}</a></H>
     <p class="what">{e.what}</p>
     <p class="meta">
-      {e.cats.map((c) => <span class="cat" style={`--c: var(--k-${c})`}>{CATS.find((x) => x.id === c)!.label}</span>)}
+      {e.cats.map((c) => <span class="cat">{CATS.find((x) => x.id === c)!.label}</span>)}
       <span class="yr">{year}</span>
     </p>
   </div>
@@ -28,20 +27,19 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .card {
     container-type: inline-size;
     position: relative; display: flex; flex-direction: column; min-width: 0;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--c) 9%, var(--panel)) 0%, var(--panel) 40%);
+    background: var(--panel);
     border-radius: var(--r); overflow: hidden;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 24%, transparent), 0 18px 36px -24px #000;
+    box-shadow: inset 0 0 0 1px var(--line);
     transition: box-shadow 180ms ease-out;
   }
-  .card:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 70%, transparent), 0 26px 48px -24px color-mix(in srgb, var(--c) 45%, #000); }
+  .card:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
   .card:has(a:focus-visible) { outline: 3px solid var(--lime); outline-offset: 4px; }
   .pic { position: relative; aspect-ratio: 16 / 10; background: #000; overflow: hidden; }
   .pic img { width: 100%; height: 100%; object-fit: cover; transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1); }
   .card:hover .pic img { transform: scale(1.04); }
-  .shine { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px 220px at var(--sx, -40%) 0%, rgba(255, 255, 255, 0.18), transparent 70%); mix-blend-mode: soft-light; }
   .body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 16px; flex: 1; }
   .stat { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; line-height: 1; }
-  .stat b { font: italic 900 clamp(1.7rem, 15cqi, 2.6rem)/0.95 var(--display); color: var(--c); letter-spacing: 0.005em; }
+  .stat b { font: 800 clamp(1.8rem, 15cqi, 2.7rem)/0.95 var(--display); color: var(--ink); letter-spacing: 0.01em; }
   .stat span { font: 600 0.78rem/1.2 var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
   .name { font-size: clamp(1.35rem, 9cqi, 1.7rem); line-height: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .name a { text-decoration: none; }
@@ -49,7 +47,7 @@ const alt = e.pic.kind === 'img' ? e.pic.alt : '';
   .name a:focus-visible { outline: none; }
   .what { color: var(--ink-2); font-size: 0.95rem; line-height: 1.4; }
   .meta { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-top: 1px solid var(--line); }
-  .yr { margin-left: auto; font: italic 800 1rem/1 var(--display); color: var(--ink-2); }
+  .yr { margin-left: auto; font: 700 1.05rem/1 var(--display); color: var(--ink-2); }
   /* starters: wide horizontal card with larger type */
   @media (min-width: 900px) {
     .big { flex-direction: row; }
