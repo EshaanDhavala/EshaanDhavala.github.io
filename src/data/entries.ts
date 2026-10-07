@@ -193,10 +193,10 @@ export const entries: Entry[] = [
       'Best mood: Fridays (8.3/10). Lowest: Tuesdays (7.5)',
       'Gym schedule: Mon/Tue 68%, Thu 58%, Sun 11%. Split: 21 push, 19 pull, 11 legs',
       'Sleep and mood barely move together (r = −0.12); gym days and rest days had the same mood',
+      'Study hours had the strongest link to mood, and it was negative (r = −0.37)',
     ],
     links: [{ href: 'https://github.com/EshaanDhavala/Journal-to-Data-Base', label: 'Code' }],
     pic: { kind: 'img', src: '/thumbs/journal-to-data.jpg', alt: "The JournalToData dashboard: mood, study hours, screen time, workouts, and habits over Feb to June 2026" , caption: 'The real dashboard (my photo and weight cropped out).' },
-    charts: ['journal-dow', 'journal'],
   },
   {
     slug: 'tennis-scouting',
