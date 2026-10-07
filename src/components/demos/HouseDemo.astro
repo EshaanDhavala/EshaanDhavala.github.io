@@ -1,3 +1,385 @@
 ---
-/** Interactive demo for this project. Placeholder until the demo is built. */
+/**
+ * House price model, live. Coefficients, covariance matrix, model comparison and
+ * diagnostics are exported from the real R fit (see ./house/export.R); nothing is fit at runtime.
+ */
+import { asset } from '../../lib/asset';
+const src = asset('/data/house-prices/model.json');
+const sliders = [
+  { key: 'tsf', label: 'Total sq ft', hint: 'living + basement' },
+  { key: 'qual', label: 'Overall quality', hint: '1 to 10' },
+  { key: 'year', label: 'Year built', hint: '' },
+  { key: 'bsmt', label: 'Finished basement', hint: 'sq ft' },
+  { key: 'lot', label: 'Lot area', hint: 'sq ft' },
+  { key: 'rooms', label: 'Rooms above grade', hint: '' },
+];
 ---
+<section class="hp" data-hp={src} aria-labelledby="hp-title">
+  <div class="hp-panel hp-est">
+    <div class="hp-head">
+      <h2 id="hp-title" class="hp-h">Price estimator</h2>
+      <p class="hp-sub">The submitted model, coefficients straight from the R fit.</p>
+    </div>
+
+    <div class="hp-grid">
+      <div class="hp-out">
+        <p class="hp-k">Estimate</p>
+        <p class="hp-price" aria-live="polite"><span data-hp-price>&nbsp;</span></p>
+        <p class="hp-pi"><span class="hp-k">95% prediction interval</span> <b data-hp-pi>&nbsp;</b></p>
+        <div class="hp-band" aria-hidden="true">
+          <div class="hp-band-track">
+            <span class="hp-band-fill" data-hp-band></span>
+            <span class="hp-band-dot" data-hp-dot></span>
+          </div>
+          <div class="hp-band-ticks"><span>$100K</span><span>$1M</span><span>$10M</span></div>
+        </div>
+        <p class="hp-elas"><span class="hp-k">Size effect at this quality</span> <b data-hp-elas>&nbsp;</b></p>
+      </div>
+
+      <div class="hp-ctl">
+        {sliders.map((s) => (
+          <label class="hp-sl">
+            <span class="hp-sl-top"><span>{s.label}{s.hint && <em> {s.hint}</em>}</span><b data-hp-val={s.key}></b></span>
+            <input type="range" data-hp-in={s.key} aria-label={s.label} />
+          </label>
+        ))}
+        <button type="button" class="hp-reset" data-hp-reset>Reset to median house</button>
+      </div>
+    </div>
+
+    <figure class="hp-fan">
+      <div class="hp-fan-head">
+        <p class="hp-k">Price vs size, one line per quality level</p>
+        <p class="hp-legend"><span class="lg"><span class="sw sw-sel"></span>Selected quality</span><span class="lg"><span class="sw sw-oth"></span>Other levels</span><span class="lg"><span class="sw sw-dot"></span>This house</span></p>
+      </div>
+      <div class="hp-chart" data-hp-fan role="img" aria-label="Predicted price against total square feet for quality levels 1 to 10. Higher quality lines are steeper."></div>
+      <figcaption>Log–log axes. Slope = 2.29 + 0.068 × quality, so the lines fan out: size is worth more in better houses. Dots: 2,000 training homes; bright ones are within half a point of the selected quality.</figcaption>
+    </figure>
+  </div>
+
+  <div class="hp-panel hp-ladder-wrap">
+    <div class="hp-head">
+      <h2 class="hp-h">Three candidate models</h2>
+      <p class="hp-sub">Same 7,000 training homes, response log(price). Higher adj. R² and lower AIC / BIC are better.</p>
+    </div>
+    <ol class="hp-ladder" data-hp-ladder></ol>
+    <p class="hp-fine">Not strictly nested: the final model drops garage area from the intermediate one.</p>
+  </div>
+
+  <div class="hp-panel hp-diag">
+    <div class="hp-head">
+      <h2 class="hp-h">Diagnostics</h2>
+      <p class="hp-sub">Redrawn from the final model’s residuals.</p>
+    </div>
+    <div class="d-filters hp-tabs" role="group" aria-label="Diagnostic plot">
+      <button type="button" data-hp-tab="rvf" aria-pressed="true">Residuals vs fitted</button>
+      <button type="button" data-hp-tab="qq" aria-pressed="false">Normal Q–Q</button>
+      <button type="button" data-hp-tab="mmp" aria-pressed="false">Marginal model plots</button>
+    </div>
+    <div class="hp-dchart" data-hp-diag></div>
+    <p class="hp-dcap" data-hp-dcap></p>
+  </div>
+
+  <p class="hp-fine hp-source" data-hp-source></p>
+</section>
+
+<script>
+  import * as Plot from '@observablehq/plot';
+
+  const KEYS = ['tsf', 'qual', 'year', 'bsmt', 'lot', 'rooms'] as const;
+  type Key = (typeof KEYS)[number];
+  const money = (v: number) =>
+    v >= 1e6 ? `$${(v / 1e6).toFixed(v >= 1e7 ? 1 : 2)}M` : `$${Math.round(v / 1e3).toLocaleString()}K`;
+  const fmt: Record<Key, (v: number) => string> = {
+    tsf: (v) => v.toLocaleString(),
+    qual: (v) => `${v}`,
+    year: (v) => `${v}`,
+    bsmt: (v) => v.toLocaleString(),
+    lot: (v) => v.toLocaleString(),
+    rooms: (v) => `${v}`,
+  };
+  const FONT = 'Barlow, system-ui, sans-serif';
+
+  async function setup() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-hp]:not([data-ready])');
+    for (const root of roots) {
+      root.dataset.ready = '1';
+      const M = await fetch(root.dataset.hp!).then((r) => r.json());
+      init(root, M);
+    }
+  }
+
+  function init(root: HTMLElement, M: any) {
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const b: number[] = M.coef.b;
+    const V: number[][] = M.vcov;
+    const { sigma, t975, meanYear } = M.meta;
+    const state = {} as Record<Key, number>;
+    const inputs = {} as Record<Key, HTMLInputElement>;
+    for (const k of KEYS) {
+      const s = M.sliders[k];
+      const el = $<HTMLInputElement>(`[data-hp-in="${k}"]`);
+      el.min = s.min; el.max = s.max; el.step = s.step; el.value = s.value;
+      state[k] = s.value; inputs[k] = el;
+      el.addEventListener('input', () => { state[k] = +el.value; update(); });
+    }
+    $('[data-hp-reset]').addEventListener('click', () => {
+      for (const k of KEYS) { state[k] = M.sliders[k].value; inputs[k].value = String(state[k]); }
+      update();
+    });
+
+    // Design row exactly as the R model: log(TotalBsmtSF + GrLivArea + 1), YearBuilt - train mean, log(LotArea + 1).
+    const row = (s: Record<Key, number>) => {
+      const lsf = Math.log(s.tsf + 1);
+      return [1, lsf, s.qual, s.year - meanYear, s.bsmt, Math.log(s.lot + 1), s.rooms, s.qual * lsf];
+    };
+    const dot = (a: number[], c: number[]) => a.reduce((t, v, i) => t + v * c[i], 0);
+    const predict = (s: Record<Key, number>) => {
+      const x = row(s);
+      const fit = dot(x, b);
+      const xVx = dot(x, V.map((r) => dot(r, x)));
+      const se = Math.sqrt(sigma * sigma + xVx);
+      return { fit, lo: fit - t975 * se, hi: fit + t975 * se };
+    };
+
+    const fanEl = $('[data-hp-fan]');
+    const fanPts = M.fan.tsf.map((t: number, i: number) => ({ t, p: M.fan.price[i], q: M.fan.qual[i] }));
+    const grid = Array.from({ length: 41 }, (_, i) => 1000 * Math.pow(4.9, i / 40));
+    const bandPos = (v: number) => Math.min(100, Math.max(0, ((Math.log10(v) - 5) / 2) * 100));
+
+    function update() {
+      for (const k of KEYS) $(`[data-hp-val="${k}"]`).textContent = fmt[k](state[k]);
+      const p = predict(state);
+      const [est, lo, hi] = [Math.exp(p.fit), Math.exp(p.lo), Math.exp(p.hi)];
+      $('[data-hp-price]').textContent = money(est);
+      $('[data-hp-pi]').textContent = `${money(lo)} – ${money(hi)}`;
+      const band = $('[data-hp-band]');
+      band.style.left = `${bandPos(lo)}%`; band.style.width = `${bandPos(hi) - bandPos(lo)}%`;
+      $('[data-hp-dot]').style.left = `${bandPos(est)}%`;
+      const e = b[1] + b[7] * state.qual;
+      $('[data-hp-elas]').textContent = `+10% sq ft → +${((Math.pow(1.1, e) - 1) * 100).toFixed(1)}% price`;
+      drawFan(est);
+    }
+
+    function drawFan(est: number) {
+      const lines: any[] = [];
+      for (let q = 1; q <= 10; q++)
+        for (const t of grid) lines.push({ q, t, p: Math.exp(predict({ ...state, qual: q, tsf: t }).fit) });
+      const sel = lines.filter((d) => d.q === state.qual);
+      const oth = lines.filter((d) => d.q !== state.qual);
+      const near = fanPts.filter((d: any) => Math.abs(d.q - state.qual) <= 0.5);
+      const far = fanPts.filter((d: any) => Math.abs(d.q - state.qual) > 0.5);
+      const w = Math.max(300, fanEl.clientWidth || 600);
+      const ends = Array.from({ length: 10 }, (_, i) => lines[i * 41 + 40]);
+      fanEl.replaceChildren(
+        Plot.plot({
+          width: w, height: Math.round(Math.min(420, Math.max(280, w * 0.5))),
+          marginLeft: 52, marginRight: 30, marginBottom: 36, marginTop: 24,
+          style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '12px' },
+          x: { type: 'log', domain: [1000, 4900], ticks: [1000, 1500, 2000, 3000, 4000], tickFormat: (d: number) => d.toLocaleString(), label: 'Total sq ft →', labelAnchor: 'right' },
+          y: { type: 'log', domain: [30000, 12e6], ticks: [1e5, 3e5, 1e6, 3e6, 1e7], tickFormat: (d: number) => (d >= 1e6 ? `$${d / 1e6}M` : `$${d / 1e3}K`), label: '↑ Price' },
+          marks: [
+            Plot.gridY([1e5, 3e5, 1e6, 3e6, 1e7], { stroke: '#2a3b58', strokeOpacity: 1 }),
+            Plot.dot(far, { x: 't', y: 'p', r: 1.6, fill: '#a9b4c6', fillOpacity: 0.12, clip: true }),
+            Plot.dot(near, { x: 't', y: 'p', r: 2, fill: '#7fb2e5', fillOpacity: 0.45, clip: true }),
+            Plot.line(oth, { x: 't', y: 'p', z: 'q', stroke: '#a9b4c6', strokeOpacity: 0.55, strokeWidth: 1.2 }),
+            Plot.text(ends.filter((d) => d.q !== state.qual && (w >= 600 || d.q === 1 || d.q === 10)), { x: 't', y: 'p', text: 'q', dx: 10, fill: '#a9b4c6', fontSize: 11 }),
+            Plot.line(sel, { x: 't', y: 'p', stroke: '#7fb2e5', strokeWidth: 3.5 }),
+            Plot.text([ends[state.qual - 1]], { x: 't', y: 'p', text: 'q', dx: 10, fill: '#7fb2e5', fontSize: 13, fontWeight: 800 }),
+            Plot.dot([{ t: state.tsf, p: est }], { x: 't', y: 'p', r: 7, fill: '#f2b33d', stroke: '#0f1724', strokeWidth: 2 }),
+          ],
+        }),
+      );
+    }
+
+    // Model ladder
+    const L = M.ladder;
+    const n0 = (v: number) => Math.round(v).toLocaleString();
+    $('[data-hp-ladder]').innerHTML = L.map((m: any, i: number) => {
+      const prev = L[i - 1];
+      const d = (k: string) => (prev ? `<i>${n0(m[k] - prev[k])} vs prev.</i>` : '<i>&nbsp;</i>');
+      return `<li class="${i === L.length - 1 ? 'is-final' : ''}" style="--h:${m.adjr2}">
+        <div class="hp-rung"><span class="hp-r2">${m.adjr2.toFixed(3)}</span><span class="hp-k">adj. R²</span></div>
+        <div class="hp-rmeta">
+          <p class="hp-rname">${m.name} <span>${m.predictors} predictors</span></p>
+          <p class="hp-rwhat">${m.what}</p>
+          <dl><div><dt>AIC</dt><dd>${n0(m.aic)}${d('aic')}</dd></div><div><dt>BIC</dt><dd>${n0(m.bic)}${d('bic')}</dd></div></dl>
+        </div>
+      </li>`;
+    }).join('');
+
+    // Diagnostics
+    const dEl = $('[data-hp-diag]');
+    const cap = $('[data-hp-dcap]');
+    let tab = 'rvf';
+    const base = (w: number, h: number) => ({
+      width: w, height: h, marginLeft: 46, marginRight: 14, marginBottom: 36, marginTop: 26,
+      style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '12px' },
+    });
+    function drawDiag() {
+      const w = Math.max(300, dEl.clientWidth || 600);
+      const h = Math.round(Math.min(360, Math.max(260, w * 0.42)));
+      if (tab === 'rvf') {
+        const pts = M.rvf.fitted.map((f: number, i: number) => ({ f, r: M.rvf.resid[i] }));
+        const sm = M.rvf.smooth.x.map((x: number, i: number) => ({ x, y: M.rvf.smooth.y[i] }));
+        dEl.replaceChildren(Plot.plot({
+          ...base(w, h),
+          x: { label: 'Fitted log(price) →', labelAnchor: 'right' }, y: { label: '↑ Residual' },
+          marks: [
+            Plot.gridY({ stroke: '#2a3b58', strokeOpacity: 1 }),
+            Plot.ruleY([0], { stroke: '#f3efe6', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
+            Plot.dot(pts, { x: 'f', y: 'r', r: 1.6, fill: '#a9b4c6', fillOpacity: 0.28 }),
+            Plot.line(sm, { x: 'x', y: 'y', stroke: '#7fb2e5', strokeWidth: 3 }),
+          ],
+        }));
+        cap.textContent = '2,400 of 7,000 residuals. Blue: a smoother over all of them. It stays close to zero, so little curvature is left over, and the spread is similar across the range.';
+      } else if (tab === 'qq') {
+        const pts = M.qq.theo.map((t: number, i: number) => ({ t, s: M.qq.samp[i] }));
+        dEl.replaceChildren(Plot.plot({
+          ...base(w, h),
+          x: { label: 'Normal quantile →', labelAnchor: 'right' }, y: { label: '↑ Std. residual' },
+          marks: [
+            Plot.gridY({ stroke: '#2a3b58', strokeOpacity: 1 }),
+            Plot.line([{ t: -3, s: -3 }, { t: 3, s: 3 }], { x: 't', y: 's', stroke: '#f3efe6', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
+            Plot.dot(pts, { x: 't', y: 's', r: 2.6, fill: '#7fb2e5' }),
+          ],
+        }));
+        cap.textContent = `240 quantiles of the standardized residuals. On the line through the middle; the tails drift off, the low tail more (min ${M.qq.min.toFixed(1)}, max ${M.qq.max.toFixed(1)}).`;
+      } else {
+        const cols = w >= 760 ? 3 : 2;
+        const cw = Math.floor((w - (cols - 1) * 12) / cols);
+        const wrap = document.createElement('div');
+        wrap.className = 'hp-mmp';
+        for (const p of M.mmp) {
+          const pts = p.px.map((x: number, i: number) => ({ x, y: p.py[i] }));
+          const ln = p.x.map((x: number, i: number) => ({ x, d: p.data[i], m: p.model[i] }));
+          const lo = Math.min(...p.x), hi = Math.max(...p.x);
+          const cell = document.createElement('figure');
+          const t = document.createElement('figcaption');
+          t.textContent = p.label;
+          cell.append(t, Plot.plot({
+            width: cw, height: Math.round(cw * 0.72), marginLeft: 30, marginRight: 8, marginBottom: 24, marginTop: 6,
+            style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '10.5px' },
+            x: { type: p.logx ? 'log' : 'linear', domain: [lo, hi], ticks: 3, tickFormat: p.key === 'year' ? (d: number) => `${d}` : (d: number) => (d >= 1000 ? `${d / 1000}k` : `${d}`), label: null },
+            y: { domain: [11, 16.5], ticks: 3, label: null },
+            marks: [
+              Plot.gridY({ ticks: 3, stroke: '#2a3b58', strokeOpacity: 1 }),
+              Plot.dot(pts, { x: 'x', y: 'y', r: 1.1, fill: '#a9b4c6', fillOpacity: 0.16, clip: true }),
+              Plot.line(ln, { x: 'x', y: 'd', stroke: '#f3efe6', strokeWidth: 2.2 }),
+              Plot.line(ln, { x: 'x', y: 'm', stroke: '#7fb2e5', strokeWidth: 2.6, strokeDasharray: '5 4' }),
+            ],
+          }));
+          wrap.append(cell);
+        }
+        dEl.replaceChildren(wrap);
+        cap.innerHTML = '<span class="sw sw-data"></span>Data smoother <span class="sw sw-model"></span>Model smoother. y = log(price), 1,500 homes shown. Where the two lines overlap, the model has that predictor’s shape right.';
+      }
+    }
+    root.querySelectorAll<HTMLButtonElement>('[data-hp-tab]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        tab = btn.dataset.hpTab!;
+        root.querySelectorAll('[data-hp-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
+        drawDiag();
+      }),
+    );
+
+    $('[data-hp-source]').textContent =
+      `Class Kaggle dataset (STATS 101A): 7,000 training homes; SalePrice is synthetic, per the assignment. Train R² ${M.meta.r2.toFixed(3)} on log price. ` +
+      `Kaggle leaderboard R² ${M.meta.kaggle.toFixed(3)} on ${M.meta.testN.toLocaleString()} test homes; test prices aren’t public, so that one can’t be recomputed here. ` +
+      `The interval is a 95% prediction interval from the fit’s covariance matrix, back-transformed from log price.`;
+
+    let rt: number | undefined;
+    let lastW = root.clientWidth;
+    new ResizeObserver(() => {
+      if (root.clientWidth === lastW) return;
+      lastW = root.clientWidth;
+      clearTimeout(rt); rt = window.setTimeout(() => { update(); drawDiag(); }, 120);
+    }).observe(root);
+    update();
+    drawDiag();
+  }
+
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>
+
+<style>
+  .hp { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .hp-panel { background: var(--panel); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: clamp(16px, 3vw, 30px); min-width: 0; }
+  .hp-head { margin-bottom: 18px; }
+  .hp-h { font-size: clamp(1.6rem, 3vw, 2.1rem); color: var(--ink); }
+  .hp-sub { color: var(--ink-2); font-size: 0.95rem; margin-top: 6px; }
+  .hp-k { color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; }
+  .hp-fine { color: var(--ink-2); font-size: 0.85rem; margin-top: 14px; }
+  .hp-source { margin-top: 0; padding: 0 4px; max-width: 70rem; }
+
+  .hp-grid { display: grid; gap: 24px 40px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .hp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; } }
+
+  .hp-out { display: flex; flex-direction: column; gap: 10px; }
+  .hp-price { font: 900 clamp(3.6rem, 9vw, 6rem)/0.85 var(--display); color: var(--blue); letter-spacing: 0.01em; }
+  .hp-pi, .hp-elas { display: flex; flex-direction: column; gap: 3px; }
+  .hp-pi b, .hp-elas b { font: 800 1.45rem/1.05 var(--display); text-transform: uppercase; color: var(--ink); }
+  .hp-band { margin: 4px 0 8px; }
+  .hp-band-track { position: relative; height: 14px; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); background: var(--bg); }
+  .hp-band-fill { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--blue); opacity: 0.45; transition: left 160ms ease-out, width 160ms ease-out; }
+  .hp-band-dot { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 2px var(--bg); transition: left 160ms ease-out; }
+  .hp-band-ticks { display: flex; justify-content: space-between; color: var(--ink-2); font-size: 0.75rem; margin-top: 4px; }
+
+  .hp-ctl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 28px; }
+  @media (min-width: 560px) { .hp-ctl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .hp-sl { display: block; min-width: 0; }
+  .hp-sl-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--ink); }
+  .hp-sl-top em { font-style: normal; font-weight: 400; color: var(--ink-2); font-size: 0.82rem; }
+  .hp-sl-top b { font: 800 1.15rem/1 var(--display); color: var(--blue); }
+  .hp-sl input { width: 100%; height: 40px; accent-color: var(--lime); cursor: pointer; margin: 0; }
+  .hp-reset { justify-self: start; margin-top: 8px; min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .hp-reset:hover { color: var(--ink); border-color: var(--ink-2); }
+
+  .hp-fan { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .hp-fan-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 20px; align-items: baseline; margin-bottom: 8px; }
+  .hp-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; color: var(--ink-2); font-size: 0.85rem; }
+  .sw { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin: 0 4px 0 8px; }
+  .lg { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .lg .sw { margin: 0; }
+  .sw-sel { background: var(--blue); height: 4px; }
+  .sw-oth { background: var(--ink-2); opacity: 0.6; }
+  .sw-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--lime); }
+  .hp :global(.sw-data) { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin: 0 4px 0 0; background: var(--ink); }
+  .hp :global(.sw-model) { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin: 0 4px 0 10px; border-top: 3px dashed var(--blue); }
+  .hp-chart, .hp-dchart { min-height: 260px; min-width: 0; overflow: hidden; }
+  .hp-fan figcaption, .hp-dcap { color: var(--ink-2); font-size: 0.88rem; margin-top: 8px; padding: 0; }
+
+  .hp-ladder { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+  @media (min-width: 760px) { .hp-ladder { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+  .hp-ladder :global(li) { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .hp-ladder :global(.hp-rung) {
+    display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 14px 16px; border-radius: 12px;
+    background: var(--bg); box-shadow: inset 0 0 0 1px var(--line);
+    height: calc(var(--h) * 240px);
+  }
+  .hp-ladder :global(.is-final .hp-rung) { box-shadow: inset 0 0 0 2px var(--blue); }
+  .hp-ladder :global(.hp-r2) { font: 900 clamp(2.4rem, 5vw, 3.4rem)/0.9 var(--display); color: var(--blue); }
+  .hp-ladder :global(.hp-rname) { font: 800 1.35rem/1 var(--display); text-transform: uppercase; }
+  .hp-ladder :global(.hp-rname span) { font: 600 0.72rem/1 var(--body); letter-spacing: 0.08em; color: var(--ink-2); margin-left: 6px; }
+  .hp-ladder :global(.hp-rwhat) { color: var(--ink-2); font-size: 0.88rem; margin-top: 4px; }
+  .hp-ladder :global(dl) { display: flex; gap: 22px; margin: 8px 0 0; }
+  .hp-ladder :global(dt) { color: var(--ink-2); font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
+  .hp-ladder :global(dd) { margin: 0; font: 800 1.3rem/1.1 var(--display); color: var(--ink); }
+  .hp-ladder :global(dd i) { display: block; font: 600 0.8rem/1.3 var(--body); font-style: normal; color: var(--ink-2); }
+  @media (min-width: 760px) { .hp-ladder :global(.hp-rwhat) { min-height: 2.7em; } }
+  @media (max-width: 759px) {
+    .hp-ladder :global(li) { flex-direction: row; align-items: stretch; gap: 14px; }
+    .hp-ladder :global(.hp-rung) { height: auto; width: 112px; flex: none; justify-content: center; }
+  }
+
+  .hp-tabs { margin: 0 0 14px !important; }
+  .hp :global(.hp-mmp) { display: grid; gap: 14px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (min-width: 760px) { .hp :global(.hp-mmp) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .hp :global(.hp-mmp figure) { margin: 0; min-width: 0; }
+  .hp :global(.hp-mmp figcaption) { margin: 0 0 2px; padding: 0; font-size: 0.78rem; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hp-band-fill, .hp-band-dot { transition: none; }
+  }
+</style>
