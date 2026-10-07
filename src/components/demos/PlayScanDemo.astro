@@ -1,3 +1,396 @@
 ---
-/** Interactive demo for this project. Placeholder until the demo is built. */
+/**
+ * PlayScan booth: six validation clips, the model's read synced to the playhead,
+ * the 16 frames it actually gets, and the confusion matrix on all validation clips.
+ * Data: public/data/playscan/demo.json (built from the saved checkpoint).
+ */
+import demo from '../../../public/data/playscan/demo.json';
+import { asset } from '../../lib/asset';
+
+const NAMES: Record<string, string> = { pass: 'Pass', run: 'Run', special_teams: 'Special teams' };
+const SHORT: Record<string, string> = { pass: 'Pass', run: 'Run', special_teams: 'Spec. teams' };
+const classes = demo.classes as string[];
+const plays = demo.plays;
+const total = plays.reduce((s, p) => Math.max(s, p.start + p.dur), 0);
+const sprites = plays.map((_, i) => asset(`/data/playscan/frames-${i + 1}.jpg`));
+const v = demo.validation;
+const rowSum = v.matrix.map((r) => r.reduce((a, b) => a + b, 0));
+// biggest off-diagonal cell, for the one-line takeaway
+let miss = { a: 0, p: 0, n: 0 };
+v.matrix.forEach((r, a) => r.forEach((n, p) => { if (a !== p && n > miss.n) miss = { a, p, n }; }));
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+const cfg = { plays, classes, sprites, total };
 ---
+<section class="ps" id="demo" data-ps data-cfg={JSON.stringify(cfg)} aria-label="PlayScan demo">
+  <div class="ps-top">
+    <span class="ps-brand">PlayScan</span>
+    <span class="ps-sub">6 validation clips · never seen in training</span>
+    <span class="ps-count">Play <b data-ps-n>1</b>/{plays.length}</span>
+  </div>
+
+  <div class="ps-stage">
+    <div class="ps-main">
+      <div class="ps-screen">
+        <video
+          data-ps-video
+          src={asset('/media/playscan.mp4')}
+          poster={asset('/media/playscan-poster.jpg')}
+          muted
+          playsinline
+          preload="metadata"
+          aria-label="Six NFL broadcast plays from the validation set, back to back"
+        ></video>
+        <div class="ps-read">
+          <div class="ps-call">
+            <span class="ps-k">Model's call</span>
+            <b data-ps-call>Reading</b>
+            <span class="ps-after" data-ps-after>0 of 16 frames</span>
+          </div>
+          <ul class="ps-bars">
+            {classes.map((c, i) => (
+              <li data-ps-bar={i}>
+                <span class="ps-bl">{NAMES[c]}</span>
+                <span class="ps-track"><i></i></span>
+                <span class="ps-pct">–</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div class="ps-ctrl">
+        <button type="button" class="ps-btn" data-ps-prev aria-label="Previous play">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h2v12H3zM14 2v12L6 8z" /></svg>
+        </button>
+        <button type="button" class="ps-btn ps-play" data-ps-play aria-label="Play">
+          <svg viewBox="0 0 16 16" aria-hidden="true" data-i="play"><path d="M4 2l10 6-10 6z" /></svg>
+          <svg viewBox="0 0 16 16" aria-hidden="true" data-i="pause" hidden><path d="M3 2h4v12H3zM9 2h4v12H9z" /></svg>
+        </button>
+        <button type="button" class="ps-btn" data-ps-next aria-label="Next play">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2h2v12h-2zM2 2v12l8-6z" /></svg>
+        </button>
+        <div class="ps-scrub">
+          {plays.slice(1).map((p) => <i class="ps-tick" style={`left:${(p.start / total) * 100}%`}></i>)}
+          <input type="range" min="0" max={total.toFixed(2)} step="0.05" value="0" data-ps-scrub aria-label="Scrub through all six plays" />
+        </div>
+        <span class="ps-time" data-ps-time>0:00</span>
+      </div>
+      <p class="visually-hidden" aria-live="polite" data-ps-live></p>
+    </div>
+
+    <ol class="ps-rail" aria-label="Plays">
+      {plays.map((p, i) => {
+        const top = p.probs.indexOf(Math.max(...p.probs));
+        return (
+          <li>
+            <button type="button" class="ps-card" data-ps-jump={i} aria-pressed={i === 0 ? 'true' : 'false'}>
+              <span class="ps-cn">Play {i + 1}<span class="ps-cd">{Math.round(p.dur)}s</span></span>
+              <span class="ps-cc">{SHORT[p.pred]} <em>{pct(p.probs[top])}</em></span>
+              <span class="ps-ca">Actual: {NAMES[p.label]}{p.pred === p.label ? ' · right' : ' · wrong'}</span>
+              <span class="ps-prog"><i data-ps-prog></i></span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+
+  <div class="ps-hood">
+    <div class="ps-hh">
+      <h2 class="ps-h">What the model sees</h2>
+      <p class="ps-note">16 frames spread over the clip, squashed to 224×224 and center-cropped. Lit = read so far. Tap one to jump there.</p>
+    </div>
+    <div class="ps-hr ps-fr">
+    <span class="ps-hl">Frames</span>
+    <div class="ps-tiles" role="group" aria-label="The 16 frames the model reads">
+      {Array.from({ length: 16 }, (_, j) => (
+        <button type="button" class="ps-tile" data-ps-tile={j} aria-label={`Frame ${j + 1} of 16`} style={`background-image:url(${sprites[0]});background-position:${(j / 15) * 100}% 0`}>
+          <span>{j + 1}</span>
+        </button>
+      ))}
+    </div>
+    </div>
+    <div class="ps-heat" aria-hidden="true">
+      {classes.map((c, r) => (
+        <div class="ps-hr">
+          <span class="ps-hl">{SHORT[c]}</span>
+          <div class="ps-hc">{Array.from({ length: 16 }, (_, j) => <i data-ps-cell={`${r}-${j}`}><span></span></i>)}</div>
+        </div>
+      ))}
+    </div>
+    <p class="ps-note">Rows: its read after each frame, in percent. The real call comes after all 16.</p>
+  </div>
+
+  <div class="ps-val">
+    <div class="ps-hh">
+      <h2 class="ps-h">All {v.n} validation clips</h2>
+      <p class="ps-note">Saved model re-run on the held-out 20% split. {v.correct} of {v.n} right. Most common miss: {NAMES[classes[miss.a]].toLowerCase()} called {NAMES[classes[miss.p]].toLowerCase()} ({miss.n}).</p>
+    </div>
+    <div class="ps-mx" role="table" aria-label="Confusion matrix: rows are the actual play, columns are the model's call">
+      <div role="row" class="ps-mr ps-mhead">
+        <span role="columnheader" class="ps-corner">Actual ↓ · Called →</span>
+        {classes.map((c) => <span role="columnheader">{SHORT[c]}</span>)}
+        <span role="columnheader">Right</span>
+      </div>
+      {v.matrix.map((row, a) => (
+        <div role="row" class="ps-mr">
+          <span role="rowheader">{NAMES[classes[a]]}</span>
+          {row.map((n, p) => (
+            <span role="cell" class:list={['ps-m', { diag: a === p }]} style={`--s:${Math.round((n / rowSum[a]) * 45)}%`}>{n}</span>
+          ))}
+          <span role="cell" class="ps-rec">{pct(row[a] / rowSum[a])}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  type Play = { label: string; pred: string; start: number; dur: number; frameTimes: number[]; steps: number[][]; probs: number[] };
+  const NAMES: Record<string, string> = { pass: 'Pass', run: 'Run', special_teams: 'Special teams' };
+
+  function init(root: HTMLElement) {
+    if (root.dataset.ready) return;
+    root.dataset.ready = '1';
+    const cfg = JSON.parse(root.dataset.cfg!) as { plays: Play[]; classes: string[]; sprites: string[]; total: number };
+    const { plays, classes, sprites, total } = cfg;
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const $$ = <T extends Element = HTMLElement>(s: string) => [...root.querySelectorAll<T>(s)];
+    const video = $<HTMLVideoElement>('[data-ps-video]');
+    const scrub = $<HTMLInputElement>('[data-ps-scrub]');
+    const playBtn = $<HTMLButtonElement>('[data-ps-play]');
+    const callEl = $('[data-ps-call]'), afterEl = $('[data-ps-after]'), nEl = $('[data-ps-n]'), timeEl = $('[data-ps-time]'), live = $('[data-ps-live]');
+    const bars = $$('[data-ps-bar]');
+    const cards = $$<HTMLButtonElement>('[data-ps-jump]');
+    const progs = $$('[data-ps-prog]');
+    const tiles = $$<HTMLButtonElement>('[data-ps-tile]');
+    const cells = $$('[data-ps-cell]');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let cur = -1, curK = -1, raf = 0, userPaused = false;
+    const fmt = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+    const playAt = (t: number) => { let i = plays.length - 1; while (i > 0 && t < plays[i].start) i--; return i; };
+    const seek = (t: number) => { video.currentTime = Math.min(total - 0.05, Math.max(0, t)); render(); };
+
+    function setPlay(i: number) {
+      cur = i; curK = -1;
+      nEl.textContent = String(i + 1);
+      cards.forEach((c, j) => c.setAttribute('aria-pressed', String(j === i)));
+      tiles.forEach((b) => (b.style.backgroundImage = `url(${sprites[i]})`));
+      const p = plays[i];
+      cells.forEach((c) => {
+        const [r, j] = c.dataset.psCell!.split('-').map(Number);
+        const v = p.steps[j][r];
+        c.style.setProperty('--s', `${Math.round(v * 48)}%`);
+        c.firstElementChild!.textContent = String(Math.round(v * 100));
+        c.title = `${NAMES[classes[r]]} ${Math.round(v * 100)}% after frame ${j + 1}`;
+      });
+    }
+    function setK(k: number) {
+      curK = k;
+      const p = plays[cur];
+      tiles.forEach((b, j) => { b.classList.toggle('on', j < k); b.classList.toggle('now', j === k - 1); });
+      cells.forEach((c) => c.classList.toggle('on', +c.dataset.psCell!.split('-')[1] < k));
+      if (k === 0) {
+        callEl.textContent = 'Reading';
+        afterEl.textContent = '0 of 16 frames';
+        bars.forEach((b) => { b.classList.remove('top'); b.querySelector('i')!.style.width = '0%'; b.querySelector('.ps-pct')!.textContent = '–'; });
+        return;
+      }
+      const s = p.steps[k - 1];
+      const top = s.indexOf(Math.max(...s));
+      callEl.textContent = NAMES[classes[top]];
+      afterEl.textContent = k === 16 ? `Final · actual: ${NAMES[p.label]}` : `after ${k} of 16 frames`;
+      bars.forEach((b, r) => {
+        b.classList.toggle('top', r === top);
+        b.querySelector('i')!.style.width = `${(s[r] * 100).toFixed(1)}%`;
+        b.querySelector('.ps-pct')!.textContent = `${Math.round(s[r] * 100)}%`;
+      });
+      if (k === 16) live.textContent = `Play ${cur + 1}: called ${NAMES[classes[top]]}, ${Math.round(s[top] * 100)}%. Actual: ${NAMES[p.label]}.`;
+    }
+    function render() {
+      const t = video.currentTime;
+      const i = playAt(t);
+      if (i !== cur) setPlay(i);
+      const p = plays[i], local = t - p.start;
+      let k = 0; while (k < 16 && p.frameTimes[k] <= local + 0.02) k++;
+      if (k !== curK) setK(k);
+      progs.forEach((el, j) => (el.style.width = j === i ? `${Math.min(100, (local / p.dur) * 100)}%` : j < i ? '100%' : '0%'));
+      if (document.activeElement !== scrub) scrub.value = t.toFixed(2);
+      timeEl.textContent = fmt(t);
+    }
+    const loop = () => { render(); raf = video.paused ? 0 : requestAnimationFrame(loop); };
+    const syncBtn = () => {
+      const paused = video.paused;
+      playBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+      playBtn.querySelector('[data-i="play"]')!.toggleAttribute('hidden', !paused);
+      playBtn.querySelector('[data-i="pause"]')!.toggleAttribute('hidden', paused);
+    };
+    video.addEventListener('play', () => { syncBtn(); if (!raf) raf = requestAnimationFrame(loop); });
+    video.addEventListener('pause', syncBtn);
+    video.addEventListener('seeked', render);
+    video.addEventListener('timeupdate', () => { if (!raf) render(); });
+    video.addEventListener('ended', () => { video.currentTime = 0; video.play().catch(() => {}); });
+
+    playBtn.addEventListener('click', () => {
+      if (video.paused) { userPaused = false; video.play().catch(() => {}); } else { userPaused = true; video.pause(); }
+    });
+    $('[data-ps-prev]').addEventListener('click', () => {
+      const p = plays[cur];
+      seek(video.currentTime - p.start > 1.5 || cur === 0 ? p.start : plays[cur - 1].start);
+    });
+    $('[data-ps-next]').addEventListener('click', () => seek(plays[(cur + 1) % plays.length].start));
+    scrub.addEventListener('input', () => seek(+scrub.value));
+    cards.forEach((c) => c.addEventListener('click', () => {
+      seek(plays[+c.dataset.psJump!].start);
+      if (!reduce && !userPaused) video.play().catch(() => {});
+    }));
+    tiles.forEach((b) => b.addEventListener('click', () => {
+      const p = plays[cur];
+      video.pause(); userPaused = true;
+      seek(p.start + p.frameTimes[+b.dataset.psTile!] + 0.03);
+    }));
+
+    setPlay(0); setK(0); syncBtn();
+    // play when on screen, pause when off; never autoplay with reduced motion
+    if (!reduce && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !userPaused) video.play().catch(() => {});
+        else if (!e.isIntersecting && !video.paused) video.pause();
+      }, { threshold: 0.4 }).observe(video);
+    }
+  }
+  const setup = () => document.querySelectorAll<HTMLElement>('[data-ps]').forEach(init);
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>
+
+<style>
+  .ps {
+    --sh: inset 0 0 0 1px var(--line);
+    background: var(--panel); border-radius: 18px; box-shadow: var(--sh);
+    padding: clamp(12px, 2vw, 20px); display: flex; flex-direction: column; gap: clamp(14px, 2vw, 20px);
+    scroll-margin-top: 90px;
+  }
+  .ps-top { display: flex; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; padding: 2px 4px 0; }
+  .ps-brand { font: 900 1.5rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; }
+  .ps-sub { color: var(--ink-2); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .ps-count { margin-left: auto; font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); }
+  .ps-count b { color: var(--blue); font-weight: 900; }
+
+  .ps-stage { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 1000px) { .ps-stage { grid-template-columns: minmax(0, 1fr) 248px; } }
+
+  .ps-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .ps-screen { position: relative; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px var(--line); }
+  .ps-screen video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; }
+
+  /* the call: a block under the video on phones, a booth card over the crowd on wider screens */
+  .ps-read { background: var(--bg); padding: 14px 16px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 720px) {
+    .ps-read {
+      position: absolute; top: 14px; left: 14px; width: min(340px, 44%);
+      background: rgba(15, 23, 36, 0.9); border-radius: 12px; box-shadow: var(--sh);
+    }
+  }
+  .ps-call { display: flex; flex-direction: column; gap: 2px; }
+  .ps-k { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+  .ps-call b { font: 900 clamp(2rem, 4vw, 2.6rem)/0.95 var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
+  .ps-after { font-size: 0.85rem; color: var(--ink-2); font-weight: 600; }
+  .ps-bars { list-style: none; display: grid; gap: 7px; }
+  .ps-bars li { display: grid; grid-template-columns: 7.6em minmax(0, 1fr) 3em; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+  .ps-track { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+  .ps-track i { display: block; height: 100%; width: 0; background: var(--ink-2); border-radius: 4px; transition: width 260ms ease-out; }
+  .ps-pct { text-align: right; font-variant-numeric: tabular-nums; }
+  .ps-bars li.top { color: var(--ink); }
+  .ps-bars li.top .ps-track i { background: var(--blue); }
+  .ps-bars li.top .ps-pct { color: var(--blue); font-weight: 700; }
+
+  .ps-ctrl { display: flex; align-items: center; gap: 8px; }
+  .ps-btn {
+    flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: var(--ink);
+  }
+  .ps-btn:hover { border-color: var(--ink-2); }
+  .ps-btn svg { width: 16px; height: 16px; fill: currentColor; }
+  .ps-play { background: var(--lime); border-color: var(--lime); color: var(--on-lime); }
+  .ps-play:hover { background: #f7c25e; border-color: #f7c25e; }
+  .ps-scrub { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+  .ps-scrub input { width: 100%; height: 44px; margin: 0; accent-color: var(--lime); cursor: pointer; position: relative; }
+  .ps-tick { position: absolute; top: 50%; width: 2px; height: 16px; margin-top: -8px; background: var(--ink-2); opacity: 0.6; pointer-events: none; }
+  .ps-time { flex: none; min-width: 3.2em; text-align: right; color: var(--blue); font-weight: 700; font-size: 0.9rem; }
+
+  .ps-rail { list-style: none; display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
+  @media (min-width: 640px) { .ps-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .ps-rail { grid-template-columns: minmax(0, 1fr); } }
+  .ps-card {
+    width: 100%; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+    padding: 10px 12px 0; border-radius: 12px; border: 0; background: var(--bg); box-shadow: var(--sh); color: var(--ink); overflow: hidden;
+  }
+  .ps-card:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
+  .ps-card[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--lime); }
+  .ps-cn { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+  .ps-cc { font: 800 1.35rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
+  .ps-cc em { font-style: normal; color: var(--blue); }
+  .ps-ca { font-size: 0.8rem; color: var(--ink-2); padding-bottom: 8px; }
+  .ps-prog { height: 3px; margin: 0 -12px; background: var(--panel-2); }
+  .ps-prog i { display: block; height: 100%; width: 0; background: var(--blue); }
+
+  .ps-hood, .ps-val { background: var(--bg); border-radius: 14px; box-shadow: var(--sh); padding: clamp(14px, 2vw, 20px); display: flex; flex-direction: column; gap: 12px; }
+  .ps-hh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+  .ps-h { font: 800 1.45rem/1 var(--display); text-transform: uppercase; color: var(--blue); }
+  .ps-note { color: var(--ink-2); font-size: 0.9rem; }
+  .ps-hh .ps-note { flex: 1 1 22rem; }
+
+  .ps-tiles { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+  @media (min-width: 760px) { .ps-tiles { grid-template-columns: repeat(16, minmax(0, 1fr)); } }
+  .ps-tile {
+    position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 6px; cursor: pointer;
+    background-color: #000; background-size: 1600% 100%; background-repeat: no-repeat;
+    opacity: 0.32; filter: grayscale(1); transition: opacity 200ms ease-out, filter 200ms ease-out;
+  }
+  .ps-tile.on { opacity: 1; filter: none; }
+  .ps-tile.now { box-shadow: 0 0 0 2px var(--lime); }
+  .ps-tile:hover { opacity: 1; }
+  .ps-tile span {
+    position: absolute; left: 3px; bottom: 3px; font: 700 0.68rem/1 var(--body); color: var(--ink);
+    background: rgba(15, 23, 36, 0.85); padding: 2px 4px; border-radius: 3px;
+  }
+
+  .ps-heat { display: grid; gap: 4px; }
+  .ps-fr { align-items: start; }
+  .ps-fr .ps-hl { padding-top: 4px; }
+  .ps-hr { display: grid; grid-template-columns: 5.6em minmax(0, 1fr); align-items: center; gap: 8px; }
+  .ps-hl { font-size: 0.78rem; font-weight: 600; color: var(--ink-2); }
+  .ps-hc { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; }
+  .ps-hc i {
+    height: 24px; border-radius: 4px; display: grid; place-items: center; font: 600 0.68rem/1 var(--body); font-style: normal;
+    background: var(--panel); box-shadow: var(--sh); color: transparent;
+  }
+  .ps-hc i.on { background: color-mix(in srgb, var(--blue) var(--s, 0%), var(--panel)); box-shadow: none; color: var(--ink); }
+  @media (max-width: 759px) { .ps-hc i span, .ps-tile span { display: none; } .ps-hc i { height: 16px; } .ps-hr { grid-template-columns: 4.8em minmax(0, 1fr); } }
+
+  .ps-mx { display: grid; gap: 4px; max-width: 640px; }
+  .ps-mr { display: grid; grid-template-columns: minmax(6.5em, 1.3fr) repeat(3, minmax(0, 1fr)) minmax(0, 0.8fr); gap: 4px; align-items: stretch; }
+  .ps-mr > span { display: grid; place-items: center; min-height: 48px; }
+  .ps-mr [role='rowheader'] { justify-items: start; font-weight: 600; font-size: 0.9rem; }
+  .ps-mhead > span { min-height: 28px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); text-align: center; }
+  .ps-mhead .ps-corner { justify-items: start; text-align: left; letter-spacing: 0.02em; text-transform: none; font-size: 0.75rem; }
+  .ps-m { border-radius: 6px; background: color-mix(in srgb, var(--blue) var(--s), var(--panel)); font: 800 1.35rem/1 var(--display); color: var(--ink); }
+  .ps-m.diag { font-weight: 900; font-size: 1.6rem; }
+  .ps-rec { font: 900 1.35rem/1 var(--display); color: var(--blue); }
+
+  @media (max-width: 639px) {
+    .ps-cc { font-size: 1.12rem; }
+    .ps-ca { font-size: 0.76rem; }
+  }
+  @media (max-width: 420px) {
+    .ps-mr { grid-template-columns: 5.4em repeat(3, minmax(0, 1fr)) 3em; }
+    .ps-mr [role='rowheader'] { font-size: 0.8rem; }
+    .ps-mhead > span { font-size: 0.62rem; letter-spacing: 0.02em; }
+    .ps-mhead .ps-corner { font-size: 0.62rem; }
+    .ps-count { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ps-track i, .ps-tile { transition: none; }
+  }
+</style>
