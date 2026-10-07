@@ -5,12 +5,13 @@ import '@fontsource/big-shoulders-display/900';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/600.css';
 import '../styles/game.css';
+import { asset } from '../lib/asset';
 
 interface Props { title?: string; description?: string; image?: string }
 const {
   title,
   description = 'Eshaan Dhavala: Stats & Data Science at UCLA. Sports models, ML tools, and AI assistants.',
-  image = '/img/eshaan-circle.jpg',
+  image = asset('/og.png'),
 } = Astro.props;
 const fullTitle = title ? `${title} · Eshaan Dhavala` : 'Eshaan Dhavala';
 const path = Astro.url.pathname;
@@ -27,6 +28,10 @@ const path = Astro.url.pathname;
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(path, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={new URL(image, Astro.site)} />
     <meta name="theme-color" content="#0f1724" />
     <script is:inline data-goatcounter="https://eshaandhavala.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </head>
