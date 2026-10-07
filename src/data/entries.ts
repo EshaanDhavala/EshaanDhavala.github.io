@@ -217,8 +217,6 @@ export const entries: Entry[] = [
     results: ['Scouting graphics for 8 opponents', 'Travel map used by players on the road'],
     links: [],
     pic: { kind: 'img', src: '/thumbs/tennis-scouting.jpg', alt: 'Travel dashboard map with a venue card showing live weather for SMU in Dallas' , caption: 'The travel dashboard: venue card with live weather.' },
-    charts: ['tennis'],
-    figures: [{ src: '/img/travel-popup.jpg', alt: 'Leaflet travel dashboard: venue card for SMU in Dallas with travel, conditions, live weather, and nearby tabs', caption: 'Travel dashboard: each away venue has travel time, court conditions, live weather, and what’s nearby.', w: 1280, h: 800, wide: true }],
   },
   {
     slug: 'house-prices',

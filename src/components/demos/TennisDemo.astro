@@ -1,3 +1,482 @@
 ---
-/** Interactive demo for this project. Placeholder until the demo is built. */
+/**
+ * Tennis scouting tool: every tracked serve and return (SwingVision exports) on a drawn court,
+ * with filters and a tendencies readout computed live from the filtered shots.
+ * Plus the away-venue map from the travel dashboard, with live weather from Open-Meteo.
+ * Data: public/data/tennis-scouting/{shots,venues}.json. No player names anywhere.
+ */
+import { asset } from '../../lib/asset';
+const shotsUrl = asset('/data/tennis-scouting/shots.json');
+const venuesUrl = asset('/data/tennis-scouting/venues.json');
 ---
+<section class="ts" id="demo" data-ts data-src={shotsUrl} aria-labelledby="ts-title">
+  <header class="ts-head">
+    <h2 id="ts-title">Scouting tool</h2>
+    <p class="ts-sub" data-ts-total>Loading tracked shots…</p>
+  </header>
+
+  <div class="ts-controls">
+    <label class="ts-field">
+      <span>Player</span>
+      <select data-ts-sub></select>
+    </label>
+    <label class="ts-field">
+      <span>Match</span>
+      <select data-ts-match></select>
+    </label>
+    <div class="ts-group">
+      <span class="ts-lab" id="ts-l-kind">Shot</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-kind">
+        <button type="button" data-f="kind" data-v="0" aria-pressed="true">Serves</button>
+        <button type="button" data-f="kind" data-v="1" aria-pressed="false">Returns</button>
+      </div>
+    </div>
+    <div class="ts-group">
+      <span class="ts-lab" id="ts-l-ss">Serve</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-ss">
+        <button type="button" data-f="ss" data-v="0" aria-pressed="true">Both</button>
+        <button type="button" data-f="ss" data-v="1" aria-pressed="false">1st</button>
+        <button type="button" data-f="ss" data-v="2" aria-pressed="false">2nd</button>
+      </div>
+    </div>
+    <div class="ts-group">
+      <span class="ts-lab" id="ts-l-side">Side</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-side">
+        <button type="button" data-f="side" data-v="-1" aria-pressed="true">Both</button>
+        <button type="button" data-f="side" data-v="0" aria-pressed="false">Deuce</button>
+        <button type="button" data-f="side" data-v="1" aria-pressed="false">Ad</button>
+      </div>
+    </div>
+    <div class="ts-group" data-ts-stroke hidden>
+      <span class="ts-lab" id="ts-l-stroke">Stroke</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-stroke">
+        <button type="button" data-f="stroke" data-v="-1" aria-pressed="true">Both</button>
+        <button type="button" data-f="stroke" data-v="0" aria-pressed="false">Forehand</button>
+        <button type="button" data-f="stroke" data-v="1" aria-pressed="false">Backhand</button>
+      </div>
+    </div>
+    <div class="ts-group">
+      <span class="ts-lab" id="ts-l-out">Point</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-out">
+        <button type="button" data-f="out" data-v="-1" aria-pressed="true">All</button>
+        <button type="button" data-f="out" data-v="1" aria-pressed="false">Won</button>
+        <button type="button" data-f="out" data-v="0" aria-pressed="false">Lost</button>
+      </div>
+    </div>
+    <div class="ts-group">
+      <span class="ts-lab" id="ts-l-bp">Score</span>
+      <div class="d-filters" role="group" aria-labelledby="ts-l-bp">
+        <button type="button" data-f="bp" data-v="0" aria-pressed="true">All points</button>
+        <button type="button" data-f="bp" data-v="1" aria-pressed="false">Break points</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ts-main">
+    <figure class="ts-court">
+      <div class="ts-svgwrap" data-ts-wrap>
+        <svg viewBox="-6.8 -26.4 13.6 15.9" data-ts-svg role="img" aria-labelledby="ts-court-desc">
+          <desc id="ts-court-desc" data-ts-desc>Half court seen from behind the hitter. Dots are where each shot bounced.</desc>
+          <rect x="-6.8" y="-26.4" width="13.6" height="15.9" class="c-runoff" />
+          <rect x="-5.485" y="-23.77" width="10.97" height="11.885" class="c-surface" />
+          <g data-ts-heat></g>
+          <g class="c-lines">
+            <line x1="-5.485" y1="-23.77" x2="5.485" y2="-23.77" />
+            <line x1="-5.485" y1="-23.77" x2="-5.485" y2="-11.885" />
+            <line x1="5.485" y1="-23.77" x2="5.485" y2="-11.885" />
+            <line x1="-4.115" y1="-23.77" x2="-4.115" y2="-11.885" />
+            <line x1="4.115" y1="-23.77" x2="4.115" y2="-11.885" />
+            <line x1="-4.115" y1="-18.285" x2="4.115" y2="-18.285" />
+            <line x1="0" y1="-18.285" x2="0" y2="-11.885" />
+            <line x1="0" y1="-23.77" x2="0" y2="-23.47" />
+          </g>
+          <g data-ts-lanes class="c-lanes"></g>
+          <g data-ts-dots></g>
+          <g data-ts-labels></g>
+          <line x1="-6.4" y1="-11.885" x2="6.4" y2="-11.885" class="c-net" />
+          <text x="0" y="-10.95" class="c-cap" text-anchor="middle" data-ts-cap>Net</text>
+          <circle data-ts-hl r="0.32" cx="-99" cy="-99" class="c-hl" />
+        </svg>
+        <div class="ts-tip" data-ts-tip hidden></div>
+      </div>
+      <figcaption class="ts-key">
+        <span>Seen from behind the hitter</span><span><i class="k-in"></i>In</span><span><i class="k-out"></i>Out</span>
+        <span data-ts-keytext>Shading: share of serves in each third of the box</span>
+      </figcaption>
+    </figure>
+
+    <div class="ts-read" data-ts-read aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="tv" data-tv data-src={venuesUrl} aria-labelledby="tv-title">
+  <header class="ts-head">
+    <h2 id="tv-title">Away venues</h2>
+    <p class="ts-sub">From my travel dashboard (R Leaflet). Miles are straight-line from the LA Tennis Center.</p>
+  </header>
+  <div class="tv-main">
+    <div class="tv-mapwrap">
+      <svg data-tv-svg viewBox="20 200 560 330" role="img" aria-label="Map of the away venues with travel lines from Los Angeles"></svg>
+      <div class="d-filters tv-pick" role="group" aria-label="Venue" data-tv-pick></div>
+    </div>
+    <div class="tv-card" data-tv-card aria-live="polite"></div>
+  </div>
+</section>
+
+<script>
+  type Row = number[];
+  type Sub = { label: string; group: string; matches: [number, string | null, string | null][] };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const pct = (a: number, b: number) => (b ? Math.round((100 * a) / b) : 0);
+  const fmt = (n: number) => n.toLocaleString('en-US');
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Court geometry (metres). Bounce y runs from the hitter's baseline (0) to the far baseline (23.77).
+  const NET = 11.885, SVC = 18.285, BASE = 23.77, SGL = 4.115, THIRD = 4.115 / 3, RTHIRD = 8.23 / 3 / 2;
+
+  document.querySelectorAll<HTMLElement>('[data-ts]').forEach(async (root) => {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const subSel = $<HTMLSelectElement>('[data-ts-sub]'), matchSel = $<HTMLSelectElement>('[data-ts-match]');
+    const svg = $<SVGSVGElement>('[data-ts-svg]'), dotsG = $<SVGGElement>('[data-ts-dots]'), heatG = $<SVGGElement>('[data-ts-heat]');
+    const lanesG = $<SVGGElement>('[data-ts-lanes]'), labelsG = $<SVGGElement>('[data-ts-labels]'), hl = $<SVGCircleElement>('[data-ts-hl]');
+    const read = $<HTMLElement>('[data-ts-read]'), tip = $<HTMLElement>('[data-ts-tip]'), wrap = $<HTMLElement>('[data-ts-wrap]');
+    let D: { subjects: Sub[]; rows: Row[] };
+    try { D = await fetch(root.dataset.src!).then((r) => r.json()); }
+    catch { $('[data-ts-total]').textContent = 'Could not load the shot data.'; return; }
+
+    const bySub: Row[][] = D.subjects.map(() => []);
+    for (const r of D.rows) bySub[r[0]].push(r);
+    const nMatches = new Set(D.rows.map((r) => r[1])).size;
+    const nS = D.rows.filter((r) => r[2] === 0).length;
+    $('[data-ts-total]').textContent = `${fmt(nS)} serves and ${fmt(D.rows.length - nS)} returns from ${nMatches} tracked college matches (SwingVision). Players anonymized.`;
+
+    const groups: Record<string, string> = { UCLA: 'UCLA', Opp: 'Opponents scouted' };
+    for (const g of Object.keys(groups)) {
+      const og = document.createElement('optgroup'); og.label = groups[g];
+      D.subjects.forEach((s, i) => { if (s.group === g) og.append(new Option(`${s.label} · ${s.matches.length} matches`, String(i))); });
+      subSel.append(og);
+    }
+    const matchLabel = (m: Sub['matches'][number], k: number) => {
+      const [, date, vs] = m;
+      const d = date ? `${MON[+date.slice(5, 7) - 1]} ${+date.slice(8, 10)}, ${date.slice(0, 4)}` : `Match ${k + 1}`;
+      return vs ? `${d} · vs ${vs}` : d;
+    };
+    const matchName: Map<number, string> = new Map();
+    const fillMatches = () => {
+      const s = D.subjects[st.sub]; matchSel.innerHTML = ''; matchName.clear();
+      matchSel.append(new Option(`All ${s.matches.length} matches`, 'all'));
+      s.matches.forEach((m, k) => { const l = matchLabel(m, k); matchName.set(m[0], l); matchSel.append(new Option(l, String(m[0]))); });
+    };
+
+    const st = { sub: 0, match: 'all' as string, kind: 0, ss: 0, side: -1, stroke: -1, out: -1, bp: 0 };
+    const base = (ignoreBp = false) => bySub[st.sub].filter((r) =>
+      (st.match === 'all' || r[1] === +st.match) && r[2] === st.kind && (!st.ss || r[3] === st.ss) &&
+      (st.side < 0 || r[4] === st.side) && (st.kind === 0 || st.stroke < 0 || r[9] === st.stroke) &&
+      (st.out < 0 || r[11] === st.out) && (ignoreBp || !st.bp || r[12] === 1));
+
+    // Serve lanes: thirds of each service box (T next to the centre line, wide by the sideline).
+    const serveIn = (r: Row) => r[8] === 0 && r[6] / 10 > NET && r[6] / 10 <= SVC + 0.3 && Math.abs(r[5] / 10) <= SGL + 0.3;
+    const sLane = (r: Row) => { const a = Math.abs(r[5] / 10); return a < THIRD ? 0 : a < 2 * THIRD ? 1 : 2; }; // 0 T, 1 body, 2 wide
+    const S_LANES = ['T', 'Body', 'Wide'];
+    // Return zones: left / middle / right third of the singles court, short (inside service line) or deep.
+    const rIn = (r: Row) => r[8] === 0 && r[6] / 10 > NET;
+    const rLane = (r: Row) => { const x = r[5] / 10; return x < -RTHIRD ? 0 : x <= RTHIRD ? 1 : 2; };
+    const deep = (r: Row) => r[6] / 10 > SVC;
+
+    const el = (tag: string, attrs: Record<string, string | number>, parent: Element) => {
+      const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, String(attrs[k])); parent.append(n); return n;
+    };
+    const txt = (x: number, y: number, s: string, cls: string, parent: Element) => { const t = el('text', { x, y, class: cls, 'text-anchor': 'middle' }, parent); t.textContent = s; return t; };
+
+    let drawn: Row[] = [];
+    function drawCourt(rows: Row[]) {
+      heatG.innerHTML = ''; lanesG.innerHTML = ''; labelsG.innerHTML = ''; dotsG.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      if (st.kind === 0) {
+        // two boxes: deuce (x<0) and ad (x>0) from the hitter's view
+        for (const side of [0, 1]) {
+          const sgn = side === 0 ? -1 : 1;
+          const inBox = rows.filter((r) => serveIn(r) && Math.sign(r[5]) === sgn);
+          const c = [0, 0, 0]; inBox.forEach((r) => c[sLane(r)]++);
+          const dim = st.side >= 0 && st.side !== side;
+          for (let l = 0; l < 3; l++) {
+            const x0 = sgn < 0 ? -(l + 1) * THIRD : l * THIRD;
+            const share = inBox.length ? c[l] / inBox.length : 0;
+            el('rect', { x: x0, y: -SVC, width: THIRD, height: SVC - NET, class: 'tsc-heat', 'fill-opacity': dim ? 0 : (0.05 + 0.5 * share).toFixed(3) }, heatG);
+            if (l) el('line', { x1: sgn * l * THIRD, y1: -SVC, x2: sgn * l * THIRD, y2: -NET }, lanesG);
+            if (!dim && inBox.length) {
+              txt(x0 + THIRD / 2, -NET - 1.05, `${Math.round(share * 100)}%`, 'tsc-pct', labelsG);
+              txt(x0 + THIRD / 2, -NET - 0.45, S_LANES[l], 'tsc-lab', labelsG);
+            }
+          }
+          txt(sgn * 2.06, -10.95, side === 0 ? 'Deuce box' : 'Ad box', 'tsc-box', labelsG);
+        }
+      } else {
+        const ins = rows.filter(rIn), c = [0, 0, 0, 0, 0, 0];
+        ins.forEach((r) => c[rLane(r) + (deep(r) ? 3 : 0)]++);
+        const mx = Math.max(1, ...c);
+        for (let z = 0; z < 6; z++) {
+          const l = z % 3, dp = z >= 3, x0 = -SGL + l * 2 * RTHIRD, y0 = dp ? -BASE : -SVC, h = dp ? BASE - SVC : SVC - NET;
+          el('rect', { x: x0, y: y0, width: 2 * RTHIRD, height: h, class: 'tsc-heat', 'fill-opacity': (0.04 + 0.45 * (c[z] / mx)).toFixed(3) }, heatG);
+          if (l) el('line', { x1: x0, y1: -BASE, x2: x0, y2: -NET }, lanesG);
+          if (ins.length) txt(x0 + RTHIRD, dp ? -BASE - 0.55 : -NET - 0.75, `${pct(c[z], ins.length)}%`, 'tsc-pct', labelsG);
+        }
+        txt(-SGL - 0.75, -BASE + 2.7, 'Deep', 'tsc-box', labelsG).setAttribute('transform', `rotate(-90 ${-SGL - 0.75} ${-BASE + 2.7})`);
+        txt(-SGL - 0.75, -SVC + 3.2, 'Short', 'tsc-box', labelsG).setAttribute('transform', `rotate(-90 ${-SGL - 0.75} ${-SVC + 3.2})`);
+      }
+      // dots: misses first, makes on top; cap the animation stagger so big sets still land fast
+      drawn = rows.filter((r) => r[8] !== 2 && r[6] / 10 > NET - 0.4 && r[6] / 10 < 26.3 && Math.abs(r[5] / 10) < 6.7)
+        .sort((a, b) => (b[8] === 0 ? 0 : 1) - (a[8] === 0 ? 0 : 1));
+      const step = Math.min(3, 700 / Math.max(1, drawn.length));
+      const rad = drawn.length > 600 ? 0.085 : drawn.length > 200 ? 0.1 : 0.13;
+      drawn.forEach((r, i) => {
+        const inn = r[8] === 0;
+        const n = document.createElementNS(NS, 'circle');
+        n.setAttribute('cx', (r[5] / 10).toFixed(2)); n.setAttribute('cy', (-r[6] / 10).toFixed(2));
+        n.setAttribute('r', String(inn ? rad : rad * 0.85)); n.setAttribute('class', inn ? 'tsd-in' : 'tsd-out');
+        if (!reduce) n.style.animationDelay = `${Math.round(i * step)}ms`;
+        frag.append(n);
+      });
+      dotsG.append(frag);
+    }
+
+    const bar = (title: string, parts: [string, number][], n: number, note = '') => {
+      const tot = parts.reduce((a, [, v]) => a + v, 0);
+      if (!tot) return `<div class="r-bar"><p class="r-bt">${title}<span>no shots</span></p></div>`;
+      const mx = Math.max(...parts.map(([, v]) => v));
+      return `<div class="r-bar"><p class="r-bt">${title}<span>${fmt(n)} ${note}</span></p><div class="r-track">${parts.filter(([, v]) => v > 0).map(([k, v]) =>
+        `<span style="flex:${v}"${v === mx ? ' class="top"' : ''} title="${k} ${pct(v, tot)}%"><b>${pct(v, tot)}%</b> ${k}</span>`).join('')}</div></div>`;
+    };
+    const stat = (v: string, l: string) => `<div class="r-stat"><b>${v}</b><span>${l}</span></div>`;
+
+    function readout(rows: Row[]) {
+      const all = base(true), bp = all.filter((r) => r[12] === 1), small = rows.length < 25;
+      let h = '';
+      if (st.kind === 0) {
+        const ins = rows.filter((r) => r[8] === 0), sp = ins.filter((r) => r[7] > 0);
+        const aces = rows.filter((r) => r[13] === 1).length, unret = rows.filter((r) => r[13] === 2).length;
+        h += `<div class="r-stats">${stat(fmt(rows.length), 'serves')}${stat(pct(ins.length, rows.length) + '%', 'in')}${stat(pct(ins.filter((r) => r[11]).length, ins.length) + '%', 'won when in')}${stat(sp.length ? Math.round(sp.reduce((a, r) => a + r[7], 0) / sp.length) + '' : '–', 'avg mph')}</div>`;
+        const mix = (rs: Row[]) => { const c = [0, 0, 0]; rs.filter(serveIn).forEach((r) => c[sLane(r)]++); return [['Wide', c[2]], ['Body', c[1]], ['T', c[0]]] as [string, number][]; };
+        h += `<h3 class="r-h">Where it goes</h3>`;
+        h += bar(st.bp ? 'Break points' : 'All points', mix(rows), rows.filter(serveIn).length, 'in');
+        if (!st.bp) h += bar('Break points only', mix(bp), bp.filter(serveIn).length, 'in');
+        else h += bar('All points', mix(all), all.filter(serveIn).length, 'in');
+        h += `<ul class="r-notes"><li><b>${fmt(aces)}</b> aces, <b>${fmt(unret)}</b> more unreturned</li>`;
+        const df = rows.filter((r) => r[3] === 2 && r[8] !== 0).length;
+        if (st.ss !== 1) h += `<li><b>${fmt(df)}</b> double faults</li>`;
+        h += `</ul>`;
+      } else {
+        const ins = rows.filter(rIn), sp = ins.filter((r) => r[7] > 0);
+        h += `<div class="r-stats">${stat(fmt(rows.length), 'returns')}${stat(pct(rows.filter((r) => r[8] === 0).length, rows.length) + '%', 'in')}${stat(pct(rows.filter((r) => r[11]).length, rows.length) + '%', 'points won')}${stat(ins.length ? (ins.reduce((a, r) => a + (BASE - r[6] / 10), 0) / ins.length).toFixed(1) + ' m' : '–', 'from baseline')}</div>`;
+        const depth = (rs: Row[]) => { const i = rs.filter(rIn); const d = i.filter(deep).length; return [['Deep', d], ['Short', i.length - d]] as [string, number][]; };
+        // direction from geometry: outer third on the far side of where it was hit = crosscourt, same side = down the line
+        const dir = (rs: Row[]) => { const c = [0, 0, 0]; rs.filter(rIn).forEach((r) => { const l = rLane(r); c[l === 1 ? 1 : (l === 2) === (r[14] > 0) ? 2 : 0]++; }); return [['Cross', c[0]], ['Middle', c[1]], ['Line', c[2]]] as [string, number][]; };
+        h += `<h3 class="r-h">Depth and direction</h3>`;
+        h += bar(st.bp ? 'Break points: depth' : 'Depth (past service line)', depth(rows), ins.length, 'in');
+        if (!st.bp) h += bar('Break points only: depth', depth(bp), bp.filter(rIn).length, 'in');
+        else h += bar('All points: depth', depth(all), all.filter(rIn).length, 'in');
+        h += bar('Direction (by landing third)', dir(rows), ins.length, 'in');
+        if (st.stroke < 0) { const fh = rows.filter((r) => r[9] === 0).length, bh = rows.filter((r) => r[9] === 1).length; h += `<ul class="r-notes"><li><b>${pct(fh, fh + bh)}%</b> forehand, <b>${pct(bh, fh + bh)}%</b> backhand</li><li>Avg speed <b>${sp.length ? Math.round(sp.reduce((a, r) => a + r[7], 0) / sp.length) : '–'}</b> mph</li></ul>`; }
+      }
+      if (small) h += `<p class="r-warn">Small sample (${rows.length}). Read with care.</p>`;
+      read.innerHTML = h;
+    }
+
+    function render() {
+      const rows = base();
+      root.querySelector<HTMLElement>('[data-ts-stroke]')!.hidden = st.kind !== 1;
+      $('[data-ts-cap]').textContent = st.kind === 0 ? 'Net' : 'Net · hit from this side';
+      $('[data-ts-keytext]').textContent = st.kind === 0 ? 'Shading: share of serves in each third of the box' : 'Shading: share of returns landing in each zone';
+      $('[data-ts-desc]').textContent = `${D.subjects[st.sub].label}, ${rows.length} ${st.kind === 0 ? 'serves' : 'returns'} with the current filters, drawn where each bounced.`;
+      drawCourt(rows); readout(rows); hideTip();
+    }
+
+    // tooltip: nearest dot to the pointer
+    const SSIDE = ['Deuce', 'Ad'], RES = ['In', 'Out', 'Net'], STROKE = ['Forehand', 'Backhand', 'Other', 'Serve'];
+    function hideTip() { tip.hidden = true; hl.setAttribute('cx', '-99'); }
+    svg.addEventListener('pointermove', (e) => {
+      const m = svg.getScreenCTM(); if (!m || !drawn.length) return;
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+      let best: Row | null = null, bd = 0.5 * 0.5;
+      for (const r of drawn) { const dx = r[5] / 10 - p.x, dy = -r[6] / 10 - p.y, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = r; } }
+      if (!best) return hideTip();
+      hl.setAttribute('cx', String(best[5] / 10)); hl.setAttribute('cy', String(-best[6] / 10));
+      const parts = [st.kind === 0 ? `${best[3] === 1 ? '1st' : '2nd'} serve` : `Return of ${best[3] === 1 ? '1st' : '2nd'} · ${STROKE[best[9]]}`,
+        `${SSIDE[best[4]]} side`, best[7] ? `${best[7]} mph` : '', RES[best[8]], best[13] === 1 ? 'Ace' : best[13] === 2 ? 'Unreturned' : '',
+        best[11] ? 'Point won' : 'Point lost', best[12] ? 'Break point' : ''].filter(Boolean);
+      tip.innerHTML = `<b>${parts[0]}</b><br>${parts.slice(1).join(' · ')}<br><span>${matchName.get(best[1]) ?? ''}</span>`;
+      tip.hidden = false;
+      const wr = wrap.getBoundingClientRect(), x = e.clientX - wr.left, y = e.clientY - wr.top;
+      tip.style.left = `${Math.min(Math.max(8, x - tip.offsetWidth / 2), wr.width - tip.offsetWidth - 8)}px`;
+      tip.style.top = `${y > tip.offsetHeight + 24 ? y - tip.offsetHeight - 14 : y + 18}px`;
+    });
+    svg.addEventListener('pointerleave', hideTip);
+
+    root.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', () => {
+      const f = b.dataset.f as keyof typeof st; (st as any)[f] = +b.dataset.v!;
+      root.querySelectorAll(`[data-f="${f}"]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      render();
+    }));
+    subSel.addEventListener('change', () => { st.sub = +subSel.value; st.match = 'all'; fillMatches(); render(); });
+    matchSel.addEventListener('change', () => { st.match = matchSel.value; render(); });
+    fillMatches();
+    // draw when it scrolls into view so the dots land where the visitor can see them
+    const io = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { io.disconnect(); render(); } }, { threshold: 0.15 });
+    io.observe(svg);
+  });
+
+  // ---------- Away venues ----------
+  type Venue = { id: string; name: string; short: string; city: string; lat: number; lon: number; p: [number, number]; miles: number; setup: string; travel: string; tz: string; climate: string; conditions: string; notes: string };
+  document.querySelectorAll<HTMLElement>('[data-tv]').forEach(async (root) => {
+    const svg = root.querySelector<SVGSVGElement>('[data-tv-svg]')!, pick = root.querySelector<HTMLElement>('[data-tv-pick]')!, card = root.querySelector<HTMLElement>('[data-tv-card]')!;
+    let M: { nation: string; states: string; home: { p: [number, number]; lat: number; lon: number }; venues: Venue[] };
+    try { M = await fetch(root.dataset.src!).then((r) => r.json()); } catch { card.textContent = 'Could not load the venue data.'; return; }
+    const [hx, hy] = M.home.p;
+    let html = `<path d="${M.nation}" class="m-land"/><path d="${M.states}" class="m-states"/>`;
+    M.venues.forEach((v) => {
+      const [x, y] = v.p, mx = (hx + x) / 2, my = Math.min(hy, y) - Math.max(18, Math.hypot(x - hx, y - hy) * 0.28);
+      html += `<path d="M${hx},${hy} Q${mx},${my} ${x},${y}" class="m-arc" data-arc="${v.id}" pathLength="1"/>`;
+    });
+    html += `<circle cx="${hx}" cy="${hy}" r="6" class="m-home"/><text x="${hx + 4}" y="${hy - 12}" class="m-lab">LA (home)</text>`;
+    const LAB: Record<string, [number, number, string]> = { usc: [12, 16, 'start'], lajolla: [10, 14, 'start'], smu: [10, -8, 'start'], baylor: [10, 14, 'start'] };
+    M.venues.forEach((v) => {
+      const [x, y] = v.p, [dx, dy, a] = LAB[v.id] ?? [10, 4, 'start'];
+      html += `<g class="m-v" data-v="${v.id}"><circle cx="${x}" cy="${y}" r="12" class="m-hit"/><circle cx="${x}" cy="${y}" r="4.5" class="m-dot"/><text x="${x + dx}" y="${y + dy}" text-anchor="${a}" class="m-lab">${v.short}</text></g>`;
+    });
+    svg.innerHTML = html;
+    M.venues.forEach((v) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.v = v.id; b.textContent = v.short; b.setAttribute('aria-pressed', 'false'); pick.append(b); });
+
+    const wx: Record<string, any> = {}; let wxState: 'idle' | 'loading' | 'ok' | 'fail' = 'idle', cur = 'smu';
+    const loadWeather = async () => {
+      if (wxState !== 'idle') return; wxState = 'loading'; show(cur);
+      const q = new URLSearchParams({ latitude: M.venues.map((v) => v.lat).join(','), longitude: M.venues.map((v) => v.lon).join(','),
+        current: 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation_probability', temperature_unit: 'fahrenheit', wind_speed_unit: 'mph', timezone: 'auto' });
+      try {
+        const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
+        const r = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`, { signal: ctl.signal }); clearTimeout(t);
+        if (!r.ok) throw 0; const j = await r.json(); const arr = Array.isArray(j) ? j : [j];
+        M.venues.forEach((v, i) => { if (arr[i]?.current) wx[v.id] = arr[i].current; });
+        wxState = Object.keys(wx).length ? 'ok' : 'fail';
+      } catch { wxState = 'fail'; }
+      show(cur);
+    };
+    function show(id: string) {
+      cur = id; const v = M.venues.find((x) => x.id === id)!;
+      pick.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === id)));
+      svg.querySelectorAll('.m-v').forEach((g) => g.classList.toggle('on', (g as HTMLElement).dataset.v === id));
+      svg.querySelectorAll('.m-arc').forEach((a) => a.classList.toggle('on', (a as HTMLElement).dataset.arc === id));
+      const w = wx[id];
+      const weather = w
+        ? `<div class="v-wx"><div class="r-stat"><b>${Math.round(w.temperature_2m)}°</b><span>now, °F</span></div><div class="r-stat"><b>${Math.round(w.apparent_temperature)}°</b><span>feels like</span></div><div class="r-stat"><b>${Math.round(w.wind_speed_10m)}</b><span>wind mph</span></div><div class="r-stat"><b>${Math.round(w.relative_humidity_2m)}%</b><span>humidity</span></div></div><p class="v-src">Live from Open-Meteo, local time ${String(w.time).slice(11, 16)}${w.precipitation_probability != null ? ` · ${Math.round(w.precipitation_probability)}% rain chance` : ''}</p>`
+        : `<p class="v-src">${wxState === 'loading' ? 'Loading live weather…' : wxState === 'fail' ? 'Live weather unavailable right now.' : ''}</p>`;
+      card.innerHTML = `<p class="v-city">${v.city}</p><h3 class="v-name">${v.name}</h3>
+        <div class="r-stats"><div class="r-stat"><b>${fmt(v.miles)}</b><span>miles</span></div><div class="r-stat"><b class="v-sm">${v.travel}</b><span>travel</span></div><div class="r-stat"><b class="v-sm">${v.tz}</b><span>time zone</span></div></div>
+        <dl class="v-dl"><div><dt>Setup</dt><dd>${v.setup}</dd></div><div><dt>Conditions</dt><dd>${v.conditions}</dd></div><div><dt>Notes</dt><dd>${v.notes}</dd></div></dl>
+        <h4 class="r-h">Weather now</h4>${weather}`;
+    }
+    pick.addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest('button'); if (b) show(b.dataset.v!); });
+    svg.addEventListener('click', (e) => { const g = (e.target as Element).closest('.m-v') as HTMLElement | null; if (g) show(g.dataset.v!); });
+    show('smu');
+    const io = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { io.disconnect(); loadWeather(); } }, { rootMargin: '200px' });
+    io.observe(root);
+  });
+</script>
+
+<style>
+  .ts, .tv { background: var(--panel); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line); padding: clamp(14px, 2.4vw, 26px); display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .ts-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+  .ts-head h2 { font-size: clamp(1.7rem, 3vw, 2.2rem); color: var(--blue); }
+  .ts-sub { color: var(--ink-2); font-size: 0.95rem; max-width: 60ch; }
+
+  .ts-controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: flex-end; }
+  .ts-field, .ts-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ts-field > span, .ts-lab { color: var(--ink-2); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .ts-field select { min-height: 40px; max-width: 100%; padding: 0 34px 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a9b4c6'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--ink); font: 600 0.95rem var(--body); appearance: none; cursor: pointer; }
+  .ts-field select:hover { border-color: var(--ink-2); }
+  .ts :global(.d-filters), .tv :global(.d-filters) { margin: 0 !important; gap: 6px !important; }
+  @media (max-width: 600px) {
+    .ts-controls { gap: 12px 16px; }
+    .ts-field { flex: 1 1 100%; }
+    .ts :global(.d-filters) { flex-wrap: nowrap !important; gap: 4px !important; }
+    .ts :global(.d-filters button) { padding: 0 9px !important; font-size: 0.85rem !important; }
+    .tv :global(.m-lab) { font-size: 20px !important; stroke-width: 4px !important; }
+  }
+
+  .ts-main { display: grid; gap: clamp(16px, 3vw, 32px); grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .ts-main { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+  .ts-court { margin: 0; min-width: 0; }
+  .ts-svgwrap { position: relative; max-width: 560px; margin-inline: auto; }
+  .ts-svgwrap svg { width: 100%; height: auto; display: block; border-radius: 10px; touch-action: pan-y; }
+  .c-runoff { fill: var(--bg); }
+  .c-surface { fill: #1a2a44; }
+  .c-lines line { stroke: #c9d2df; stroke-width: 0.07; }
+  :global(.tsc-heat) { fill: var(--blue); }
+  .c-lanes :global(line) { stroke: #a9b4c6; stroke-opacity: 0.45; stroke-width: 0.035; stroke-dasharray: 0.18 0.14; }
+  .c-net { stroke: var(--ink); stroke-width: 0.13; }
+  .c-cap { fill: var(--ink-2); font: 600 0.44px var(--body); }
+  :global(.tsc-pct) { fill: var(--ink); font: 800 0.72px var(--display); paint-order: stroke; stroke: #0f1724; stroke-width: 0.16; stroke-linejoin: round; }
+  :global(.tsc-lab) { fill: var(--ink-2); font: 600 0.4px var(--body); text-transform: uppercase; paint-order: stroke; stroke: #0f1724; stroke-width: 0.12; }
+  :global(.tsc-box) { fill: var(--ink-2); font: 700 0.4px var(--body); text-transform: uppercase; }
+  :global(.tsd-in) { fill: var(--blue); fill-opacity: 0.55; stroke: #0f1724; stroke-width: 0.02; }
+  :global(.tsd-out) { fill: none; stroke: #c9d2df; stroke-opacity: 0.7; stroke-width: 0.045; }
+  .c-hl { fill: none; stroke: var(--lime); stroke-width: 0.07; pointer-events: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.tsd-in), :global(.tsd-out) { animation: ts-drop 360ms cubic-bezier(.2,.7,.3,1) both; transform-box: fill-box; transform-origin: center; }
+  }
+  @keyframes ts-drop { from { opacity: 0; transform: scale(2.6); } to { opacity: 1; transform: scale(1); } }
+  .ts-tip { position: absolute; z-index: 2; pointer-events: none; max-width: 240px; padding: 8px 10px; border-radius: 8px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); font-size: 0.82rem; line-height: 1.35; color: var(--ink); }
+  .ts-tip :global(span) { color: var(--ink-2); }
+  .ts-key { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; margin-top: 10px !important; font-size: 0.85rem; color: var(--ink-2); }
+  .ts-key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .k-in { background: var(--blue); }
+  .k-out { box-shadow: inset 0 0 0 1.5px #c9d2df; }
+
+  .ts-read { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .ts :global(.r-stats), .tv :global(.r-stats) { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 8px; }
+  .ts :global(.r-stat), .tv :global(.r-stat) { background: var(--bg); border-radius: 10px; padding: 10px 12px; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ts :global(.r-stat b), .tv :global(.r-stat b) { font: 800 clamp(1.7rem, 3vw, 2.2rem)/0.95 var(--display); color: var(--blue); }
+  .ts :global(.r-stat span), .tv :global(.r-stat span) { color: var(--ink-2); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ts :global(.r-h), .tv :global(.r-h) { font-size: 1.25rem; color: var(--ink); margin-top: 4px; }
+  .ts :global(.r-bar) { display: flex; flex-direction: column; gap: 6px; }
+  .ts :global(.r-bt) { display: flex; justify-content: space-between; gap: 10px; font-size: 0.9rem; font-weight: 600; }
+  .ts :global(.r-bt span) { color: var(--ink-2); font-weight: 400; white-space: nowrap; }
+  .ts :global(.r-track) { display: flex; gap: 3px; height: 40px; }
+  .ts :global(.r-track span) { min-width: 0; overflow: hidden; white-space: nowrap; display: flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 6px; font-size: 0.8rem; color: var(--ink-2); background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+  .ts :global(.r-track span.top) { background: rgba(127, 178, 229, 0.22); box-shadow: none; color: var(--ink); }
+  .ts :global(.r-track b) { font: 800 1.15rem/1 var(--display); color: var(--ink); }
+  .ts :global(.r-notes) { list-style: none; display: flex; flex-direction: column; gap: 4px; color: var(--ink-2); font-size: 0.92rem; }
+  .ts :global(.r-notes b) { color: var(--blue); font-family: var(--display); font-size: 1.15rem; }
+  .ts :global(.r-warn) { color: var(--ink-2); font-size: 0.88rem; }
+
+  .tv-main { display: grid; gap: clamp(16px, 3vw, 32px); grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .tv-main { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
+  .tv-mapwrap { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .tv-mapwrap svg { width: 100%; height: auto; background: var(--bg); border-radius: 10px; }
+  .tv :global(.m-land) { fill: #1a2a44; stroke: #3a4f72; stroke-width: 1; }
+  .tv :global(.m-states) { fill: none; stroke: #2f4263; stroke-width: 0.8; }
+  .tv :global(.m-arc) { fill: none; stroke: var(--ink-2); stroke-opacity: 0.45; stroke-width: 1.5; stroke-dasharray: 0.02 0.02; }
+  .tv :global(.m-arc.on) { stroke: var(--lime); stroke-opacity: 1; stroke-dasharray: none; stroke-width: 2; }
+  @media (prefers-reduced-motion: no-preference) {
+    .tv :global(.m-arc.on) { stroke-dasharray: 1; stroke-dashoffset: 1; animation: tv-draw 700ms ease-out forwards; }
+  }
+  @keyframes tv-draw { to { stroke-dashoffset: 0; } }
+  .tv :global(.m-home) { fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
+  .tv :global(.m-v) { cursor: pointer; }
+  .tv :global(.m-hit) { fill: transparent; }
+  .tv :global(.m-dot) { fill: var(--blue); }
+  .tv :global(.m-v.on .m-dot) { fill: var(--lime); }
+  .tv :global(.m-lab) { fill: var(--ink); font: 600 13px var(--body); paint-order: stroke; stroke: #0f1724; stroke-width: 3px; stroke-linejoin: round; }
+  .tv :global(.m-v.on .m-lab) { fill: var(--lime); }
+  .tv-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .tv :global(.v-city) { color: var(--ink-2); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .tv :global(.v-name) { font-size: clamp(1.5rem, 2.6vw, 2rem); }
+  .tv :global(.v-sm) { font-size: 1.15rem !important; line-height: 1.1 !important; color: var(--ink) !important; }
+  .tv :global(.v-dl) { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+  .tv :global(.v-dl dt) { color: var(--ink-2); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .tv :global(.v-dl dd) { margin: 2px 0 0; font-size: 0.95rem; }
+  .tv :global(.v-wx) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 480px) { .tv :global(.v-wx) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .tv :global(.v-src) { color: var(--ink-2); font-size: 0.85rem; }
+  @media (max-width: 600px) { .ts :global(.r-stats) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
