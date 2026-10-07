@@ -34,6 +34,8 @@ export interface Entry {
   chapters?: { t: number; label: string }[];
   video?: { src: string; poster: string; label: string };
   note?: string;
+  /** short backstory, in my words, shown above the demo */
+  story?: string;
   /** starters get the big cards at the top */
   starter?: boolean;
 }
@@ -84,6 +86,7 @@ export const entries: Entry[] = [
       '15 features: distance, wind gusts, temperature, surface, altitude, kicker form, game pressure',
       'XGBoost tuned on Brier score, then isotonic-calibrated so 70% means 70%',
       'Feeds the live decision engine with three other sub-models',
+      'Rebuilt the live app: one-pass scoring, a faster server, a new look, and a fix for a win-probability bug that said go for it from deep in your own end',
     ],
     results: [
       'Held-out ROC-AUC 0.78',
@@ -95,7 +98,7 @@ export const entries: Entry[] = [
       { href: 'https://playbyplay.football', label: 'Live tool' },
       { href: 'https://github.com/Bruin-Sports-Analytics/nfl-ot-4th-down-model/tree/feature/fg-probability-model', label: 'Code' },
     ],
-    pic: { kind: 'img', src: '/thumbs/nfl-overtime-4th-down.jpg', alt: "The live decision engine recommending a field goal from the opponent's 32, with a 72.1% make probability from my model" , caption: 'The live tool: from the opponent’s 32 it recommends the kick. The 72.1% make probability comes from my model.' },
+    pic: { kind: 'img', src: '/thumbs/nfl-overtime-4th-down.jpg', alt: 'The live decision engine on 4th and 5 at midfield in overtime, calling a punt: 47.1% to win vs 45.6% going for it', caption: 'The live tool: 4th & 5 at midfield on the first OT possession, it calls the punt.' },
     charts: ['fg'],
     figures: [
       { src: '/img/fg-explainer.png', alt: 'Four-panel chart of field goal make probability by distance, kicker quality, weather, and game scenario', caption: 'The summary slide I presented.', w: 1600, h: 891, wide: true },
@@ -175,6 +178,7 @@ export const entries: Entry[] = [
   },
   {
     slug: 'journal-to-data',
+    story: 'I didn’t want to forget what college actually felt like day to day, so I started tracking everything: sleep, gym, classes, mood. Filling in a spreadsheet every night got old fast. So I flipped it: I just write a normal journal entry, and an LLM pulls the numbers out for me.',
     name: 'JournalToData',
     what: 'An LLM turns my nightly journal into daily metrics.',
     stat: { value: '15+', label: 'metrics per entry' },
@@ -265,7 +269,7 @@ export const entries: Entry[] = [
       '69% have at least one other diagnosed condition',
     ],
     links: [],
-    pic: { kind: 'img', src: '/data/adhd-diagnosis/thumb.jpg', alt: '100 squares each for the poorest and highest-income households, shaded by ADHD severity' },
+    pic: { kind: 'img', src: '/thumbs/adhd-diagnosis.jpg', alt: 'The project chart: stacked bars of ADHD severity by household income, survey-weighted', caption: 'The team chart, re-run with survey weights.' },
   },
   {
     slug: 'souschef',
