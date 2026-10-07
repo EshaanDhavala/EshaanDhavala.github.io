@@ -228,8 +228,8 @@ export const entries: Entry[] = [
   {
     slug: 'house-prices',
     name: 'House Price Model',
-    what: '7-predictor regression for a Kaggle class competition.',
-    stat: { value: '0.888', label: 'test R²' },
+    what: '7-predictor regression for a class Kaggle competition.',
+    stat: { value: '0.888', label: 'Kaggle leaderboard R²' },
     cats: ['stats'],
     plate: 'stats',
     when: 'Mar 2026',
@@ -239,13 +239,15 @@ export const entries: Entry[] = [
       'log(price) on 7 predictors',
       'Engineered log total sq ft, centered year built, log lot area',
       'One interaction: quality × log(sq ft)',
-      'Compared 3 nested models on adj. R², AIC, BIC; checked diagnostics',
+      'Compared 3 candidate models on adj. R², AIC, BIC; checked diagnostics',
     ],
-    results: ['Kaggle test R² 0.888'],
+    results: [
+      'Kaggle leaderboard R² 0.888 on 3,000 test homes',
+      'Train adj. R² 0.761 on log price, up from 0.534 for the baseline',
+      'AIC 11,565 vs 16,226 for the baseline',
+    ],
     links: [],
-    figures: [
-      { src: '/img/house-marginal.jpg', alt: 'Marginal model plots for each predictor', caption: 'Marginal model plots: the model (red) tracks the data smoother (blue) on every predictor.', w: 1344, h: 960, wide: true },
-    ],
+    note: 'Class Kaggle dataset: the sale prices are synthetic, per the assignment.',
     pic: { kind: 'img', src: '/thumbs/house-prices.jpg', alt: "Report figure: log price vs log square footage by overall quality, showing non-parallel lines" , caption: 'The interaction the model is built on: price climbs faster with size in higher-quality houses.' },
   },
   {
