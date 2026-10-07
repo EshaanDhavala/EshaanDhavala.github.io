@@ -1,3 +1,621 @@
 ---
-/** Interactive demo for this project. Placeholder until the demo is built. */
+/**
+ * JournalToData demo.
+ * 1) The pipeline on a made-up entry: phrases fly into typed fields, validation asks for what's missing, a row is saved.
+ * 2) The real 131 nights (allowed fields only: sleep, mood, gym/split, study, screen) as a calendar with a weekday rhythm.
+ * 3) What moved with mood: scatter + Pearson r, computed in the browser from the same daily file.
+ * Data: public/data/journal-to-data/days.json, exported from the Daily sheet with no text fields and no weight.
+ */
+const FIELDS = [
+  { k: 'sleep_hours', t: 'float', v: '7.5' },
+  { k: 'wake_time', t: 'str', v: '"08:30"' },
+  { k: 'gym', t: 'bool', v: 'True' },
+  { k: 'workout_type', t: 'str', v: '"push"' },
+  { k: 'workout_minutes', t: 'int', v: '50' },
+  { k: 'study_hours', t: 'float', v: '3.0' },
+  { k: 'mood_1_10', t: 'float', v: '8.0' },
+  { k: 'screen_time_hours', t: 'float', v: '6.0' },
+];
+const METRICS = [
+  { id: 'mood', label: 'Mood' },
+  { id: 'sleep', label: 'Sleep' },
+  { id: 'gym', label: 'Gym' },
+  { id: 'study', label: 'Study' },
+  { id: 'screen', label: 'Screen' },
+];
 ---
+<section class="jd" data-jd aria-label="JournalToData demo">
+  <!-- 1. Pipeline -->
+  <div class="jd-panel jd-pipe" data-pipe>
+    <div class="jd-top">
+      <h2 class="jd-h">One night, extracted</h2>
+      <button type="button" class="btn btn-lime jd-run" data-run>Replay</button>
+    </div>
+    <ol class="jd-steps" aria-label="Pipeline steps">
+      <li data-step="0"><span>1</span>Entry</li>
+      <li data-step="1"><span>2</span>LLM extract</li>
+      <li data-step="2"><span>3</span>Validate</li>
+      <li data-step="3"><span>4</span>Save row</li>
+    </ol>
+
+    <div class="jd-stage" data-stage>
+      <div class="jd-entry">
+        <p class="jd-lab">Example entry (made up)</p>
+        <p class="jd-text"><span class="ph" data-ph="0">Slept like 7.5 hours</span>, <span class="ph" data-ph="1">up at 8:30</span>. <span class="ph" data-ph="2">Push day</span>, bench finally moved, <span class="ph" data-ph="4">about 50 min</span>. Library after class, <span class="ph" data-ph="5">3 hours on the stats midterm</span>. Good day overall, <span class="ph" data-ph="6">call it an 8</span>.</p>
+        <p class="jd-model"><span class="jd-lab">Model</span> gpt-4.1-mini · JSON mode · temp 0.1</p>
+        <div class="jd-ask" data-ask hidden>
+          <p><span class="jd-lab">App asks</span> “Screen time hours? (e.g., 6.0)”</p>
+          <p class="ans">› <span data-ans></span></p>
+        </div>
+      </div>
+
+      <div class="jd-schema">
+        <p class="jd-lab">Extraction(BaseModel)</p>
+        <dl class="jd-fields">
+          {FIELDS.map((f, i) => (
+            <div class="fld" data-f={i}>
+              <dt>{f.k}</dt>
+              <dd class="ty">{f.t}</dd>
+              <dd class="va" data-val={f.v}>None</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+
+    <div class="jd-row" data-row hidden>
+      <p class="jd-lab">Google Sheets · Daily · upsert by date</p>
+      <div class="cells" role="table" aria-label="Saved row">
+        <div role="row" class="hd"><span role="columnheader">sleep</span><span role="columnheader">mood</span><span role="columnheader">gym</span><span role="columnheader">split</span><span role="columnheader">study</span><span role="columnheader">screen</span></div>
+        <div role="row" class="bd"><span role="cell">7.5</span><span role="cell">8.0</span><span role="cell">TRUE</span><span role="cell">push</span><span role="cell">3.0</span><span role="cell">6.0</span></div>
+      </div>
+      <p class="times">Then 130 more nights ↓</p>
+    </div>
+    <p class="visually-hidden" aria-live="polite" data-pipe-live></p>
+  </div>
+
+  <!-- 2. Calendar -->
+  <div class="jd-panel jd-cal" data-cal>
+    <div class="jd-top">
+      <div>
+        <h2 class="jd-h"><b class="num" data-n>131</b> nights</h2>
+        <p class="jd-sub" data-range>Jan 25 – Jun 5, 2026 · 1 missed</p>
+      </div>
+      <div class="d-filters jd-metrics" role="group" aria-label="Color the calendar by">
+        {METRICS.map((m, i) => <button type="button" data-metric={m.id} aria-pressed={i === 0 ? 'true' : 'false'}>{m.label}</button>)}
+      </div>
+    </div>
+    <div class="jd-calbody">
+      <div class="jd-grid" data-grid tabindex="0" role="group" aria-label="Calendar of nights. Use arrow keys to move between nights." aria-describedby="jd-readout"></div>
+      <aside class="jd-read" id="jd-readout" data-read aria-live="polite"></aside>
+    </div>
+    <div class="jd-legend" data-legend aria-hidden="true"></div>
+  </div>
+
+  <!-- 3. Correlation -->
+  <div class="jd-panel jd-corr" data-corr>
+    <div class="jd-top">
+      <h2 class="jd-h">What moved with mood</h2>
+      <div class="d-filters" role="group" aria-label="Compare mood with">
+        <button type="button" data-x="sleep" aria-pressed="true">Sleep</button>
+        <button type="button" data-x="study" aria-pressed="false">Study</button>
+        <button type="button" data-x="screen" aria-pressed="false">Screen</button>
+      </div>
+    </div>
+    <div class="jd-corrbody">
+      <div class="jd-r">
+        <p class="big"><span class="rlab">r =</span> <b data-r>−0.12</b></p>
+        <p class="jd-sub" data-rn></p>
+        <ul class="rlist" data-rlist></ul>
+      </div>
+      <div class="jd-scatter" data-scatter></div>
+    </div>
+    <p class="jd-note">Each dot is a night. Pearson r; line is a least-squares fit. Correlation only.</p>
+  </div>
+</section>
+
+<script>
+  type Day = { d: string; sl: number | null; mo: number | null; g: number; s: string; st: number | null; sc: number | null };
+  type Metric = 'mood' | 'sleep' | 'gym' | 'study' | 'screen';
+
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const minus = (v: number, dp = 2) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(dp);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag: string, attrs: Record<string, any> = {}, text?: string) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, String(attrs[k]));
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const parse = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const iso = (t: Date) => t.toISOString().slice(0, 10);
+  const dowOf = (t: Date) => (t.getUTCDay() + 6) % 7; // Mon=0
+
+  /* ---------- 1. pipeline ---------- */
+  function initPipe(root: HTMLElement) {
+    const stage = root.querySelector<HTMLElement>('[data-stage]')!;
+    const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
+    const phs = [...root.querySelectorAll<HTMLElement>('[data-ph]')];
+    const flds = [...root.querySelectorAll<HTMLElement>('[data-f]')];
+    const ask = root.querySelector<HTMLElement>('[data-ask]')!;
+    const ans = root.querySelector<HTMLElement>('[data-ans]')!;
+    const row = root.querySelector<HTMLElement>('[data-row]')!;
+    const live = root.querySelector<HTMLElement>('[data-pipe-live]')!;
+    const btn = root.querySelector<HTMLButtonElement>('[data-run]')!;
+    // field index -> phrase index (gym and workout_type both come from "Push day"; screen time has no phrase)
+    const SRC = [0, 1, 2, 2, 4, 5, 6, -1];
+    let run = 0;
+
+    const setStep = (i: number) => steps.forEach((s, j) => {
+      s.classList.toggle('done', j < i);
+      if (j === i) s.setAttribute('aria-current', 'step'); else s.removeAttribute('aria-current');
+    });
+    const fill = (f: HTMLElement) => { const v = f.querySelector<HTMLElement>('.va')!; v.textContent = v.dataset.val!; f.classList.add('on'); };
+    function reset() {
+      phs.forEach((p) => p.classList.remove('hl', 'used'));
+      flds.forEach((f) => { f.classList.remove('on', 'miss'); f.querySelector('.va')!.textContent = 'None'; });
+      ask.hidden = true; ans.textContent = ''; row.hidden = true; row.classList.remove('in');
+      stage.querySelectorAll('.chip').forEach((c) => c.remove());
+      setStep(0);
+    }
+    function finalState() {
+      reset();
+      phs.forEach((p) => p.classList.add('used'));
+      flds.forEach(fill);
+      ask.hidden = false; ans.textContent = '6';
+      row.hidden = false; row.classList.add('in');
+      setStep(4);
+    }
+    async function fly(from: HTMLElement, to: HTMLElement, text: string, id: number) {
+      const sr = stage.getBoundingClientRect();
+      const a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+      const chip = document.createElement('span');
+      chip.className = 'chip'; chip.textContent = text; chip.setAttribute('aria-hidden', 'true');
+      stage.appendChild(chip);
+      const x0 = a.left - sr.left, y0 = a.top - sr.top + (a.height - 26) / 2;
+      const cw = chip.offsetWidth;
+      const x1 = b.right - sr.left - cw, y1 = b.top - sr.top + (b.height - 26) / 2;
+      chip.style.left = `${x0}px`; chip.style.top = `${y0}px`;
+      const dx = x1 - x0, dy = y1 - y0;
+      const anim = chip.animate([
+        { transform: 'translate(0,0) scale(.85)', opacity: 0 },
+        { transform: 'translate(0,-6px) scale(1)', opacity: 1, offset: 0.18 },
+        { transform: `translate(${dx}px, ${dy}px) scale(1)`, opacity: 1 },
+      ], { duration: 620, easing: 'cubic-bezier(.3,.6,.2,1)' });
+      await anim.finished.catch(() => {});
+      chip.remove();
+      return id === run;
+    }
+    async function play() {
+      const id = ++run;
+      reset();
+      if (reduce()) { finalState(); live.textContent = 'Extracted 8 fields, asked for 1 missing, saved one row.'; return; }
+      await wait(350); if (id !== run) return;
+      setStep(1);
+      for (let i = 0; i < flds.length; i++) {
+        const src = SRC[i];
+        if (src < 0) { flds[i].classList.add('miss'); continue; }
+        const p = phs.find((x) => +x.dataset.ph! === src)!;
+        p.classList.add('hl');
+        await wait(200); if (id !== run) return;
+        const ok = await fly(p, flds[i].querySelector('.va')!, flds[i].querySelector<HTMLElement>('.va')!.dataset.val!, id);
+        if (!ok) return;
+        fill(flds[i]);
+        if (SRC[i + 1] !== src) { p.classList.remove('hl'); p.classList.add('used'); }
+        await wait(120); if (id !== run) return;
+      }
+      await wait(350); if (id !== run) return;
+      setStep(2);
+      ask.hidden = false;
+      await wait(700); if (id !== run) return;
+      ans.textContent = '6';
+      await wait(380); if (id !== run) return;
+      const last = flds[flds.length - 1]; last.classList.remove('miss'); fill(last);
+      await wait(500); if (id !== run) return;
+      setStep(3);
+      row.hidden = false; requestAnimationFrame(() => row.classList.add('in'));
+      await wait(400); if (id !== run) return;
+      setStep(4);
+      live.textContent = 'Extracted 8 fields, asked for 1 missing, saved one row.';
+    }
+    btn.addEventListener('click', play);
+    reset();
+    if (reduce() || !('IntersectionObserver' in window)) { finalState(); return; }
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); play(); } }, { threshold: 0.45 });
+    io.observe(stage);
+  }
+
+  /* ---------- shared selection ---------- */
+  let selected: string | null = null;
+  const listeners: (() => void)[] = [];
+  const select = (d: string | null) => { selected = d; listeners.forEach((f) => f()); };
+
+  /* ---------- 2. calendar ---------- */
+  const BINS: Record<Metric, { cuts: number[]; labels: string[]; unit: string }> = {
+    mood: { cuts: [7, 7.5, 8, 8.5], labels: ['< 7', '7', '7.5', '8', '8.5+'], unit: '/10' },
+    sleep: { cuts: [6, 7, 8, 9], labels: ['< 6 h', '6', '7', '8', '9+'], unit: ' h' },
+    gym: { cuts: [0.5], labels: ['Rest', 'Gym'], unit: '' },
+    study: { cuts: [0.01, 1, 2, 3.5], labels: ['0 h', '≤ 1', '≤ 2', '≤ 3.5', '3.5+'], unit: ' h' },
+    screen: { cuts: [6, 7, 8, 9], labels: ['< 6 h', '6', '7', '8', '9+'], unit: ' h' },
+  };
+  const RAMP = ['#22354f', '#2f5075', '#43709c', '#5e93c6', '#8fbfec'];
+  const val = (d: Day, m: Metric) => (m === 'mood' ? d.mo : m === 'sleep' ? d.sl : m === 'gym' ? d.g : m === 'study' ? d.st : d.sc);
+  const color = (v: number | null, m: Metric) => {
+    if (v == null) return null;
+    const c = BINS[m].cuts; let i = 0; while (i < c.length && v >= c[i]) i++;
+    return m === 'gym' ? (i ? RAMP[4] : RAMP[0]) : RAMP[i];
+  };
+  const fmt = (v: number | null, m: Metric) => (v == null ? '—' : m === 'gym' ? (v ? 'Gym' : 'Rest') : m === 'mood' ? v.toFixed(1) : `${+v.toFixed(2)} h`);
+
+  function initCal(root: HTMLElement, data: any) {
+    const days: Day[] = data.days;
+    const byDate = new Map(days.map((d) => [d.d, d]));
+    const start = parse(data.range[0]), end = parse(data.range[1]);
+    const gridStart = new Date(start.getTime() - dowOf(start) * 864e5);
+    const nWeeks = Math.ceil(((end.getTime() - gridStart.getTime()) / 864e5 + 1) / 7);
+    const all: { date: string; t: Date; w: number; r: number; day?: Day }[] = [];
+    for (let t = new Date(start); t <= end; t = new Date(t.getTime() + 864e5)) {
+      const w = Math.floor((t.getTime() - gridStart.getTime()) / (7 * 864e5));
+      all.push({ date: iso(t), t, w, r: dowOf(t), day: byDate.get(iso(t)) });
+    }
+    const grid = root.querySelector<HTMLElement>('[data-grid]')!;
+    const read = root.querySelector<HTMLElement>('[data-read]')!;
+    const legend = root.querySelector<HTMLElement>('[data-legend]')!;
+    let metric: Metric = 'mood';
+    let rects = new Map<string, SVGRectElement>();
+
+    const rhythm = (m: Metric) => DOW.map((_, r) => {
+      const vs = days.filter((d) => dowOf(parse(d.d)) === r).map((d) => val(d, m)).filter((v): v is number => v != null);
+      return vs.reduce((a, b) => a + b, 0) / vs.length;
+    });
+
+    function draw() {
+      const W = grid.clientWidth || 600;
+      const horiz = W >= 640;
+      const g = 4;
+      const svg = el('svg', { role: 'presentation' }) as SVGSVGElement;
+      rects = new Map();
+      const rh = rhythm(metric);
+      const lo = metric === 'gym' ? 0 : Math.min(...rh), hi = Math.max(...rh);
+      const pad = metric === 'gym' ? 0 : (hi - lo) * 0.25 || 0.5;
+      const dlo = metric === 'gym' ? 0 : lo - pad, dhi = metric === 'gym' ? 1 : hi + pad;
+      const maxI = rh.indexOf(hi);
+      const rfmt = (v: number) => (metric === 'gym' ? `${Math.round(v * 100)}%` : metric === 'mood' ? v.toFixed(1) : `${v.toFixed(1)} h`);
+
+      let cs: number, w: number, h: number, cellXY: (wk: number, r: number) => [number, number];
+      if (horiz) {
+        const L = 40, T = 22, R = 170;
+        cs = Math.min(34, Math.floor((W - L - R) / nWeeks) - g);
+        const gw = nWeeks * (cs + g);
+        w = L + gw + R; h = T + 7 * (cs + g);
+        cellXY = (wk, r) => [L + wk * (cs + g), T + r * (cs + g)];
+        DOW.forEach((d, r) => svg.append(el('text', { x: L - 8, y: T + r * (cs + g) + cs / 2, class: 'lab', 'text-anchor': 'end', 'dominant-baseline': 'central' }, d)));
+        // rhythm track per weekday row, aligned to the calendar rows
+        const rx0 = L + gw + 14, rx1 = w - 46;
+        svg.append(el('text', { x: rx0, y: 12, class: 'lab' }, metric === 'gym' ? 'Gym rate' : 'Avg by weekday'));
+        rh.forEach((v, r) => {
+          const y = T + r * (cs + g) + cs / 2;
+          const x = rx0 + ((v - dlo) / (dhi - dlo)) * (rx1 - rx0);
+          svg.append(el('line', { x1: rx0, x2: rx1, y1: y, y2: y, class: 'track' }));
+          svg.append(el('line', { x1: rx0, x2: x, y1: y, y2: y, class: 'bar' }));
+          svg.append(el('circle', { cx: x, cy: y, r: 4.5, class: 'pip' }));
+          svg.append(el('text', { x: w - 2, y, class: r === maxI ? 'rv top' : 'rv', 'text-anchor': 'end', 'dominant-baseline': 'central' }, rfmt(v)));
+        });
+      } else {
+        const L = 34, T = 20, B = 96;
+        cs = Math.min(32, Math.floor((W - L) / 7) - g);
+        w = L + 7 * (cs + g); h = T + nWeeks * (cs + g) + B;
+        cellXY = (wk, r) => [L + r * (cs + g), T + wk * (cs + g)];
+        DOW.forEach((d, r) => svg.append(el('text', { x: L + r * (cs + g) + cs / 2, y: 10, class: 'lab', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, d.slice(0, 2))));
+        const by = T + nWeeks * (cs + g) + 10, bh = 52;
+        svg.append(el('text', { x: 0, y: by + bh / 2, class: 'lab', 'dominant-baseline': 'central' }, 'Avg'));
+        rh.forEach((v, r) => {
+          const x = L + r * (cs + g) + cs / 2;
+          const y = by + bh - ((v - dlo) / (dhi - dlo)) * bh;
+          svg.append(el('line', { x1: x, x2: x, y1: by, y2: by + bh, class: 'track' }));
+          svg.append(el('line', { x1: x, x2: x, y1: by + bh, y2: y, class: 'bar' }));
+          svg.append(el('circle', { cx: x, cy: y, r: 4.5, class: 'pip' }));
+          svg.append(el('text', { x, y: by + bh + 18, class: r === maxI ? 'rv top' : 'rv', 'text-anchor': 'middle' }, rfmt(v)));
+        });
+      }
+      // month labels at the first week holding the 1st (or the first week)
+      const seen = new Set<number>();
+      all.forEach((c) => {
+        const m = c.t.getUTCMonth();
+        if (seen.has(m)) return;
+        if (c.t.getUTCDate() !== 1 && seen.size) return;
+        seen.add(m);
+        const [x, y] = cellXY(c.w, c.r);
+        if (horiz) svg.append(el('text', { x, y: 10, class: 'lab mon' }, MON[m]));
+        else svg.append(el('text', { x: 0, y: y + cs / 2, class: 'lab mon', 'dominant-baseline': 'central' }, MON[m]));
+      });
+      all.forEach((c) => {
+        const [x, y] = cellXY(c.w, c.r);
+        const v = c.day ? val(c.day, metric) : null;
+        const fill = c.day ? color(v, metric) : null;
+        const r = el('rect', { x, y, width: cs, height: cs, rx: 5, class: c.day ? (fill ? 'cell' : 'cell nodata') : 'cell missed', 'data-d': c.date }) as SVGRectElement;
+        if (fill) r.setAttribute('fill', fill);
+        r.addEventListener('pointerenter', () => select(c.date));
+        r.addEventListener('click', () => { select(c.date); grid.focus({ preventScroll: true }); });
+        svg.append(r);
+        rects.set(c.date, r);
+        if (metric === 'gym' && c.day?.g && cs >= 22) {
+          const s = c.day.s;
+          svg.append(el('text', { x: x + cs / 2, y: y + cs / 2 + 0.5, class: 'split', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, s === 'push' ? 'Pu' : s === 'pull' ? 'Pl' : s === 'legs' ? 'L' : '+'));
+        }
+      });
+      svg.append(el('rect', { class: 'sel', width: cs + 4, height: cs + 4, rx: 7, x: 0, y: 0, visibility: 'hidden', 'data-sel': '' }));
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.setAttribute('width', String(w)); svg.setAttribute('height', String(h));
+      grid.replaceChildren(svg);
+      drawLegend();
+      mark();
+    }
+    function drawLegend() {
+      const b = BINS[metric];
+      const cols = metric === 'gym' ? [RAMP[0], RAMP[4]] : RAMP;
+      legend.replaceChildren(...cols.map((c, i) => {
+        const s = document.createElement('span');
+        s.innerHTML = `<i style="background:${c}"></i>${b.labels[i]}`;
+        return s;
+      }));
+      if (metric === 'gym') { const s = document.createElement('span'); s.textContent = 'Pu push · Pl pull · L legs · + other'; legend.append(s); }
+      const s = document.createElement('span'); s.innerHTML = `<i class="nd"></i>Not logged`; legend.append(s);
+    }
+    function mark() {
+      const sel = grid.querySelector<SVGRectElement>('[data-sel]');
+      const r = selected ? rects.get(selected) : null;
+      if (sel) {
+        sel.style.visibility = r ? 'visible' : 'hidden';
+        if (r) { sel.setAttribute('x', String(+r.getAttribute('x')! - 2)); sel.setAttribute('y', String(+r.getAttribute('y')! - 2)); }
+      }
+      readout();
+    }
+    function readout() {
+      const t = data.totals;
+      if (!selected) {
+        read.innerHTML = `<p class="jd-lab">All nights</p>
+          <dl><div><dt>Logged</dt><dd>${t.nights} / ${t.span}</dd></div>
+          <div><dt>Gym days</dt><dd>${t.gym}</dd></div>
+          <div><dt>Avg sleep</dt><dd>${t.sleep.toFixed(1)} h</dd></div>
+          <div><dt>Avg mood</dt><dd>${t.mood.toFixed(1)}</dd></div>
+          <div><dt>Avg study</dt><dd>${t.study.toFixed(1)} h</dd></div>
+          <div><dt>Avg screen</dt><dd>${t.screen.toFixed(1)} h</dd></div></dl>
+          <p class="hint">Hover or arrow-key through the nights</p>`;
+        return;
+      }
+      const t0 = parse(selected), d = byDate.get(selected);
+      const head = `<p class="jd-lab">${DOW[dowOf(t0)]}</p><p class="date">${MON[t0.getUTCMonth()]} ${t0.getUTCDate()}</p>`;
+      if (!d) { read.innerHTML = `${head}<p class="hint">Not logged. The only missed night.</p>`; return; }
+      const gym = d.g ? (d.s && d.s !== 'other' ? d.s[0].toUpperCase() + d.s.slice(1) : 'Yes') : 'Rest';
+      read.innerHTML = `${head}<dl>
+        <div><dt>Mood</dt><dd>${fmt(d.mo, 'mood')}</dd></div>
+        <div><dt>Sleep</dt><dd>${fmt(d.sl, 'sleep')}</dd></div>
+        <div><dt>Gym</dt><dd>${gym}</dd></div>
+        <div><dt>Study</dt><dd>${fmt(d.st, 'study')}</dd></div>
+        <div><dt>Screen</dt><dd>${fmt(d.sc, 'screen')}</dd></div></dl>`;
+    }
+    root.querySelectorAll<HTMLButtonElement>('[data-metric]').forEach((b) => b.addEventListener('click', () => {
+      root.querySelectorAll('[data-metric]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      metric = b.dataset.metric as Metric; draw();
+    }));
+    grid.addEventListener('keydown', (e) => {
+      const k = e.key;
+      const map: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7 };
+      const horiz = (grid.clientWidth || 600) >= 640;
+      if (horiz) { map.ArrowRight = 7; map.ArrowLeft = -7; map.ArrowDown = 1; map.ArrowUp = -1; }
+      if (k === 'Escape') { select(null); return; }
+      if (!(k in map) && k !== 'Home' && k !== 'End') return;
+      e.preventDefault();
+      let i = selected ? all.findIndex((c) => c.date === selected) : -1;
+      if (k === 'Home') i = 0; else if (k === 'End') i = all.length - 1;
+      else i = i < 0 ? 0 : Math.max(0, Math.min(all.length - 1, i + map[k]));
+      select(all[i].date);
+    });
+    grid.addEventListener('pointerleave', () => { if (document.activeElement !== grid) select(null); });
+    listeners.push(mark);
+    let to: number | undefined;
+    new ResizeObserver(() => { clearTimeout(to); to = window.setTimeout(draw, 80); }).observe(grid);
+    draw();
+  }
+
+  /* ---------- 3. correlation ---------- */
+  function pearson(xs: number[], ys: number[]) {
+    const n = xs.length, mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) { const a = xs[i] - mx, b = ys[i] - my; sxy += a * b; sxx += a * a; syy += b * b; }
+    return { r: sxy / Math.sqrt(sxx * syy), slope: sxy / sxx, icept: my - (sxy / sxx) * mx, n };
+  }
+  function initCorr(root: HTMLElement, data: any) {
+    const days: Day[] = data.days;
+    const box = root.querySelector<HTMLElement>('[data-scatter]')!;
+    const rEl = root.querySelector<HTMLElement>('[data-r]')!;
+    const rn = root.querySelector<HTMLElement>('[data-rn]')!;
+    const rlist = root.querySelector<HTMLElement>('[data-rlist]')!;
+    const X = { sleep: { k: 'sl', label: 'Sleep (h)', name: 'Sleep' }, study: { k: 'st', label: 'Study (h)', name: 'Study' }, screen: { k: 'sc', label: 'Screen time (h)', name: 'Screen' } } as const;
+    type XK = keyof typeof X;
+    let xk: XK = 'sleep';
+    const pts = (k: XK) => days.filter((d) => (d as any)[X[k].k] != null && d.mo != null).map((d) => ({ x: (d as any)[X[k].k] as number, y: d.mo as number, d: d.d }));
+    const stats = Object.fromEntries((Object.keys(X) as XK[]).map((k) => { const p = pts(k); return [k, pearson(p.map((q) => q.x), p.map((q) => q.y))]; })) as Record<XK, ReturnType<typeof pearson>>;
+    const gymMood = (g: number) => { const v = days.filter((d) => d.g === g && d.mo != null).map((d) => d.mo!); return v.reduce((a, b) => a + b) / v.length; };
+
+    function list() {
+      rlist.replaceChildren(...(Object.keys(X) as XK[]).sort((a, b) => Math.abs(stats[b].r) - Math.abs(stats[a].r)).map((k) => {
+        const li = document.createElement('li');
+        li.className = k === xk ? 'cur' : '';
+        const wpct = Math.abs(stats[k].r) * 100 / 0.5;
+        li.innerHTML = `<span class="nm">${X[k].name}</span><span class="tr"><i style="width:${Math.min(100, wpct)}%"></i></span><b>${minus(stats[k].r)}</b>`;
+        return li;
+      }), (() => { const li = document.createElement('li'); li.className = 'gm'; li.innerHTML = `<span class="nm">Gym vs rest</span><span class="txt">mood ${gymMood(1).toFixed(2)} vs ${gymMood(0).toFixed(2)}</span>`; return li; })());
+    }
+    function draw() {
+      const p = pts(xk), s = stats[xk];
+      rEl.textContent = minus(s.r);
+      rn.textContent = `${s.n} nights with both logged`;
+      const W = Math.max(280, box.clientWidth || 500), H = Math.round(Math.min(320, Math.max(240, W * 0.55)));
+      const m = { l: 34, r: 12, t: 12, b: 36 };
+      const xmax = Math.ceil(Math.max(...p.map((q) => q.x))), xmin = Math.floor(Math.min(...p.map((q) => q.x)));
+      const ymin = 6, ymax = 10;
+      const sx = (v: number) => m.l + ((v - xmin) / (xmax - xmin || 1)) * (W - m.l - m.r);
+      const sy = (v: number) => H - m.b - ((v - ymin) / (ymax - ymin)) * (H - m.t - m.b);
+      const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': `Scatter of mood against ${X[xk].name.toLowerCase()}, ${s.n} nights, r ${minus(s.r)}` });
+      for (let y = ymin; y <= ymax; y++) { svg.append(el('line', { x1: m.l, x2: W - m.r, y1: sy(y), y2: sy(y), class: 'gl' })); svg.append(el('text', { x: m.l - 8, y: sy(y), class: 'lab', 'text-anchor': 'end', 'dominant-baseline': 'central' }, String(y))); }
+      const step = xmax - xmin > 8 ? 2 : 1;
+      for (let x = xmin; x <= xmax; x += step) svg.append(el('text', { x: sx(x), y: H - m.b + 16, class: 'lab', 'text-anchor': 'middle' }, String(x)));
+      svg.append(el('text', { x: W - m.r, y: H - 4, class: 'lab', 'text-anchor': 'end' }, X[xk].label));
+      svg.append(el('text', { x: m.l, y: m.t - 2, class: 'lab' }, 'Mood'));
+      const g = el('g');
+      p.forEach((q) => {
+        const c = el('circle', { cx: sx(q.x), cy: sy(q.y), r: 4.5, class: 'dot', 'data-d': q.d });
+        c.addEventListener('pointerenter', () => select(q.d));
+        g.append(c);
+      });
+      svg.append(g);
+      svg.append(el('line', { x1: sx(xmin), x2: sx(xmax), y1: sy(s.icept + s.slope * xmin), y2: sy(s.icept + s.slope * xmax), class: 'fit' }));
+      svg.append(el('circle', { r: 8, cx: 0, cy: 0, visibility: 'hidden', class: 'ring', 'data-ring': '' }));
+      box.replaceChildren(svg);
+      list(); mark();
+    }
+    function mark() {
+      const ring = box.querySelector('[data-ring]');
+      const dot = selected ? box.querySelector<SVGCircleElement>(`.dot[data-d="${selected}"]`) : null;
+      if (!ring) return;
+      (ring as SVGElement).style.visibility = dot ? 'visible' : 'hidden';
+      if (dot) { ring.setAttribute('cx', dot.getAttribute('cx')!); ring.setAttribute('cy', dot.getAttribute('cy')!); }
+    }
+    root.querySelectorAll<HTMLButtonElement>('[data-x]').forEach((b) => b.addEventListener('click', () => {
+      root.querySelectorAll('[data-x]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      xk = b.dataset.x as XK; draw();
+    }));
+    box.addEventListener('pointerleave', () => select(null));
+    listeners.push(mark);
+    let to: number | undefined;
+    new ResizeObserver(() => { clearTimeout(to); to = window.setTimeout(draw, 80); }).observe(box);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-jd]').forEach(async (root) => {
+    initPipe(root.querySelector('[data-pipe]')!);
+    const data = await fetch('/data/journal-to-data/days.json').then((r) => r.json());
+    initCal(root.querySelector('[data-cal]')!, data);
+    initCorr(root.querySelector('[data-corr]')!, data);
+  });
+</script>
+
+<style>
+  .jd { display: flex; flex-direction: column; gap: 20px; --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace; }
+  .jd-panel { background: var(--panel); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: clamp(16px, 2.6vw, 28px); min-width: 0; }
+  .jd-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 20px; margin-bottom: 16px; }
+  .jd-h { font-size: clamp(1.7rem, 3.2vw, 2.3rem); font-weight: 800; }
+  .jd-h .num { color: var(--blue); font-weight: 900; }
+  .jd-sub { color: var(--ink-2); font-size: 0.92rem; margin-top: 6px; }
+  .jd-lab { display: inline-block; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
+  .jd-note { color: var(--ink-2); font-size: 0.88rem; margin-top: 12px; }
+  .jd .d-filters { margin: 0; }
+  .jd-run { min-height: 44px; font-size: 1.05rem; }
+
+  /* steps */
+  .jd-steps { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 18px; }
+  .jd-steps li { display: flex; align-items: center; gap: 8px; padding: 8px 0 10px; color: var(--ink-2); font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid var(--line); transition: color 200ms, border-color 200ms; min-width: 0; }
+  .jd-steps span { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; font: 800 0.85rem/1 var(--display); box-shadow: inset 0 0 0 1px var(--line); }
+  .jd-steps li.done { color: var(--ink); border-color: var(--blue); }
+  .jd-steps li.done span { background: var(--blue); color: var(--bg); box-shadow: none; }
+  .jd-steps li[aria-current='step'] { color: var(--ink); border-color: var(--lime); }
+  .jd-steps li[aria-current='step'] span { box-shadow: inset 0 0 0 1.5px var(--lime); color: var(--lime); }
+  @media (max-width: 560px) { .jd-steps li { flex-direction: column; align-items: flex-start; gap: 4px; font-size: 0.78rem; line-height: 1.15; } }
+
+  /* stage */
+  .jd-stage { position: relative; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 860px) { .jd-stage { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; } }
+  .jd-entry, .jd-schema { background: var(--bg-2); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); padding: 16px 18px; min-width: 0; }
+  .jd-text { font-size: clamp(1.05rem, 1.6vw, 1.2rem); line-height: 1.75; color: var(--ink); }
+  .ph { border-radius: 4px; padding: 1px 0; transition: background-color 220ms, box-shadow 220ms; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .ph.hl { background: color-mix(in srgb, var(--blue) 30%, transparent); }
+  .ph.used { box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--blue) 70%, transparent); }
+  .jd-model { margin-top: 14px; font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .jd-model .jd-lab { margin: 0; font-family: var(--body); }
+
+  .jd-fields { font-family: var(--mono); font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
+  .fld { display: grid; grid-template-columns: minmax(0, 1fr) auto 5.5rem; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .fld:last-child { border-bottom: 0; }
+  .fld dt { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fld dd { margin: 0; }
+  .fld .ty { color: var(--ink-2); font-size: 0.85em; }
+  .fld .va { text-align: right; color: var(--ink-2); transition: color 200ms; }
+  .fld.on .va { color: var(--blue); font-weight: 700; }
+  .fld.miss .va { color: var(--lime); }
+  .fld.miss dt { color: var(--lime); }
+  .jd-ask { margin-top: 16px; padding: 10px 12px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); font-size: 0.92rem; }
+  .jd-ask .jd-lab { margin: 0 6px 0 0; }
+  .jd-ask .ans { font-family: var(--mono); color: var(--blue); margin-top: 4px; min-height: 1.4em; }
+  .jd-stage :global(.chip) { position: absolute; z-index: 3; height: 26px; display: inline-flex; align-items: center; padding: 0 9px; border-radius: 6px; background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--blue); color: var(--blue); font: 700 0.88rem/1 var(--mono); white-space: nowrap; pointer-events: none; }
+
+  .jd-row { margin-top: 16px; opacity: 0; transform: translateY(8px); transition: opacity 360ms ease-out, transform 360ms ease-out; }
+  .jd-row.in { opacity: 1; transform: none; }
+  .cells { border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); font-family: var(--mono); font-size: clamp(0.72rem, 1.3vw, 0.9rem); }
+  .cells [role='row'] { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cells span { padding: 7px 8px; border-right: 1px solid var(--line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cells span:last-child { border-right: 0; }
+  .cells .hd { background: var(--bg-2); color: var(--ink-2); border-bottom: 1px solid var(--line); }
+  .cells .bd { color: var(--blue); font-weight: 700; }
+  .times { margin-top: 10px; color: var(--ink-2); font-size: 0.9rem; font-weight: 600; }
+
+  /* calendar */
+  .jd-calbody { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 1100px) { .jd-calbody { grid-template-columns: minmax(0, 1fr) 220px; } }
+  .jd-grid { min-width: 0; border-radius: 8px; }
+  .jd-grid :global(svg) { max-width: 100%; height: auto; overflow: visible; }
+  .jd-grid :global(.cell) { cursor: pointer; }
+  .jd-grid :global(.cell.nodata) { fill: transparent; stroke: var(--line); stroke-width: 1; }
+  .jd-grid :global(.cell.missed) { fill: transparent; stroke: var(--ink-2); stroke-dasharray: 3 3; stroke-width: 1; }
+  .jd-grid :global(.sel) { fill: none; stroke: var(--lime); stroke-width: 2.5; pointer-events: none; }
+  .jd :global(.lab) { fill: var(--ink-2); font: 600 11px var(--body); letter-spacing: 0.04em; }
+  .jd :global(.lab.mon) { fill: var(--ink); text-transform: uppercase; }
+  .jd-grid :global(.split) { fill: var(--bg); font: 800 11px var(--display); pointer-events: none; text-transform: uppercase; }
+  .jd-grid :global(.track) { stroke: var(--line); stroke-width: 2; }
+  .jd-grid :global(.bar) { stroke: var(--blue); stroke-width: 2; opacity: 0.55; }
+  .jd-grid :global(.pip) { fill: var(--blue); }
+  .jd-grid :global(.rv) { fill: var(--ink-2); font: 700 13px var(--display); letter-spacing: 0.02em; }
+  .jd-grid :global(.rv.top) { fill: var(--blue); }
+
+  @media (max-width: 1099px) { .jd-read { order: -1; } }
+  .jd-read { background: var(--bg-2); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); padding: 14px 16px; min-height: 100%; }
+  .jd-read :global(.jd-lab) { display: block; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
+  .jd-read :global(.date) { font: 900 2rem/0.95 var(--display); text-transform: uppercase; margin-bottom: 10px; }
+  .jd-read :global(dl) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+  @media (min-width: 1100px) { .jd-read :global(dl) { grid-template-columns: minmax(0, 1fr); gap: 6px; } .jd-read :global(dl > div) { display: flex; justify-content: space-between; align-items: baseline; } }
+  .jd-read :global(dt) { color: var(--ink-2); font-size: 0.82rem; font-weight: 600; }
+  .jd-read :global(dd) { margin: 0; color: var(--blue); font: 800 1.35rem/1.1 var(--display); }
+  .jd-read :global(.hint) { color: var(--ink-2); font-size: 0.85rem; margin-top: 12px; }
+
+  .jd-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; color: var(--ink-2); font-size: 0.8rem; font-weight: 600; }
+  .jd-legend :global(span) { display: inline-flex; align-items: center; gap: 6px; }
+  .jd-legend :global(i) { width: 13px; height: 13px; border-radius: 3px; display: inline-block; }
+  .jd-legend :global(i.nd) { box-shadow: inset 0 0 0 1px var(--ink-2); outline: 1px dashed var(--ink-2); outline-offset: -1px; }
+
+  /* correlation */
+  .jd-corrbody { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 860px) { .jd-corrbody { grid-template-columns: 280px minmax(0, 1fr); gap: 28px; } }
+  .big { font: 900 clamp(3.4rem, 7vw, 4.8rem)/0.9 var(--display); color: var(--blue); }
+  .big .rlab { font-size: 0.45em; color: var(--ink-2); font-weight: 800; }
+  .rlist { list-style: none; margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .rlist :global(li) { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr) 3.2rem; gap: 10px; align-items: center; font-size: 0.9rem; color: var(--ink-2); font-weight: 600; }
+  .rlist :global(li.cur) { color: var(--ink); }
+  .rlist :global(.tr) { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .rlist :global(.tr i) { display: block; height: 100%; background: var(--blue); opacity: 0.6; }
+  .rlist :global(li.cur .tr i) { opacity: 1; }
+  .rlist :global(b) { text-align: right; color: var(--blue); font: 800 1.05rem/1 var(--display); }
+  .rlist :global(li.gm) { grid-template-columns: 6.2rem minmax(0, 1fr); padding-top: 8px; border-top: 1px solid var(--line); }
+  .rlist :global(.txt) { color: var(--ink); }
+  .jd-scatter { min-width: 0; }
+  .jd-scatter :global(svg) { max-width: 100%; height: auto; }
+  .jd-scatter :global(.gl) { stroke: var(--line); }
+  .jd-scatter :global(.dot) { fill: var(--blue); fill-opacity: 0.45; stroke: var(--blue); stroke-opacity: 0.8; }
+  .jd-scatter :global(.fit) { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 4; }
+  .jd-scatter :global(.ring) { fill: none; stroke: var(--lime); stroke-width: 2.5; pointer-events: none; }
+
+  @media (prefers-reduced-motion: reduce) { .jd-row { transition: none; } }
+</style>
