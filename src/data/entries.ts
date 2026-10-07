@@ -172,11 +172,6 @@ export const entries: Entry[] = [
     results: ['89% on held-out validation clips (majority-class baseline: 37%)', 'Demo: 6 validation plays it never trained on, with its real probabilities'],
     links: [{ href: '#demo', label: 'Watch demo' }, { href: 'https://github.com/EshaanDhavala/PlayScan', label: 'Code' }],
     pic: { kind: 'img', src: '/thumbs/playscan.jpg', alt: 'PlayScan calling a run play over an NFL broadcast' },
-    video: { src: '/media/playscan.mp4', poster: '/media/playscan-poster.jpg', label: 'PlayScan reading six validation plays and calling pass, run, or special teams with its probabilities' },
-    chapters: [
-      { t: 0, label: 'Play 1 · Pass 98%' }, { t: 5.6, label: 'Play 2 · Run 100%' }, { t: 11.2, label: 'Play 3 · Special teams 100%' },
-      { t: 16.8, label: 'Play 4 · Pass 100%' }, { t: 22.4, label: 'Play 5 · Run 100%' }, { t: 28.0, label: 'Play 6 · Special teams 99%' },
-    ],
   },
   {
     slug: 'journal-to-data',
