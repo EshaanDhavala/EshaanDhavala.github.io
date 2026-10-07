@@ -1,3 +1,415 @@
 ---
-/** Interactive demo for this project. Placeholder until the demo is built. */
+/** ADHD Care Gap: survey-weighted NS-DATA 2014 numbers, precomputed in public/data/adhd-diagnosis/adhd.json. */
+const cells = Array.from({ length: 100 }, (_, i) => i);
+const incomes = [
+  { k: 1, label: '≤100%', sub: 'poorest' },
+  { k: 2, label: '100–200%', sub: '' },
+  { k: 3, label: '200–400%', sub: '' },
+  { k: 4, label: '>400%', sub: 'highest' },
+];
 ---
+<section class="adhd" data-adhd aria-labelledby="ad-title">
+  <header class="ad-head">
+    <p class="ad-kicker">CDC NS-DATA 2014 · 2,966 kids ever diagnosed with ADHD</p>
+    <h2 id="ad-title">The care gap</h2>
+    <p class="ad-dek">Kids in the poorest homes are more likely to have severe ADHD, and at the same severity, less likely to be getting any treatment.</p>
+  </header>
+
+  <!-- 1. 100 kids -->
+  <div class="ad-panel ad-waffle-panel">
+    <div class="ad-sec-head">
+      <h3>Out of 100 kids with ADHD</h3>
+      <p>Pick a household income. Each square is one kid, shaded by how severe a parent rates their ADHD.</p>
+    </div>
+    <div class="ad-waffle-grid">
+      <div class="ad-controls">
+        <p class="ad-label" id="ad-inc-label">Household income, % of the federal poverty line</p>
+        <div class="ad-steps" role="group" aria-labelledby="ad-inc-label">
+          {incomes.map((g) => (
+            <button type="button" data-inc={g.k} aria-pressed={g.k === 1 ? 'true' : 'false'}>
+              <span class="s-l">{g.label}</span>
+              <span class="s-v" data-inc-sev={g.k}>&nbsp;</span>
+              {g.sub && <span class="s-sub">{g.sub}</span>}
+            </button>
+          ))}
+        </div>
+        <div class="ad-read" aria-live="polite">
+          <p class="ad-big"><b data-w-sev>–</b><span>of 100 have <strong>severe</strong> ADHD</span></p>
+          <p class="ad-ci" data-w-ci>&nbsp;</p>
+          <p class="ad-gap" data-w-gap>&nbsp;</p>
+          <ul class="ad-mix">
+            <li><i class="sw sev3"></i>Severe <b data-w-n="3">–</b></li>
+            <li><i class="sw sev2"></i>Moderate <b data-w-n="2">–</b></li>
+            <li><i class="sw sev1"></i>Mild <b data-w-n="1">–</b></li>
+            <li class="ad-extra-key"><i class="sw extra"></i>Severe beyond the &gt;400% rate</li>
+          </ul>
+        </div>
+        <div class="ad-toggle" role="group" aria-label="Estimate type">
+          <button type="button" data-wt="w" aria-pressed="true">Survey-weighted</button>
+          <button type="button" data-wt="u" aria-pressed="false">Raw sample</button>
+        </div>
+        <p class="ad-small" data-wt-note>National estimate using the survey weights.</p>
+      </div>
+      <div class="ad-waffle" data-waffle aria-hidden="true">
+        {cells.map((i) => <i class="c sev1" style={`--i:${i}`}></i>)}
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. treatment at the same severity -->
+  <div class="ad-panel">
+    <div class="ad-sec-head">
+      <h3>Same severity, different care</h3>
+      <p>Kids who currently have ADHD, split by severity and income. Bars show the 95% interval; small groups are wide.</p>
+    </div>
+    <div class="ad-toggle" role="group" aria-label="Measure">
+      <button type="button" data-tx="neither" aria-pressed="true">No treatment</button>
+      <button type="button" data-tx="med" aria-pressed="false">On medication</button>
+      <button type="button" data-tx="beh" aria-pressed="false">Behavioral treatment</button>
+    </div>
+    <div class="ad-tx-wrap"><table class="ad-tx" data-tx-table></table></div>
+    <p class="ad-call" data-tx-call>&nbsp;</p>
+  </div>
+
+  <!-- 3. co-occurring conditions -->
+  <div class="ad-panel">
+    <div class="ad-sec-head">
+      <h3>ADHD rarely comes alone</h3>
+      <p><b class="ad-num" data-any>–</b> have been told by a provider they have at least one of 13 other conditions. The more severe the ADHD, the longer the list.</p>
+    </div>
+    <div class="ad-burden" data-burden></div>
+    <div class="ad-co">
+      <div class="ad-matrix-wrap">
+        <p class="ad-label">Pick a condition. Row = kids with it; shade = share who also have the column condition.</p>
+        <div class="ad-matrix" data-matrix></div>
+        <div class="ad-chips" data-chips role="group" aria-label="Pick a condition"></div>
+      </div>
+      <div class="ad-detail">
+        <p class="ad-detail-h" data-co-h aria-live="polite">&nbsp;</p>
+        <p class="ad-small ad-key"><i class="sw bar"></i>kids with it <i class="sw tick"></i>all kids in the survey</p>
+        <ul class="ad-bars" data-co-bars></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. model -->
+  <div class="ad-panel">
+    <div class="ad-sec-head">
+      <h3>Who gets treated</h3>
+      <p>Odds of currently getting any ADHD treatment, each factor holding the others fixed. Left of 1 means lower odds.</p>
+    </div>
+    <div class="ad-forest" data-forest role="img" aria-label="Odds ratios with 95% intervals from a survey-weighted logistic regression"></div>
+    <p class="ad-small" data-forest-note>&nbsp;</p>
+  </div>
+
+  <ul class="ad-notes">
+    <li>Survey-weighted with <code>ADHD_WT</code>; 95% intervals account for the survey design (strata state × phone sample, one PSU per household), per the CDC NS-DATA FAQ.</li>
+    <li>Raw, unweighted counts give 23% vs 12% severe (1.9×). Weighted, the national estimate is <span data-note-w>29% vs 12%</span>.</li>
+    <li>Severity and conditions are parent-reported. Data from 2014. These are associations, not causes.</li>
+    <li>Behavioral treatment: currently getting classroom management, peer intervention, social skills training, CBT, behavioral therapy, other counseling, or parent training.</li>
+    <li>Model: survey-weighted logistic regression, refit for this page from the team’s project spec (race, sex, income, insurance, severity, other conditions, age).</li>
+  </ul>
+</section>
+
+<script>
+  type CI = { p: number; lo: number; hi: number; n: number };
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const INC = ['', '≤100% FPL', '100–200% FPL', '200–400% FPL', '>400% FPL'];
+  const SEVS = ['mild', 'moderate', 'severe'];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Largest-remainder rounding so the 100 squares always add up.
+  function to100(ps: number[]) {
+    const raw = ps.map((p) => p * 100), fl = raw.map(Math.floor);
+    let left = 100 - fl.reduce((a, b) => a + b, 0);
+    raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { fl[i]++; left--; } });
+    return fl;
+  }
+
+  async function setup() {
+    const root = document.querySelector<HTMLElement>('[data-adhd]:not([data-ready])');
+    if (!root) return;
+    root.dataset.ready = '1';
+    const D = await fetch('/data/adhd-diagnosis/adhd.json').then((r) => r.json());
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const $$ = <T extends Element = HTMLElement>(s: string) => Array.from(root.querySelectorAll<T>(s));
+    const press = (btns: HTMLElement[], on: HTMLElement) => btns.forEach((b) => b.setAttribute('aria-pressed', String(b === on)));
+
+    /* ---------- 1. waffle ---------- */
+    const rows = D.severity.income;
+    const state = { inc: 1, wt: 'w' };
+    const cellsEl = $$('[data-waffle] .c');
+    const mix = (r: any) => {
+      if (state.wt === 'w') return to100([r.severe.p, r.moderate.p, r.mild.p]);
+      return to100([r.severe_unw, r.moderate_unw, r.mild_unw]);
+    };
+    function paintSteps() {
+      rows.forEach((r: any) => { $(`[data-inc-sev="${r.key}"]`).textContent = `${mix(r)[0]}% severe`; });
+    }
+    function paintWaffle() {
+      const r = rows[state.inc - 1], top = rows[3];
+      const [s, m] = mix(r), base = mix(top)[0];
+      cellsEl.forEach((c, i) => {
+        c.className = 'c ' + (i < s ? 'sev3' : i < s + m ? 'sev2' : 'sev1') + (i < s && i >= base ? ' extra' : '');
+      });
+      $('[data-w-sev]').textContent = String(s);
+      $('[data-w-n="3"]').textContent = String(s);
+      $('[data-w-n="2"]').textContent = String(m);
+      $('[data-w-n="1"]').textContent = String(100 - s - m);
+      $('[data-w-ci]').textContent = state.wt === 'w'
+        ? `95% interval ${Math.round(r.severe.lo * 100)}–${Math.round(r.severe.hi * 100)} · ${r.n} kids surveyed at ${INC[state.inc]}`
+        : `${r.severe_count} of ${r.n} kids surveyed at ${INC[state.inc]}, no weights`;
+      const gap = s - base;
+      $('[data-w-gap]').textContent = state.inc === 4 ? 'Highest-income group. Compare the others to this.'
+        : gap > 0 ? `${gap} more severe cases per 100 than the >400% group (${(s / base).toFixed(1)}×).` : 'About the same as the >400% group.';
+      root.querySelector('.ad-extra-key')!.toggleAttribute('hidden', !(gap > 0 && state.inc !== 4));
+    }
+    const incBtns = $$<HTMLButtonElement>('[data-inc]');
+    incBtns.forEach((b) => b.addEventListener('click', () => { state.inc = +b.dataset.inc!; press(incBtns, b); paintWaffle(); }));
+    const wtBtns = $$<HTMLButtonElement>('[data-wt]');
+    wtBtns.forEach((b) => b.addEventListener('click', () => {
+      state.wt = b.dataset.wt!; press(wtBtns, b);
+      $('[data-wt-note]').textContent = state.wt === 'w' ? 'National estimate using the survey weights.' : 'Raw sample counts, no weights. This is what the original class chart showed.';
+      paintSteps(); paintWaffle();
+    }));
+    paintSteps();
+    // Intro: start at the highest-income mix, morph to the poorest once it's on screen.
+    if (!reduce) {
+      state.inc = 4; paintWaffle();
+      const io = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          setTimeout(() => { if (state.inc === 4 && incBtns[0].getAttribute('aria-pressed') === 'true') { state.inc = 1; paintWaffle(); } }, 500);
+        }
+      }, { threshold: 0.5 });
+      io.observe($('[data-waffle]'));
+    } else paintWaffle();
+
+    /* ---------- 2. treatment table ---------- */
+    const TX: Record<string, string> = { neither: 'no treatment', med: 'on ADHD medication', beh: 'in behavioral treatment' };
+    let tx = 'neither';
+    function paintTx() {
+      const cells = D.treatment.cells;
+      const get = (k: number, s: string) => cells.find((c: any) => c.inc === k && c.sev === s);
+      let h = `<caption class="visually-hidden">Share ${TX[tx]} by severity and household income</caption>`;
+      h += `<thead><tr><th scope="col"><span class="visually-hidden">Severity</span></th>${[1, 2, 3, 4].map((k) => `<th scope="col">${INC[k].replace(' FPL', '')}${k === 1 ? '<small>poorest</small>' : k === 4 ? '<small>highest</small>' : ''}</th>`).join('')}</tr></thead><tbody>`;
+      for (const s of SEVS) {
+        h += `<tr class="${s === 'severe' ? 'hl' : ''}"><th scope="row">${s[0].toUpperCase() + s.slice(1)}</th>`;
+        for (const k of [1, 2, 3, 4]) {
+          const c = get(k, s), v: CI = c[tx];
+          h += `<td><span class="v">${pct(v.p)}</span><span class="bar" aria-hidden="true"><i style="width:${v.p * 100}%"></i><b style="left:${v.lo * 100}%;width:${(v.hi - v.lo) * 100}%"></b></span><span class="n">${Math.round(v.lo * 100)}–${Math.round(v.hi * 100)}%<br />n ${c.n}</span></td>`;
+        }
+        h += '</tr>';
+      }
+      $('[data-tx-table]').innerHTML = h + '</tbody>';
+      const lo = get(1, 'severe')[tx], hi = get(4, 'severe')[tx];
+      $('[data-tx-call]').innerHTML = tx === 'neither'
+        ? `Severe ADHD, no treatment: <b>${pct(lo.p)}</b> in the poorest group vs <b>${pct(hi.p)}</b> in the highest. Small groups (n ${get(1, 'severe').n} and ${get(4, 'severe').n}), so read the intervals.`
+        : tx === 'med'
+          ? `Medication rises with income at every severity: mild <b>${pct(get(1, 'mild').med.p)}</b> → <b>${pct(get(4, 'mild').med.p)}</b>, moderate <b>${pct(get(1, 'moderate').med.p)}</b> → <b>${pct(get(4, 'moderate').med.p)}</b>.`
+          : `Behavioral treatment runs the other way for milder cases: mild <b>${pct(get(1, 'mild').beh.p)}</b> in the poorest group vs <b>${pct(get(4, 'mild').beh.p)}</b> in the highest. Much of it is school-based.`;
+    }
+    const txBtns = $$<HTMLButtonElement>('[data-tx]');
+    txBtns.forEach((b) => b.addEventListener('click', () => { tx = b.dataset.tx!; press(txBtns, b); paintTx(); }));
+    paintTx();
+
+    /* ---------- 3. co-occurrence ---------- */
+    const C = D.conditions, names: string[] = C.names;
+    $('[data-any]').textContent = pct(C.any.p);
+    $('[data-burden]').innerHTML = `<p class="ad-label">Other diagnosed conditions, by ADHD severity</p><p class="ad-small b-key"><i class="sw b0"></i>0 <i class="sw b1"></i>1 <i class="sw b2"></i>2 <i class="sw b3"></i>3 or more</p>` + C.burden.map((b: any) => {
+      const segs = [['none', '0'], ['one', '1'], ['two', '2'], ['three', '3+']];
+      return `<div class="b-row"><span class="b-l">${b.sev[0].toUpperCase() + b.sev.slice(1)}<small>n ${b.n}</small></span><span class="b-bar">${segs.map(([k, l], i) => `<i class="b${i}" style="width:${b[k].p * 100}%" title="${l}: ${pct(b[k].p)}">${b[k].p >= 0.12 ? pct(b[k].p) : ''}</i>`).join('')}</span></div>`;
+    }).join('') + `<p class="ad-small">Severe ADHD: <b>${pct(C.burden[2].three.p)}</b> have 3 or more other conditions, vs <b>${pct(C.burden[0].three.p)}</b> of mild.</p>`;
+
+    let sel = names.indexOf('Anxiety');
+    const mx = $('[data-matrix]');
+    mx.style.setProperty('--n', String(names.length));
+    let mh = '<span class="corner"></span>' + names.map((n) => `<span class="colh">${n}</span>`).join('');
+    names.forEach((n, i) => {
+      mh += `<button type="button" class="rowh" data-row="${i}" aria-pressed="false">${n}</button>`;
+      C.cond[i].forEach((v: any, j: number) => {
+        mh += v ? `<span class="cell" data-r="${i}" data-c="${j}" style="--a:${Math.min(1, v[0] / 0.7).toFixed(3)}"></span>` : '<span class="cell diag"></span>';
+      });
+    });
+    mx.innerHTML = mh;
+    $('[data-chips]').innerHTML = names.map((n, i) => `<button type="button" data-row="${i}" aria-pressed="false">${n}</button>`).join('');
+    const rowBtns = $$<HTMLButtonElement>('[data-row]');
+    function paintCo(hoverJ = -1) {
+      rowBtns.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.row! === sel)));
+      $$('.ad-matrix .cell').forEach((c) => c.classList.toggle('on', +c.dataset.r! === sel));
+      const list = names.map((n, j) => ({ n, j, v: C.cond[sel][j], base: C.prev[j].p })).filter((x) => x.v).sort((a, b) => b.v[0] - a.v[0]);
+      $('[data-co-h]').innerHTML = hoverJ >= 0
+        ? `Of kids with <b>${names[sel]}</b>, <b class="ad-num">${pct(C.cond[sel][hoverJ][0])}</b> also have <b>${names[hoverJ]}</b> (${C.cond[sel][hoverJ][1]} kids in the sample), vs ${pct(C.prev[hoverJ].p)} of all kids in the survey.`
+        : `Kids with <b>${names[sel]}</b> <span>${pct(C.prev[sel].p)} of all · n ${C.count[sel]}</span>`;
+      if (hoverJ < 0) $('[data-co-bars]').innerHTML = list.map((x) => `<li><span class="l">${x.n}</span><span class="t"><i style="width:${x.v[0] * 100}%"></i><b style="left:${x.base * 100}%"></b></span><span class="p">${pct(x.v[0])}</span></li>`).join('');
+    }
+    rowBtns.forEach((b) => b.addEventListener('click', () => { sel = +b.dataset.row!; paintCo(); }));
+    mx.addEventListener('pointerover', (e) => {
+      const c = (e.target as HTMLElement).closest<HTMLElement>('.cell[data-r]');
+      if (!c) return;
+      sel = +c.dataset.r!; paintCo(+c.dataset.c!);
+    });
+    mx.addEventListener('pointerleave', () => paintCo());
+    paintCo();
+
+    /* ---------- 4. forest plot ---------- */
+    const M = D.model, fo = $('[data-forest]');
+    $('[data-forest-note]').innerHTML = `n ${M.n.toLocaleString()} kids who currently have ADHD; ${pct(M.treated.p)} are getting some treatment. Filled = interval excludes 1. Hollow = can’t rule out no difference.`;
+    const groups: [string, string[]][] = [['Income', ['inc1', 'inc2', 'inc3']], ['Insurance', ['public', 'unins']], ['Race, ethnicity', ['black', 'other', 'hisp']], ['Child', ['female', 'age14']], ['Clinical', ['moderate', 'severe', 'c1', 'c2']]];
+    function paintForest() {
+      const W = Math.max(300, fo.clientWidth), narrow = W < 560;
+      const L = narrow ? 118 : 220, R = narrow ? 42 : 120, rh = 26, gh = 26, top = 26;
+      const lo = 0.1, hi = 5, x = (v: number) => L + (Math.log(v) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * (W - L - R);
+      let y = top, s = '';
+      const ticks = narrow ? [0.25, 1, 4] : [0.25, 0.5, 1, 2, 4];
+      const H = top + groups.reduce((a, g) => a + gh + g[1].length * rh, 0) + 8;
+      s += ticks.map((t) => `<line x1="${x(t)}" x2="${x(t)}" y1="${top - 6}" y2="${H - 8}" class="${t === 1 ? 'one' : 'grid'}"/><text x="${x(t)}" y="14" class="tick" text-anchor="middle">${t}</text>`).join('');
+      for (const [g, terms] of groups) {
+        s += `<text x="0" y="${y + 18}" class="grp">${g}</text>`; y += gh;
+        for (const k of terms) {
+          const t = M.terms.find((d: any) => d.term === k), cy = y + rh / 2, sig = t.lo > 1 || t.hi < 1;
+          s += `<text x="0" y="${cy + 4}" class="lab">${t.label}${narrow ? '' : `<tspan class="ref"> ${t.ref}</tspan>`}</text>`;
+          s += `<line x1="${x(Math.max(lo, t.lo))}" x2="${x(Math.min(hi, t.hi))}" y1="${cy}" y2="${cy}" class="ci"/>`;
+          s += `<circle cx="${x(t.est)}" cy="${cy}" r="5.5" class="${sig ? 'sig' : 'ns'}"><title>${t.label} ${t.ref}: ${t.est} (95% ${t.lo}–${t.hi}), n ${t.n}</title></circle>`;
+          s += `<text x="${W}" y="${cy + 4}" class="val" text-anchor="end">${t.est.toFixed(2)}${narrow ? '' : ` <tspan class="ref">${t.lo.toFixed(2)}–${t.hi.toFixed(2)}</tspan>`}</text>`;
+          y += rh;
+        }
+      }
+      fo.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${s}</svg>`;
+    }
+    paintForest();
+    let t: number | undefined;
+    new ResizeObserver(() => { clearTimeout(t); t = window.setTimeout(paintForest, 120); }).observe(fo);
+  }
+  setup();
+</script>
+
+<style is:global>
+  .adhd { --sev3: var(--blue); --sev2: #4a6a8f; --sev1: #22324d; display: flex; flex-direction: column; gap: 20px; }
+  .adhd .ad-head { padding: 8px 4px 0; max-width: 46rem; }
+  .adhd .ad-kicker { color: var(--ink-2); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .adhd .ad-head h2 { font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 900; margin: 6px 0 10px; }
+  .adhd .ad-dek { font-size: 1.15rem; line-height: 1.45; }
+  .adhd .ad-panel { background: var(--panel); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: clamp(16px, 3vw, 28px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .adhd .ad-sec-head h3 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 6px; }
+  .adhd .ad-sec-head p { color: var(--ink-2); max-width: 44rem; }
+  .adhd .ad-label { color: var(--ink-2); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .adhd .ad-small { color: var(--ink-2); font-size: 0.9rem; }
+  .adhd .ad-small b, .adhd .ad-call b, .adhd .ad-num { color: var(--blue); font-weight: 700; }
+  .adhd .ad-call { color: var(--ink); }
+
+  /* toggles follow .d-filters */
+  .adhd .ad-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+  .adhd .ad-toggle button, .adhd .ad-chips button { min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .adhd .ad-toggle button:hover, .adhd .ad-chips button:hover { color: var(--ink); border-color: var(--ink-2); }
+  .adhd .ad-toggle button[aria-pressed='true'], .adhd .ad-chips button[aria-pressed='true'] { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
+
+  /* waffle */
+  .adhd .ad-waffle-grid { display: grid; gap: clamp(20px, 4vw, 48px); grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 860px) { .adhd .ad-waffle-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .adhd .ad-controls { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .adhd .ad-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .adhd .ad-steps button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 10px 9px; min-height: 64px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
+  .adhd .ad-steps button:hover { border-color: var(--ink-2); }
+  .adhd .ad-steps .s-l { font: 800 1.15rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
+  .adhd .ad-steps .s-v { font-size: 0.78rem; color: var(--blue); font-weight: 600; }
+  .adhd .ad-steps .s-sub { font-size: 0.72rem; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .adhd .ad-steps button[aria-pressed='true'] { background: var(--lime); border-color: var(--lime); color: var(--on-lime); }
+  .adhd .ad-steps button[aria-pressed='true'] .s-v, .adhd .ad-steps button[aria-pressed='true'] .s-sub { color: var(--on-lime); }
+  .adhd .ad-big { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .adhd .ad-big b { font: 900 clamp(4.2rem, 10vw, 6.4rem)/0.85 var(--display); color: var(--blue); min-width: 1.1ch; }
+  .adhd .ad-big span { font-size: 1.1rem; }
+  .adhd .ad-ci { color: var(--ink-2); font-size: 0.92rem; margin-top: 6px; }
+  .adhd .ad-gap { font-weight: 600; margin-top: 4px; }
+  .adhd .ad-mix { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; color: var(--ink-2); font-size: 0.9rem; }
+  .adhd .ad-mix b { color: var(--ink); margin-left: 4px; }
+  .adhd .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .adhd .sw.sev3 { background: var(--sev3); }
+  .adhd .sw.sev2 { background: var(--sev2); }
+  .adhd .sw.sev1 { background: var(--sev1); box-shadow: inset 0 0 0 1px #3a4d6c; }
+  .adhd .sw.extra { background: var(--sev3); box-shadow: inset 0 0 0 2px var(--bg); outline: 1.5px solid var(--ink); outline-offset: -1px; }
+  .adhd .ad-waffle { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: clamp(4px, 0.9vw, 7px); width: min(100%, 440px); margin-inline: auto; align-self: center; }
+  .adhd .ad-waffle .c { aspect-ratio: 1; border-radius: 4px; background: var(--sev1); box-shadow: inset 0 0 0 1px #3a4d6c; transition: background-color 420ms ease, box-shadow 420ms ease; transition-delay: calc(var(--i) * 5ms); }
+  .adhd .ad-waffle .c.sev2 { background: var(--sev2); box-shadow: none; }
+  .adhd .ad-waffle .c.sev3 { background: var(--sev3); box-shadow: none; }
+  .adhd .ad-waffle .c.extra { box-shadow: inset 0 0 0 2px var(--bg), 0 0 0 1.5px var(--ink); }
+
+  /* treatment table */
+  .adhd .ad-tx-wrap { overflow-x: auto; }
+  .adhd .ad-tx { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .adhd .ad-tx th, .adhd .ad-tx td { padding: 10px 8px; text-align: left; vertical-align: top; }
+  .adhd .ad-tx thead th { color: var(--ink-2); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; border-bottom: 1px solid var(--line); }
+  .adhd .ad-tx thead th small { display: block; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.06em; }
+  .adhd .ad-tx thead th:first-child { width: 22%; }
+  .adhd .b-key { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: -4px 0 4px; }
+  .adhd .b-key .sw { margin: 0 2px 0 8px; } .adhd .b-key .sw:first-child { margin-left: 0; }
+  .adhd .sw.b0 { background: #22324d; box-shadow: inset 0 0 0 1px #3a4d6c; } .adhd .sw.b1 { background: #34507a; } .adhd .sw.b2 { background: #4f77a6; } .adhd .sw.b3 { background: var(--blue); }
+  .adhd .ad-tx tbody th { font: 800 1.15rem/1.1 var(--display); text-transform: uppercase; }
+  .adhd .ad-tx tbody tr + tr > * { border-top: 1px solid var(--line); }
+  .adhd .ad-tx tr.hl > * { background: var(--panel-2); }
+  .adhd .ad-tx .v { display: block; font: 800 clamp(1.4rem, 3vw, 2rem)/1 var(--display); color: var(--blue); }
+  .adhd .ad-tx .bar { position: relative; display: block; height: 8px; margin: 8px 0 6px; background: #22324d; border-radius: 4px; }
+  .adhd .ad-tx .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue); border-radius: 4px; transition: width 300ms ease; }
+  .adhd .ad-tx .bar b { position: absolute; top: 3px; height: 2px; background: var(--ink); opacity: 0.85; transition: left 300ms ease, width 300ms ease; }
+  .adhd .ad-tx .n { display: block; color: var(--ink-2); font-size: 0.74rem; line-height: 1.3; }
+  @media (max-width: 520px) { .adhd .ad-tx th, .adhd .ad-tx td { padding: 8px 4px; } .adhd .ad-tx thead th:first-child { width: 25%; } .adhd .ad-tx thead th { font-size: 0.68rem; letter-spacing: 0; } .adhd .ad-tx .v { font-size: 1.2rem; } .adhd .ad-tx th:first-child { width: 23%; } .adhd .ad-tx tbody th { font-size: 0.86rem; letter-spacing: 0; } .adhd .b-row { grid-template-columns: 84px minmax(0, 1fr); } .adhd .ad-tx .n { font-size: 0.68rem; } }
+
+  /* burden */
+  .adhd .ad-burden { display: flex; flex-direction: column; gap: 8px; }
+  .adhd .b-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: center; }
+  .adhd .b-l { font: 800 1.05rem/1 var(--display); text-transform: uppercase; }
+  .adhd .b-l small { display: block; font: 600 0.72rem/1.4 var(--body); color: var(--ink-2); text-transform: none; }
+  .adhd .b-bar { display: flex; height: 34px; border-radius: 6px; overflow: hidden; gap: 2px; }
+  .adhd .b-bar i { display: flex; align-items: center; justify-content: center; gap: 4px; font-style: normal; font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; }
+  .adhd .b-bar i em { font-style: normal; font-weight: 500; opacity: 0.9; }
+  .adhd .b-bar .b0 { background: #22324d; color: var(--ink); }
+  .adhd .b-bar .b1 { background: #34507a; color: var(--ink); }
+  .adhd .b-bar .b2 { background: #4f77a6; color: var(--ink); }
+  .adhd .b-bar .b3 { background: var(--blue); color: var(--bg); }
+
+  /* matrix */
+  .adhd .ad-co { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 980px) { .adhd .ad-co { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .adhd .ad-matrix { display: grid; grid-template-columns: 150px repeat(var(--n), minmax(0, 1fr)); gap: 2px; max-width: 560px; }
+  .adhd .ad-matrix .colh { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.74rem; color: var(--ink-2); padding: 0 0 6px; height: 132px; text-align: left; justify-self: center; white-space: nowrap; }
+  .adhd .ad-matrix .rowh { all: unset; box-sizing: border-box; cursor: pointer; font-size: 0.82rem; color: var(--ink-2); padding: 0 8px 0 4px; border-radius: 4px; display: flex; align-items: center; min-height: 26px; }
+  .adhd .ad-matrix .rowh:hover { color: var(--ink); }
+  .adhd .ad-matrix .rowh:focus-visible { outline: 3px solid var(--lime); outline-offset: 1px; }
+  .adhd .ad-matrix .rowh[aria-pressed='true'] { background: var(--lime); color: var(--on-lime); font-weight: 700; }
+  .adhd .ad-matrix .cell { aspect-ratio: 1; border-radius: 3px; background: color-mix(in srgb, var(--blue) calc(var(--a) * 100%), #1a283f); }
+  .adhd .ad-matrix .cell.diag { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+  .adhd .ad-matrix .cell.on { outline: 1.5px solid var(--ink); outline-offset: -1px; }
+  .adhd .ad-chips { display: none; flex-wrap: wrap; gap: 6px; }
+  @media (max-width: 640px) { .adhd .ad-matrix { display: none; } .adhd .ad-chips { display: flex; } .adhd .ad-matrix-wrap .ad-label { display: none; } }
+  .adhd .ad-detail-h { font-size: 1.05rem; min-height: 3em; }
+  .adhd .ad-detail-h span { display: block; color: var(--ink-2); font-size: 0.85rem; }
+  .adhd .ad-key { margin: 4px 0 10px; }
+  .adhd .sw.bar { background: var(--blue); }
+  .adhd .sw.tick { width: 3px; height: 14px; border-radius: 1px; background: var(--ink); margin-left: 10px; }
+  .adhd .ad-bars { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .adhd .ad-bars li { display: grid; grid-template-columns: 136px minmax(0, 1fr) 40px; gap: 10px; align-items: center; font-size: 0.86rem; }
+  .adhd .ad-bars .l { color: var(--ink-2); }
+  .adhd .ad-bars .t { position: relative; height: 12px; background: #22324d; border-radius: 3px; }
+  .adhd .ad-bars .t i { position: absolute; inset: 0 auto 0 0; background: var(--blue); border-radius: 3px; transition: width 300ms ease; }
+  .adhd .ad-bars .t b { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 1px; transition: left 300ms ease; }
+  .adhd .ad-bars .p { text-align: right; color: var(--blue); font-weight: 700; }
+
+  /* forest */
+  .adhd .ad-forest { width: 100%; min-width: 0; }
+  .adhd .ad-forest svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--body); }
+  .adhd .ad-forest .grid { stroke: var(--line); stroke-width: 1; }
+  .adhd .ad-forest .one { stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .adhd .ad-forest .tick { fill: var(--ink-2); font-size: 11px; }
+  .adhd .ad-forest .grp { fill: var(--ink-2); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .adhd .ad-forest .lab { fill: var(--ink); font-size: 13px; }
+  .adhd .ad-forest .ref, .adhd .ad-forest .val .ref { fill: var(--ink-2); font-size: 12px; }
+  .adhd .ad-forest .val { fill: var(--blue); font-size: 13px; font-weight: 700; }
+  .adhd .ad-forest .ci { stroke: var(--blue); stroke-width: 2; }
+  .adhd .ad-forest .sig { fill: var(--blue); stroke: var(--panel); stroke-width: 2; }
+  .adhd .ad-forest .ns { fill: var(--panel); stroke: var(--blue); stroke-width: 2; }
+
+  .adhd .ad-notes { list-style: none; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); font-size: 0.85rem; padding: 0 4px; max-width: 60rem; }
+  .adhd .ad-notes li { position: relative; padding-left: 16px; }
+  .adhd .ad-notes li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 7px; height: 1.5px; background: var(--ink-2); }
+  .adhd .ad-notes code { font-size: 0.82rem; color: var(--ink); }
+</style>
