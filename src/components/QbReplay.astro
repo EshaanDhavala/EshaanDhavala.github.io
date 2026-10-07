@@ -36,7 +36,7 @@
     const COL: Record<string, string> = {};
     const colors = () => { COL.o = css('--blue'); COL.w = css('--blue'); COL.q = css('--ink'); COL.r = css('--lime'); COL.d = css('--ink-2'); COL.b = css('--lime'); };
     colors();
-    const size = () => { const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1); w = r.width; h = r.height; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    const size = () => { const dpr = Math.min(2, devicePixelRatio || 1); w = cv.offsetWidth; h = cv.offsetHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
     const hull = (pts: number[][]) => {
       if (pts.length < 3) return pts;
       pts = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -86,7 +86,7 @@
     root.querySelectorAll<HTMLButtonElement>('[data-rp-speed]').forEach((b) => b.addEventListener('click', () => {
       speed = +b.dataset.rpSpeed!; root.querySelectorAll('[data-rp-speed]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     }));
-    setPlaying(playing); size(); addEventListener('resize', size); requestAnimationFrame(tick);
+    setPlaying(playing); size(); new ResizeObserver(size).observe(cv); requestAnimationFrame(tick);
   });
 </script>
 

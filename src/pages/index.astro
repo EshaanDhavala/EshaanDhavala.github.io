@@ -160,7 +160,7 @@ const ticker = [
   @media (max-width: 1439px) { .profile :global(.amb-tennis) { display: none; } }
   .profile :global(.amb-journal) { right: 0; top: -10px; width: 380px; height: 120px; }
   .spot :global(.amb-playscan) { left: 330px; top: -10px; width: 150px; height: 64px; }
-  .spot :global(.amb-closure) { right: 0; top: -40px; width: 240px; height: 80px; }
+  .spot :global(.amb-closure) { right: 0; top: calc(10px - clamp(72px, 12vh, 140px)); width: 260px; height: calc(clamp(72px, 12vh, 140px) - 20px); }
   .roster :global(.amb-chat) { right: 0; top: -58px; width: 230px; height: 84px; }
   .profile :global(.amb-adhd) { right: -190px; top: 300px; width: 150px; height: 110px; }
   @media (max-width: 1439px) { .profile :global(.amb-adhd) { right: 0; top: auto; bottom: 170px; } }

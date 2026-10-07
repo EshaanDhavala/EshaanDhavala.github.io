@@ -149,8 +149,8 @@ const { kind, class: cls } = Astro.props;
     let w = 0, h = 0, visible = false, raf = 0;
     const offset = idx * 1.7; // stagger so they don't pulse in sync
     const size = () => {
-      const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
-      w = r.width; h = r.height; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const dpr = Math.min(2, devicePixelRatio || 1);
+      w = cv.offsetWidth; h = cv.offsetHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     const frame = (t: number) => {
       ctx.clearRect(0, 0, w, h);
@@ -164,8 +164,8 @@ const { kind, class: cls } = Astro.props;
     };
     const tick = (now: number) => { frame(((now / 1000) + offset) % PERIOD); if (visible) raf = requestAnimationFrame(tick); };
     size();
-    if (reduce) { frame(DRAW + 0.1); addEventListener('resize', () => { size(); frame(DRAW + 0.1); }); return; }
-    addEventListener('resize', size);
+    if (reduce) { frame(DRAW + 0.1); new ResizeObserver(() => { size(); frame(DRAW + 0.1); }).observe(cv); return; }
+    new ResizeObserver(size).observe(cv);
     new IntersectionObserver(([e]) => {
       visible = e.isIntersecting; cancelAnimationFrame(raf);
       if (visible) raf = requestAnimationFrame(tick);

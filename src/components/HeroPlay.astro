@@ -17,9 +17,8 @@
     const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
     function size() {
-      const r = canvas!.getBoundingClientRect();
       dpr = Math.min(2, devicePixelRatio || 1);
-      w = r.width; h = r.height;
+      w = canvas!.offsetWidth; h = canvas!.offsetHeight;
       canvas!.width = w * dpr; canvas!.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
@@ -89,7 +88,12 @@
       if (reduce) draw(d.releaseIndex);
       else raf = requestAnimationFrame(loop);
     });
-    addEventListener('resize', () => { size(); if (reduce && data) draw(data.releaseIndex); });
+    // Re-measure whenever the box changes size (late layout, back/forward navigation), not just on window resize,
+    // so the drawing buffer always matches the box and dots never stretch.
+    const resized = () => { size(); if (reduce && data) draw(data.releaseIndex); };
+    new ResizeObserver(resized).observe(canvas);
+    addEventListener('resize', resized);
+    addEventListener('pageshow', resized);
     new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
       if (visible && !reduce && data) { cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
