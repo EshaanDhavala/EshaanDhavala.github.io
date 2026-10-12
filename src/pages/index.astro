@@ -55,7 +55,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         <a class="btn btn-ghost" href="/resume.pdf">Résumé</a>
       </p>
       <aside class="telemetry" aria-label="The play behind the name">
-        <p class="ro-title">Behind my name: Herbert dropback, 2021 Wk 3 at KC, real 10 Hz tracking data</p>
+        <p class="ro-title">Herbert dropback, 2021 Wk 3 at KC, real 10 Hz tracking data</p>
         <dl>
           <div><dt>After snap</dt><dd><b data-ro-t>0.0</b> s</dd></div>
           <div><dt>Pocket</dt><dd><b data-ro-area>–</b> yd²</dd></div>
@@ -209,7 +209,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
     <details class="colophon">
       <summary>What’s moving in the background?</summary>
       <ul>
-        <li><b>Behind my name:</b> a real NFL dropback replayed from 10 Hz tracking data (Herbert, 2021 Week 3 at KC). Bright stars are the offense, dim rings the defense, the outline is the pocket.</li>
+        <li><b>At the top of the page:</b> a real NFL dropback replayed from 10 Hz tracking data (Herbert, 2021 Week 3 at KC). Bright stars are the offense, dim rings the defense, the outline is the pocket.</li>
         {entries.map((e) => <li><b>{e.name} constellation:</b> {series[e.slug]?.from}.</li>)}
         <li><b>Faint charts:</b> QB clutch ratings, FG make probability, PlayScan’s calls on its demo plays, USAA capture rate, weekly mood, tennis returns, ADHD severity by income, and the AI assistant answering (synthetic demo data).</li>
         <li><b>The 3D system:</b> one planet per project; the featured three are ringed.</li>
@@ -331,7 +331,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 
   /* ---------- hero entrance + parallax ---------- */
   if (!reduce) {
-    gsap.from('[data-hero-name] span', { yPercent: 60, opacity: 0, filter: 'blur(12px)', duration: 1.6, ease: 'expo.out', stagger: 0.12, clearProps: 'filter' });
+    gsap.from('[data-hero-name] span', { yPercent: 40, opacity: 0, duration: 1.8, ease: 'power3.out', stagger: 0.14 });
     gsap.from('.hero-in > :not(h1)', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
     const st = { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true };
     gsap.to('[data-play]', { yPercent: 22, opacity: 0.35, ease: 'none', scrollTrigger: st });

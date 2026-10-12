@@ -163,18 +163,30 @@ function frame() {
   c.globalCompositeOperation = 'source-over';
 
   // stars: three depths, twinkling; streaking during the warp intro
-  if (warp > 0) warp = Math.max(0, warp - dt / 1.6);
-  const wk = warp * warp * (3 - 2 * warp), cx0 = W / 2, cy0 = H / 2;
+  if (warp > 0) warp = Math.max(0, warp - dt / 2.4);
+  const wk = warp * warp, cx0 = W / 2, cy0 = H / 2;
+  if (wk > 0.01) {
+    // gentle streaks, one path per depth so the intro stays smooth
+    c.lineCap = 'round'; c.strokeStyle = '#ffffff';
+    for (const { depth, dots } of layers) {
+      const off = reduce ? 0 : sy * depth, k = 1 - 0.16 * wk * (0.5 + depth * 1.6);
+      c.globalAlpha = (0.25 + depth * 0.9) * (0.5 + 0.5 * wk); c.lineWidth = 0.5 + depth * 1.6;
+      c.beginPath();
+      for (const d of dots) {
+        const y = (((d.y - off) % H) + H) % H;
+        c.moveTo(cx0 + (d.x - cx0) * k, cy0 + (y - cy0) * k); c.lineTo(d.x, y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+  }
   for (const { depth, dots } of layers) {
+    if (wk > 0.01) break;
     const off = reduce ? 0 : sy * depth;
     for (const d of dots) {
       const y = (((d.y - off) % H) + H) % H;
       const a = reduce ? d.a : d.a * (0.65 + 0.35 * Math.sin(t * d.tw + d.ph));
-      if (wk > 0.01) {
-        const k = 1 - 0.55 * wk * (0.4 + depth * 1.8);
-        c.globalAlpha = Math.min(1, a + wk * 0.5); c.strokeStyle = d.col; c.lineWidth = d.r * 1.3;
-        c.beginPath(); c.moveTo(cx0 + (d.x - cx0) * k, cy0 + (y - cy0) * k); c.lineTo(d.x, y); c.stroke();
-      } else {
+      {
         c.globalAlpha = a; c.fillStyle = d.col;
         c.beginPath(); c.arc(d.x, y, d.r, 0, 6.283); c.fill();
       }

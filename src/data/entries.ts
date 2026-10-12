@@ -50,7 +50,7 @@ export const entries: Entry[] = [
     cats: ['sports', 'ai'],
     plate: 'ai',
     pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'A coach question in the chat (Which offensive linemen have the weakest hamstrings? Show me a chart.) and the assistant answer with a bar chart' , caption: 'Asked live in the chat: “Which offensive linemen have the weakest hamstrings? Show me a chart.” Answered in 6.6 s, on synthetic data.' },
-    video: { src: '/media/ai-assistant.mp4', poster: '/media/ai-assistant-poster.jpg', label: 'Screen recording of the AI Assistant answering four coach questions with charts and a CSV, on synthetic data' },
+    video: { src: '/media/team-pulse.mp4', poster: '/media/team-pulse-poster.jpg', label: 'Captioned walkthrough of Team Pulse and the AI Assistant, on synthetic data' },
     when: '2026',
     where: 'UCLA Football strength staff, via Bruin Sports Analytics',
     stack: ['R / Shiny', 'Anthropic API', 'Tool use', 'dplyr'],
