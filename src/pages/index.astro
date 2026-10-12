@@ -19,7 +19,7 @@ const career = [
   ['2022 – 2023', 'Tokyo Sushi and Grill', 'Host and cashier'],
   ['2020 – 2021', 'Kumon', 'Tutor'],
 ];
-const traits = ['Astronomy', 'Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history'];
+const traits = ['Football', 'UFC', 'Weightlifting', 'Music theory', 'Co-op puzzle games', 'Japanese art history', 'Astronomy', 'Taco Bell'];
 const ticker = [
   ['USAA', 'Data Science Intern, summer 2026'],
   ['playbyplay.football', 'live NFL overtime decision engine'],
@@ -42,22 +42,23 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   <!-- 1. Hero: the Herbert play, drawn as stars -->
   <section class="hero" id="top" data-hero data-nebula="violet" data-nebula-x="0.78" data-nebula-y="0.35" aria-labelledby="hero-title">
     <canvas class="hero-play" data-play aria-hidden="true"></canvas>
-    <a class="about-card glass-card" href="#about" data-about-card>
-      <img src={asset('/img/eshaan-circle.jpg')} alt="" width="800" height="800" fetchpriority="high" />
-      <span class="ac-text">
-        <b>About me</b>
-        <span>Stats &amp; Data Science at UCLA, class of 2027. Football, UFC, weightlifting, astronomy.</span>
-        <span class="ac-more">More about me</span>
-      </span>
-    </a>
+    <aside class="profile" data-profile aria-label="About me">
+      <div class="pf-photo">
+        <img src={asset('/img/eshaan-circle.jpg')} alt="Eshaan Dhavala" width="800" height="800" fetchpriority="high" />
+        <i class="orbit" aria-hidden="true"><b></b></i>
+      </div>
+      <dl class="pf-facts">
+        <div><dt>Studying</dt><dd>Statistics &amp; Data Science, UCLA</dd></div>
+        <div><dt>Graduating</dt><dd>December 2027</dd></div>
+        <div><dt>Now</dt><dd>USAA Data Science Intern ’26, football co-chair at Bruin Sports Analytics</dd></div>
+        <div><dt>Looking for</dt><dd>2027 roles in data science, ML, analytics</dd></div>
+        <div><dt>Into</dt><dd>Football, UFC, weightlifting, astronomy, Taco Bell</dd></div>
+      </dl>
+    </aside>
+    <div class="play-slot" data-play-slot aria-hidden="true"></div>
     <div class="hero-in wrap">
       <h1 id="hero-title" data-hero-name><span>Eshaan</span><span>Dhavala</span></h1>
       <p class="lede">Statistics &amp; Data Science at UCLA, graduating December 2027. I build ML models, LLM tools, and sports analytics.</p>
-      <ul class="proof">
-        <li>USAA Data Science Intern, summer 2026</li>
-        <li>Football co-chair, Bruin Sports Analytics</li>
-        <li>Open to 2027 roles in DS, ML, analytics</li>
-      </ul>
       <p class="cta">
         <a class="btn btn-white" href="#projects">Browse projects</a>
         <a class="btn btn-ghost" href="/resume.pdf">Résumé</a>
@@ -268,11 +269,11 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
       // measure the text itself, not the block boxes (paragraphs span the full width)
       const rng = document.createRange();
       const textRight = Math.max(...textEls.map((el) => { rng.selectNodeContents(el); return rng.getBoundingClientRect().right; })) - hero.left;
-      const card = $('[data-about-card]')!.getBoundingClientRect();
-      box.l = textRight + 48; box.r = PW - 40; box.t = card.bottom - hero.top + 28; box.b = PH - 40;
+      const prof = $('[data-profile]')!.getBoundingClientRect();
+      box.l = Math.min(textRight + 48, prof.left - hero.left); box.r = PW - 40; box.t = prof.bottom - hero.top + 32; box.b = PH - 40;
     } else {
-      const nameTop = $('[data-hero-name]')!.offsetTop + ($('.hero-in') as HTMLElement).offsetTop;
-      box.l = 12; box.r = PW - 12; box.t = 80; box.b = Math.max(240, nameTop - 16);
+      const slot = $('[data-play-slot]')!.getBoundingClientRect();
+      box.l = 8; box.r = PW - 8; box.t = slot.top - hero.top; box.b = slot.bottom - hero.top;
     }
     const sc = Math.min((box.r - box.l) / (maxX - minX), (box.b - box.t) / (maxY - minY));
     cam = { sc, cx: (box.l + box.r) / 2 - ((minX + maxX) / 2) * sc, cy: (box.t + box.b) / 2 - ((minY + maxY) / 2) * sc };
@@ -341,7 +342,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   /* ---------- hero entrance + parallax ---------- */
   if (!reduce) {
     gsap.from('[data-hero-name] span', { yPercent: 40, opacity: 0, duration: 1.8, ease: 'power3.out', stagger: 0.14 });
-    gsap.from('.hero-in > :not(h1), [data-about-card]', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
+    gsap.from('.hero-in > :not(h1), [data-profile]', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
     const st = { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true };
     gsap.to('[data-play]', { yPercent: 22, opacity: 0.35, ease: 'none', scrollTrigger: st });
     gsap.to('.hero-in', { yPercent: -18, ease: 'none', scrollTrigger: st });
@@ -379,17 +380,28 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   .hero h1 { display: flex; flex-direction: column; align-items: flex-start; font-size: clamp(3.4rem, 9vw, 9.4rem); font-weight: 300; font-stretch: 125%; text-transform: uppercase; letter-spacing: -0.035em; line-height: 0.88; cursor: default; }
   .hero h1 span:last-child { color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85); }
   .lede { margin-top: 26px; font-size: clamp(1.08rem, 1.5vw, 1.3rem); max-width: 34rem; line-height: 1.45; }
-  .proof { list-style: none; max-width: 40rem; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-  .proof li { font-size: 0.88rem; padding: 7px 13px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--faint); color: var(--ink-2); background: rgba(0, 0, 0, 0.4); }
-  .proof li:first-child { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45); }
   .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-  .about-card { position: absolute; z-index: 3; top: 92px; right: var(--gutter); width: min(380px, 34vw); display: flex; align-items: center; gap: 14px; padding: 12px 18px 12px 12px; text-decoration: none; border-radius: 999px; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: box-shadow 300ms; }
-  .about-card:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
-  .about-card img { width: 64px; height: 64px; flex: none; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 1px var(--faint), 0 0 30px rgba(140, 120, 255, 0.25); }
-  .ac-text { display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; line-height: 1.35; color: var(--ink-2); }
-  .ac-text b { color: var(--ink); font-weight: 500; font-stretch: 115%; font-size: 0.95rem; }
-  .ac-more { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, 0.35); }
-  @media (max-width: 899px) { .hero { flex-direction: column; justify-content: flex-end; align-items: stretch; } .about-card { position: relative; top: auto; right: auto; width: auto; order: 1; margin: -28px var(--gutter) 36px; } }
+  .profile { position: absolute; z-index: 3; top: 104px; right: var(--gutter); width: min(560px, 44vw); display: flex; align-items: center; gap: 26px; }
+  .pf-photo { position: relative; flex: none; width: clamp(150px, 13vw, 200px); aspect-ratio: 1; }
+  .pf-photo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 60px rgba(140, 120, 255, 0.32); }
+  .orbit { position: absolute; inset: -14px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.16); animation: orbit 16s linear infinite; }
+  .orbit b { position: absolute; top: 50%; left: -4px; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px #fff; }
+  @keyframes orbit { to { transform: rotate(360deg); } }
+  .pf-facts { display: flex; flex-direction: column; gap: 8px; font-size: 0.92rem; line-height: 1.35; }
+  .pf-facts div { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); gap: 10px; }
+  .pf-facts dt { color: var(--ink-2); }
+  .pf-facts dd { margin: 0; color: var(--ink); }
+  .play-slot { display: none; }
+  @media (max-width: 899px) {
+    .hero { flex-direction: column; justify-content: flex-start; padding-top: 88px; }
+    .profile { position: relative; top: auto; right: auto; width: auto; margin: 0 var(--gutter); gap: 18px; align-items: flex-start; }
+    .pf-photo { width: 104px; margin-top: 6px; }
+    .orbit { inset: -9px; }
+    .pf-facts { font-size: 0.86rem; gap: 6px; }
+    .pf-facts div { grid-template-columns: 1fr; gap: 0; }
+    .play-slot { display: block; height: 300px; }
+    .hero-in { padding-top: 0; }
+  }
   .telemetry { display: inline-flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 12px 16px; border-radius: 16px; max-width: 100%;
     background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px var(--faint); font-size: 0.8rem; }
   .ro-title { color: var(--ink-2); }
