@@ -118,9 +118,9 @@ export function supernovaAt(el: Element, fx = 0.5, fy = 0.5, big = false) {
   supernova(r.left + fx * r.width, scrollY + r.top + fy * r.height, big);
 }
 
-// warp-speed intro, once per visit
+// warp-speed intro: every fresh load of the home page, starting from the top
 let warp = 0;
-if (!reduce && !store.get('warp')) { warp = 1; store.set('warp'); }
+if (!reduce && document.querySelector('[data-hero]') && scrollY < 40) warp = 1;
 export const runWarp = () => { if (!reduce) warp = 1; };
 
 // cursor stardust
@@ -169,8 +169,8 @@ function frame() {
     // gentle streaks, one path per depth so the intro stays smooth
     c.lineCap = 'round'; c.strokeStyle = '#ffffff';
     for (const { depth, dots } of layers) {
-      const off = reduce ? 0 : sy * depth, k = 1 - 0.16 * wk * (0.5 + depth * 1.6);
-      c.globalAlpha = (0.25 + depth * 0.9) * (0.5 + 0.5 * wk); c.lineWidth = 0.5 + depth * 1.6;
+      const off = reduce ? 0 : sy * depth, k = 1 - 0.24 * wk * (0.5 + depth * 1.6);
+      c.globalAlpha = (0.32 + depth * 1.1) * (0.55 + 0.45 * wk); c.lineWidth = 0.6 + depth * 1.9;
       c.beginPath();
       for (const d of dots) {
         const y = (((d.y - off) % H) + H) % H;
