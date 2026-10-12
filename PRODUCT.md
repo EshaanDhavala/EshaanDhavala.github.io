@@ -19,21 +19,21 @@ Eshaan Dhavala's personal portfolio. It shows every project quickly and lets a v
 
 ## Positioning
 
-Eshaan is a UCLA Statistics & Data Science student (Dec 2027) who does sports analytics (football, tennis) plus applied ML and AI agents. The site is themed like a sports video game's menus (Madden / 2K / FUT): a title screen, a "select a project" card screen, and a "player profile". It fits a sports analytics person and lets visitors see every project at once.
+Eshaan is a UCLA Statistics & Data Science student (Dec 2027) who does sports analytics (football, tennis) plus applied ML and AI agents. Since Oct 12 2026 the site is space-themed: a black sky with white type, where each project is a constellation drawn from its own data and the projects also form a 3D solar system. It signals general DS / ML / AI range (not only football) while keeping the sports work and its real data front and center. The previous sports-game design is saved on branch `design/game-v1-fallback` (tag `fallback-game-v1`).
 
 ## Capabilities and Constraints
 
 - Static Astro site on GitHub Pages (https://eshaandhavala.github.io). No server; any "ordering" happens client-side.
 - Project data lives in `src/data/entries.ts`; one detail page per project in `src/pages/entries/`.
 - Interactive charts use Observable Plot and data in `public/data/`.
-- No real game, league, or team branding (no EA/2K/NFL marks or logos) as site chrome. Mentioning Taco Bell in the newspaper context is fine.
+- No real league or team branding (no NFL marks or logos) as site chrome. Mentioning Taco Bell in the newspaper context is fine.
 - Every number shown must trace to source data, code, or git history. Verified so far: FG model held-out ROC-AUC 0.777 (Brier 0.104 vs 0.122 baseline, 8,742 kicks); QB model 7,088 dropbacks, LOWO RMSE 1.57; PlayScan 89% on validation clips, 1,174 labeled clips; JournalToData 131 of 132 nights logged; Kaggle test R² 0.888; USAA 72% / 28%→66% (from résumé, not checkable).
 
 ## Brand Commitments
 
 - **Voice: casual but not corny.** It reads like Eshaan talking: short, plain, first person, confident. No jokes, puns, or quips, no "derpy" or millennial-internet tone, no forced personality, no "notebook" or "entry" metaphors, nothing that sounds like marketing or AI. The theme lives in the UI, not in wordplay in the copy. Labels stay plain ("Projects", "About me", "Interests"); descriptions stay straight.
 - **Minimal words.** Bullets, labels, numbers. One-line descriptions. Prose only where it's genuinely needed; no explanatory paragraphs.
-- **No theme copy** (Oct 6 2026): plain labels (Projects, Featured, More projects, About me, Interests). Look: navy, blue numbers, gold actions. Flair comes from real data (hero replays a real tracking-data play), plus parallax and scroll reveals. No order bag, combos, or game/menu wording.
+- **No theme copy** (Oct 6 2026): plain labels (Projects, Featured, More projects, About me, Interests). Look: black, white accents, colour only for nebulas and supernovas. Flair comes from real data (the hero replays a real tracking-data play; constellations come from project data), plus parallax, shooting stars and supernovas. No space puns or theme wording in the copy.
 - Sleek and modern, with a few human touches.
 - Contact: email, LinkedIn, GitHub. The résumé PDF is public and includes a phone number (his call).
 
@@ -50,7 +50,7 @@ Eshaan is a UCLA Statistics & Data Science student (Dec 2027) who does sports an
 
 1. Scannable first: what it does, the result, and the stack are visible without clicking.
 2. True over impressive: no claim the data or git history doesn't back.
-3. The theme serves browsing. If a game gimmick slows down finding a project, cut it.
+3. The theme serves browsing. If a space effect slows down finding a project, cut it. Scrolling always moves the page (no pinned or scroll-jacked sections).
 4. Sounds like a person, not a template.
 
 ## Accessibility & Inclusion

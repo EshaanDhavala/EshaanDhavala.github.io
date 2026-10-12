@@ -1,8 +1,9 @@
 ---
-import Game from '../../layouts/Game.astro';
-import Card from '../../components/game/Card.astro';
+import Space from '../../layouts/Space.astro';
 import Detail from '../../components/shared/Detail.astro';
+import Constellation from '../../components/space/Constellation.astro';
 import { entries, CATS, type Entry } from '../../data/entries';
+import { series } from '../../lib/constellations';
 import { asset } from '../../lib/asset';
 
 export function getStaticPaths() {
@@ -11,94 +12,130 @@ export function getStaticPaths() {
 const { e, next, prev } = Astro.props as { e: Entry; next: Entry; prev: Entry };
 const src = e.pic.kind === 'img' ? asset(e.pic.src) : '';
 const alt = e.pic.kind === 'img' ? e.pic.alt : '';
+const pic = (x: Entry) => (x.pic.kind === 'img' ? x.pic : null);
 ---
-<Game title={e.name} description={e.what} image={src}>
-  <article class="item wrap" style={`--c: var(--k-${e.plate})`}>
+<Space title={e.name} description={e.what} image={src} nav="entry">
+  <article class="item wrap" data-nebula="violet" data-nebula-x="0.82" data-nebula-y="0.08">
     <a class="back" href="/#projects">All projects</a>
 
     <header class="hero">
-      <figure class="pic-wrap">
-        <div class="pic" style={`view-transition-name: pic-${e.slug}`}>
-          <img src={src} alt={alt} width="1280" height="800" fetchpriority="high" />
-        </div>
-        {e.pic.kind === 'img' && e.pic.caption && <figcaption>{e.pic.caption}</figcaption>}
-      </figure>
       <div class="info">
         <p class="cats">{e.cats.map((c) => <span class="cat">{CATS.find((x) => x.id === c)!.label}</span>)}</p>
         <h1>{e.name}</h1>
         <p class="what">{e.what}</p>
-        <p class="stat"><b data-countup>{e.stat.value}</b><span>{e.stat.label}</span></p>
+        <p class="stat"><b data-count={e.stat.value}>{e.stat.value}</b><span>{e.stat.label}</span></p>
         {e.links.length > 0 && (
-          <p class="links">{e.links.map((l, i) => <a class:list={['btn', i === 0 ? 'btn-lime' : 'btn-line']} href={l.href} rel={l.href.startsWith('http') ? 'noopener' : undefined}>{l.label}</a>)}</p>
+          <p class="links">{e.links.map((l, i) => <a class:list={['btn', i === 0 ? 'btn-white' : 'btn-ghost']} href={l.href} rel={l.href.startsWith('http') ? 'noopener' : undefined}>{l.label}</a>)}</p>
         )}
+      </div>
+      <div class="sky">
+        <Constellation slug={e.slug} class="hero-con" assemble="load" novaId={`entry-${e.slug}`} />
+        <p class="con-cap">This constellation: {series[e.slug]?.from}.</p>
       </div>
     </header>
 
-    <div class="body" data-reveal>
+    <figure class="pic-wrap">
+      <div class="pic glass-card">
+        <img src={src} alt={alt} width="1280" height="800" fetchpriority="high" style={`view-transition-name: pic-${e.slug}`} />
+      </div>
+      {e.pic.kind === 'img' && e.pic.caption && <figcaption>{e.pic.caption}</figcaption>}
+    </figure>
+
+    <div class="body" data-nebula="teal" data-nebula-x="0.1" data-nebula-y="0.5">
       <Detail e={e} headingLevel={2} />
     </div>
 
     <nav class="nextup" aria-label="More projects">
-      <h2 data-reveal>More projects</h2>
+      <h2>More projects</h2>
       <div class="pair">
-        <div data-reveal><Card e={next} headingLevel={3} /></div>
-        <div data-reveal><Card e={prev} headingLevel={3} /></div>
+        {[next, prev].map((x) => (
+          <a class="card glass-card" href={`/entries/${x.slug}/`} data-tilt>
+            <div class="c-media">{pic(x) && <img src={asset(pic(x)!.src)} alt={pic(x)!.alt} width="1280" height="800" loading="lazy" decoding="async" />}</div>
+            <div class="c-body">
+              <Constellation slug={x.slug} class="mini-con" w={120} h={70} pad={8} starScale={0.6} />
+              <h3>{x.name}</h3>
+              <p class="c-stat"><b>{x.stat.value}</b> {x.stat.label}</p>
+              <p class="c-what">{x.what}</p>
+            </div>
+          </a>
+        ))}
       </div>
     </nav>
   </article>
-</Game>
+</Space>
+
+<script>
+  import { initConstellations, initCountUps, initTilt } from '../../scripts/cosmos';
+  initConstellations();
+  initCountUps();
+  initTilt();
+</script>
 
 <style>
-  .item { padding-top: 28px; }
-  .back { display: inline-flex; align-items: center; gap: 8px; font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); text-decoration: none; min-height: 44px; }
-  .back::before { content: ''; width: 10px; height: 10px; border-left: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg); }
-  .back:hover { color: var(--lime); }
-  .hero { display: grid; gap: clamp(20px, 4vw, 48px); grid-template-columns: minmax(0, 1fr); align-items: center; margin: 12px 0 clamp(32px, 6vh, 64px); }
-  @media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
-  .pic { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px var(--line); }
-  .pic img { width: 100%; height: 100%; object-fit: cover; }
-  .pic-wrap figcaption { margin-top: 10px; color: var(--ink-2); font-size: 0.9rem; }
-  .info { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; min-width: 0; }
-  .cats { display: flex; gap: 6px; flex-wrap: wrap; }
-  h1 { font-weight: 900; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 0.9; }
-  .what { color: var(--ink); font-size: 1.15rem; max-width: 34rem; }
-  .stat { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .stat b { font: 900 clamp(3.2rem, 6vw, 4.8rem)/0.9 var(--display); color: var(--blue); }
-  .stat span { color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; }
-  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .item { padding-top: 96px; }
+  .back { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); text-decoration: none; min-height: 44px; font-size: 0.95rem; }
+  .back::before { content: ''; width: 8px; height: 8px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
+  .back:hover { color: var(--ink); }
 
-  .body :global(.detail) { display: flex; flex-direction: column; gap: 20px; }
-  .body :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 10px 36px; padding: 16px 20px; background: var(--panel); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); }
-  .body :global(.d-meta dt) { color: var(--ink-2); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
-  .body :global(.d-meta dd) { margin: 2px 0 0; font-weight: 600; }
-  .body :global(.d-video), .body :global(.d-chart), .body :global(.d-fig), .body :global(.d-fg) { background: var(--panel); border-radius: 18px; padding: clamp(10px, 2vw, 18px); box-shadow: inset 0 0 0 1px var(--line); }
-  .body :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000; }
-  .body :global(.d-cols) { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
-  .body :global(.d-cols > div) { background: var(--panel); border-radius: 18px; padding: 22px 24px; box-shadow: inset 0 0 0 1px var(--line); }
-  .body :global(.d-h) { font-size: 1.9rem; margin-bottom: 14px; color: var(--blue); }
+  .hero { display: grid; gap: clamp(20px, 4vw, 56px); grid-template-columns: minmax(0, 1fr); align-items: center; margin: 18px 0 clamp(28px, 5vh, 56px); }
+  @media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); } }
+  .info { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; min-width: 0; }
+  .cats { display: flex; gap: 6px; flex-wrap: wrap; }
+  h1 { font-weight: 300; font-stretch: 122%; font-size: clamp(2.8rem, 6.4vw, 5.6rem); line-height: 0.95; letter-spacing: -0.035em; }
+  .what { font-size: 1.2rem; max-width: 36rem; line-height: 1.45; }
+  .stat { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .stat b { font-weight: 300; font-stretch: 125%; font-size: clamp(3rem, 6vw, 4.6rem); line-height: 1; letter-spacing: -0.04em; text-shadow: 0 0 24px rgba(255, 255, 255, 0.35); }
+  .stat span { color: var(--ink-2); }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sky { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .sky :global(.hero-con) { width: min(100%, 420px); height: auto; cursor: pointer; }
+  .con-cap { color: var(--ink-2); font-size: 0.82rem; text-align: center; max-width: 24rem; }
+
+  .pic-wrap { margin-bottom: clamp(28px, 5vh, 56px); }
+  .pic { aspect-ratio: 16 / 9; }
+  .pic img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pic-wrap figcaption { margin-top: 10px; color: var(--ink-2); font-size: 0.9rem; }
+
+  /* the shared project detail, in glass */
+  .body :global(.detail) { display: flex; flex-direction: column; gap: 22px; }
+  .body :global(.d-meta) { display: flex; flex-wrap: wrap; gap: 10px 40px; padding: 18px 22px; background: var(--glass); border-radius: 20px; box-shadow: inset 0 0 0 1px var(--faint); }
+  .body :global(.d-meta dt) { color: var(--ink-2); font-size: 0.82rem; }
+  .body :global(.d-meta dd) { margin: 2px 0 0; }
+  .body :global(.d-video), .body :global(.d-chart), .body :global(.d-fig), .body :global(.d-fg) { background: var(--glass); border-radius: 24px; padding: clamp(10px, 2vw, 18px); box-shadow: inset 0 0 0 1px var(--faint); }
+  .body :global(.d-video video) { width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .body :global(.d-cols) { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
+  .body :global(.d-cols > div) { background: var(--glass); border-radius: 24px; padding: 24px 26px; box-shadow: inset 0 0 0 1px var(--faint); }
+  .body :global(.d-h) { font-size: 1.7rem; font-weight: 300; margin-bottom: 14px; }
   .body :global(.d-list) { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .body :global(.d-list li) { position: relative; padding-left: 20px; line-height: 1.45; }
-  .body :global(.d-list li::before) { content: ''; position: absolute; left: 0; top: 0.62em; width: 8px; height: 2px; background: var(--ink-2); }
-  .body :global(.d-results li) { font-weight: 600; }
-  .body :global(.d-results li::before) { background: var(--lime); }
-  .body :global(.d-story) { max-width: 46rem; font-size: 1.15rem; line-height: 1.6; color: var(--ink); padding: 0 4px; }
+  .body :global(.d-list li) { position: relative; padding-left: 22px; line-height: 1.5; }
+  .body :global(.d-list li::before) { content: '✦'; position: absolute; left: 0; top: 0.1em; font-size: 0.7em; color: var(--ink-2); }
+  .body :global(.d-results li::before) { color: var(--amber); }
+  .body :global(.d-story) { max-width: 46rem; font-size: 1.15rem; line-height: 1.65; padding: 0 4px; }
   .body :global(.d-note) { color: var(--ink-2); font-size: 0.95rem; padding: 0 4px; }
   .body :global(figcaption) { color: var(--ink-2); font-size: 0.92rem; margin-top: 10px; padding: 0 4px; }
-  .body :global(.d-fig a) { display: block; border-radius: 10px; overflow: hidden; background: #000; }
+  .body :global(.d-fig a) { display: block; border-radius: 14px; overflow: hidden; background: #000; }
   .body :global(.d-fig img) { width: 100%; max-height: 74vh; object-fit: contain; margin-inline: auto; }
   .body :global(.d-fig:not(.wide)) { max-width: 860px; width: 100%; margin-inline: auto; }
-  .body :global(.d-fg) { --fg-ink: #f3efe6; --fg-accent: var(--lime); --fg-on-ink: #0f1724; padding: clamp(18px, 3vw, 30px); }
+  .body :global(.d-fg) { --fg-ink: var(--ink); --fg-accent: #ffffff; --fg-on-ink: #000; padding: clamp(18px, 3vw, 30px); }
   .body :global(.chart) { overflow-x: auto; display: grid; justify-items: center; min-height: 200px; }
   .body :global(.d-links) { display: none; }
   .body :global(.d-chapters), .body :global(.d-filters) { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .body :global(.d-filters) { margin: 0 0 12px; }
-  .body :global(.d-chapters button), .body :global(.d-filters button) { min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-  .body :global(.d-chapters button:hover), .body :global(.d-filters button:hover) { color: var(--ink); border-color: var(--ink-2); }
-  .body :global(.d-filters button[aria-pressed='true']) { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
+  .body :global(.d-chapters button), .body :global(.d-filters button) { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; box-shadow: inset 0 0 0 1px var(--faint); background: transparent; color: var(--ink-2); cursor: pointer; font-size: 0.88rem; }
+  .body :global(.d-chapters button:hover), .body :global(.d-filters button:hover) { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
+  .body :global(.d-filters button[aria-pressed='true']) { background: var(--ink); color: #000; }
 
-  .nextup { margin-top: clamp(56px, 10vh, 110px); }
-  .nextup h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 18px; }
+  .nextup { margin-top: clamp(64px, 11vh, 120px); padding-bottom: clamp(40px, 8vh, 80px); }
+  .nextup h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; margin-bottom: 22px; }
   .pair { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
-  .pair > div { display: flex; }
-  .pair :global(.card) { flex: 1; }
+  .card { display: flex; flex-direction: column; text-decoration: none; will-change: transform; }
+  .c-media { aspect-ratio: 16 / 10; overflow: hidden; background: #07080c; }
+  .c-media img { width: 100%; height: 100%; object-fit: cover; object-position: top left; opacity: 0.88; transition: transform 700ms var(--ease), opacity 400ms; }
+  .card:hover .c-media img { transform: scale(1.04); opacity: 1; }
+  .c-body { padding: 16px 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+  .c-body :global(.mini-con) { width: 90px; height: auto; opacity: 0.6; }
+  .card h3 { font-size: 1.45rem; font-weight: 400; }
+  .c-stat { color: var(--ink-2); }
+  .c-stat b { color: var(--ink); font-weight: 400; font-stretch: 120%; font-size: 1.2rem; }
+  .c-what { color: var(--ink-2); font-size: 0.96rem; }
 </style>

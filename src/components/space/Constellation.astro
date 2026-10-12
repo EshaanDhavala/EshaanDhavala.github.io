@@ -1,0 +1,24 @@
+---
+/** A project's constellation, drawn from its data. With `assemble`, the stars fly in and the line draws
+ *  (on scroll, or on load), then it goes supernova once per visit. */
+import { constellation, linePath, brightest } from '../../lib/constellations';
+interface Props { slug: string; w?: number; h?: number; pad?: number; class?: string; assemble?: false | 'scroll' | 'load'; novaId?: string; big?: boolean; end?: string; starScale?: number }
+const { slug, w = 400, h = 280, pad = 36, class: cls, assemble = false, novaId = slug, big = false, end, starScale = 1 } = Astro.props;
+const stars = constellation(slug, w, h, pad);
+const b = brightest(stars);
+---
+<svg
+  class:list={['con', cls]}
+  viewBox={`0 0 ${w} ${h}`}
+  aria-hidden="true"
+  data-assemble={assemble ? '' : undefined}
+  data-mode={assemble || undefined}
+  data-nova-id={assemble ? novaId : undefined}
+  data-nova-x={b.x.toFixed(1)}
+  data-nova-y={b.y.toFixed(1)}
+  data-big={big ? '' : undefined}
+  data-end={end}
+>
+  <path class="con-line" d={linePath(stars)} pathLength="1" />
+  {stars.map((s) => <circle class="cstar" cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={(s.r * starScale).toFixed(2)} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
+</svg>

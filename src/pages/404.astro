@@ -1,10 +1,16 @@
 ---
-import Game from '../layouts/Game.astro';
+import Space from '../layouts/Space.astro';
 ---
-<Game title="Not found">
-  <section class="wrap" style="padding: 18vh 0; display: flex; flex-direction: column; gap: 18px; align-items: flex-start;">
-    <h1 style="font-size: clamp(3rem, 8vw, 6rem);">Page not found</h1>
-    <p style="color: var(--ink-2); font-size: 1.15rem;">That page doesn’t exist.</p>
-    <a class="btn btn-lime" href="/">Back to the home page</a>
+<Space title="Not found">
+  <section class="wrap lost" data-nebula="magenta" data-nebula-x="0.7" data-nebula-y="0.5">
+    <h1>Lost in space</h1>
+    <p>That page doesn’t exist.</p>
+    <a class="btn btn-white" href="/">Back to the home page</a>
   </section>
-</Game>
+</Space>
+
+<style>
+  .lost { min-height: 80svh; padding-top: 18vh; display: flex; flex-direction: column; gap: 18px; align-items: flex-start; }
+  h1 { font-size: clamp(3rem, 9vw, 7rem); font-weight: 300; font-stretch: 125%; letter-spacing: -0.04em; }
+  p { color: var(--ink-2); font-size: 1.15rem; }
+</style>

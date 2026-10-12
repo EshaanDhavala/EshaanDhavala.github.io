@@ -1,111 +1,67 @@
 ---
 name: Eshaan Dhavala
-description: Portfolio styled like a sports video game's menus. Title screen, project select, player profile.
+description: Space-themed portfolio. Black sky, white type; projects are constellations drawn from their own data and planets in a 3D system.
 colors:
-  bg: "#0f1724"
-  bg-2: "#132034"
-  panel: "#16233a"
-  panel-2: "#1d2d48"
-  line: "#2a3b58"
-  ink: "#f3efe6"
-  ink-2: "#a9b4c6"
-  accent: "#f2b33d"
-  on-accent: "#14110a"
-  blue: "#7fb2e5"
+  bg: "#000000"
+  ink: "#f5f7fb"
+  ink-2: "#8b93a7"
+  line: "rgba(255,255,255,0.12)"
+  glass: "rgba(255,255,255,0.035)"
+  blue: "#cfdcff"
+  amber: "#ffcf8a"
+  nebula-violet: "#5b3cff"
+  nebula-magenta: "#d0369a"
+  nebula-teal: "#1fb5c9"
 typography:
   display:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "clamp(3.8rem, 11.5vw, 9.5rem)"
-    fontWeight: 900
-    lineHeight: 0.84
-  headline:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "clamp(2.4rem, 5vw, 3.8rem)"
-    fontWeight: 800
-    lineHeight: 0.95
-  title:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "clamp(1.35rem, 9cqi, 1.7rem)"
-    fontWeight: 800
-    lineHeight: 1
+    fontFamily: "Archivo Variable (font-stretch 118–125%)"
+    fontWeight: 300
+    letterSpacing: "-0.035em"
   body:
-    fontFamily: "Barlow, system-ui, sans-serif"
-    fontSize: "1.0625rem"
+    fontFamily: "Archivo Variable"
+    fontSize: "1.02rem"
     fontWeight: 400
-    lineHeight: 1.55
-    fontFeature: "'tnum' 1"
-  label:
-    fontFamily: "Barlow, system-ui, sans-serif"
-    fontSize: "0.72rem"
-    fontWeight: 600
-    letterSpacing: "0.08em"
+    lineHeight: 1.6
+  demo-display:
+    fontFamily: "Archivo Cond (Archivo at font-stretch 72%)"
+    note: "stands in for the old condensed face inside the shared project demos"
 rounded:
-  chip: "6px"
-  button: "10px"
-  tile: "14px"
-  card: "16px"
-  panel: "20px"
-  avatar: "50%"
-spacing:
-  gutter: "clamp(16px, 4vw, 56px)"
-  grid-gap: "clamp(12px, 2vw, 22px)"
-  section: "clamp(56px, 10vh, 140px)"
-components:
-  button-primary:
-    backgroundColor: "{colors.accent}"
-    textColor: "{colors.on-accent}"
-    rounded: "{rounded.button}"
-    height: "48px"
-    padding: "0 20px"
-  button-line:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.button}"
-    height: "48px"
-  project-card:
-    backgroundColor: "{colors.panel}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-  category-chip:
-    rounded: "{rounded.chip}"
-  hud:
-    backgroundColor: "{colors.bg}"
-    textColor: "{colors.ink-2}"
-    height: "64px"
-  profile-tile:
-    backgroundColor: "{colors.panel}"
-    rounded: "{rounded.tile}"
+  pill: "999px"
+  card: "24px"
 ---
 
 # Design System: Eshaan Dhavala
 
 ## Overview
 
-**Creative North Star: "The Data Behind the Game"**
-
-A plain portfolio (Projects: Featured + More projects, About me, Interests) with one signature: a real NFL play from Eshaan's tracking-data project replays in the hero. Drawn with restraint: night-navy ground, warm off-white type, upright stadium-signage display face, gold for actions and blue for numbers. Real artifacts carry the color; the chrome does not. No glows, gradients, neon, or per-category colour coding (removed Oct 2026 at Eshaan's request: they read as generic AI design).
+**Creative North Star: "The data is the sky."** A black sky with white type. Every project is a constellation whose stars come from that project's own data (QB ratings, the FG curve, real tennis bounces, weekly mood…), and the same projects orbit as planets in a 3D system. The hero replays a real NFL dropback from tracking data as moving stars. Colour appears only where the cosmos makes it: nebulas and supernovas.
 
 ## Colors
-Muted team palette: night navy with two roles, never more.
-- **Night** #0f1724 ground; **Panel** #16233a; **Line** #2a3b58.
-- **Ink** #f3efe6 text; **Ink 2** #a9b4c6 secondary.
-- **Gold** #f2b33d: actions and the selected tab only.
-- **Blue** #7fb2e5: big numbers, the second word of the name, section highlights, chart bars, field lines.
-
-**The Two Roles Rule.** Gold = do something. Blue = look at this number. No per-category colours, no glow, no gradients.
+- **Black** #000 ground, **white** #f5f7fb text and actions, **grey** #8b93a7 secondary.
+- **Starlight** #cfdcff for data in the shared demos; **amber** #ffcf8a, the single warm star colour (ball, rusher line, hover stats).
+- Nebulas (violet, magenta, teal, amber) are drawn on the sky canvas at low opacity, anchored to sections via `data-nebula`. They never sit behind body text at full strength.
 
 ## Typography
-- **Display:** Big Shoulders Display 700–900, upright, uppercase. Name, section heads, card names, big numbers.
-- **Body:** Barlow 400/600.
-- No italic display, no letter-spaced gamer caps on body text.
+- Archivo Variable throughout. Display at weight 300 and wide (font-stretch 118–125%), tight tracking; the name is uppercase, with the surname as an outline.
+- Body Archivo 400. No italics, no monospace labels.
+- Inside the shared demos, `--display` maps to a condensed cut of Archivo so their layouts (built for a condensed face) hold.
 
-## Layout, depth, shapes
-Same structure as before (sticky HUD, hero capped so the lineup peeks, 3 starters then the roster, project pages with picture + title then detail). Depth is flat: 1px insets only, no drop-shadow halos. Radii: 10px buttons, 16px cards, 4px chips, circular portrait with no ring.
+## Components
+- **Glass card:** 3.5% white fill, 1px white-10% hairline, 24px radius, a soft light that follows the pointer, slight 3D tilt.
+- **Buttons:** white pill (primary), hairline pill (secondary).
+- **Constellations:** white stars with an SVG glow, 1px white line drawn left to right.
+- **Nav:** two floating black-glass pills; ⌘K palette.
 
 ## Motion
-Native scrolling (no smooth-scroll library). The hero replays a real 10 Hz tracking-data dropback (players as dots, pocket hull forming) on a canvas, paused off-screen and static under reduced motion. Four faint background animations from real project data (QB clutch bars, FG make-probability curves, tennis return bounces, weekly mood) loop draw-in → hold → fade → gap; staggered, paused off-screen, explained in the footer ('What's moving in the background?'). Hero name parallaxes with scroll; cards reveal in batches; card tilt on hover; stat count-ups; view transitions into project pages. Reduced motion turns all of it off.
+- Native scrolling eased lightly by Lenis (lerp 0.22). Nothing pins; scrolling always moves the page.
+- Sky canvas (src/scripts/cosmos.ts): three depths of twinkling stars (parallax), nebulas at half page speed, shooting stars (more when scrolling fast), warp-speed intro once per visit, cursor stardust, a comet on the right edge showing scroll position.
+- Constellations assemble as they scroll in (stars fly in, the line draws to the last star), then go supernova once per visit (sessionStorage). On project pages they assemble on load.
+- The original site's background data animations (Ambient.astro) still loop faintly, recoloured white.
+- The 3D solar system (Three.js) loads only when near; drag turns it; it never captures the wheel.
+- Reduced motion: static sky, constellations shown formed, no warp, shooting stars, novas or orbits.
 
 ## Do's and Don'ts
-- **Do** let project pictures be the only saturated colour on the page.
-- **Don't** add glows, gradients, neon accents, colour-coded categories, or italic display type.
-- **Don't** use jokes in copy; keep labels short.
+- **Do** draw anything decorative from real project data where possible, and say what it is in the footer note.
+- **Don't** add scroll-jacking (pinned sections, scroll-scrubbed takeovers, sideways rails).
+- **Don't** let supernovas repeat on every scroll pass, or nebulas wash the page in colour.
+- **Don't** use space puns in copy; labels stay plain.

@@ -75,8 +75,9 @@ const { kind, class: cls } = Astro.props;
       };
     }
     if (kind === 'playscan') {
-      const d = await get('/data/playscan-demo.json');
-      const plays = d.plays as number[][];
+      // final pass / run / special-teams read for each of the 6 demo plays
+      const d = await get('/data/playscan/demo.json');
+      const plays = (d.plays as { steps: number[][] }[]).map((p) => p.steps[p.steps.length - 1]);
       return (ctx, w, h, p) => {
         const k = Math.min(plays.length - 1, Math.floor(p * plays.length * 0.999));
         const local = ease((p * plays.length) % 1 * 1.6);

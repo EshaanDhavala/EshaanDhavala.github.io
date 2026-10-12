@@ -1,0 +1,223 @@
+---
+/**
+ * The 3D take: my projects as a solar system (Three.js, loaded only when the section is near).
+ * Each project is a planet; the featured three are larger and ringed. Hover for the headline number,
+ * click to open, drag to turn the system. The wheel is never captured, so the page always scrolls.
+ */
+import { entries } from '../../data/entries';
+const planets = entries.map((e) => ({ slug: e.slug, name: e.name, stat: `${e.stat.value} ${e.stat.label}`, starter: !!e.starter }));
+---
+<section class="orrery wrap" id="orrery" data-nebula="aurora" data-nebula-x="0.5" data-nebula-y="0.5" aria-labelledby="orrery-title">
+  <div class="o-head" data-rise>
+    <h2 id="orrery-title">Explore in 3D</h2>
+    <p>Every project is a planet. Drag to turn the system, hover a planet for its headline number, click to open it. The ringed ones are featured.</p>
+  </div>
+  <div class="o-stage glass-card" data-orrery data-planets={JSON.stringify(planets)}>
+    <canvas data-o-canvas aria-hidden="true"></canvas>
+    <div class="o-labels" data-o-labels aria-hidden="true"></div>
+    <p class="o-loading" data-o-loading>Loading the system…</p>
+    <p class="o-hint" aria-hidden="true">Drag to turn</p>
+  </div>
+  <ul class="o-legend" aria-label="Planets">
+    {planets.map((p) => <li><a href={`/entries/${p.slug}/`} data-o-chip={p.slug}><i></i>{p.name}</a></li>)}
+  </ul>
+</section>
+
+<script>
+  import { reduce } from '../../scripts/cosmos';
+
+  const stage = document.querySelector<HTMLElement>('[data-orrery]');
+  if (stage) {
+    const planetsData: { slug: string; name: string; stat: string; starter: boolean }[] = JSON.parse(stage.dataset.planets!);
+    let started = false;
+    new IntersectionObserver(([e], io) => {
+      if (e.isIntersecting && !started) { started = true; io.disconnect(); start(); }
+    }, { rootMargin: '400px' }).observe(stage);
+
+    async function start() {
+      const THREE = await import('three');
+      const canvas = stage!.querySelector<HTMLCanvasElement>('[data-o-canvas]')!, labelsEl = stage!.querySelector<HTMLElement>('[data-o-labels]')!;
+      stage!.querySelector('[data-o-loading]')?.remove();
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 1000);
+
+      // soft glow texture for the sun and hover halos
+      const glowTex = (() => {
+        const c = document.createElement('canvas'); c.width = c.height = 256;
+        const g = c.getContext('2d')!, gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+        gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.2, 'rgba(255,240,215,0.55)'); gr.addColorStop(0.5, 'rgba(255,200,140,0.12)'); gr.addColorStop(1, 'rgba(255,200,140,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      })();
+
+      // the sun
+      const sun = new THREE.Mesh(new THREE.SphereGeometry(1.5, 48, 48), new THREE.MeshBasicMaterial({ color: 0xfff1da }));
+      scene.add(sun);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+      halo.scale.setScalar(11); scene.add(halo);
+      const corona = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.35, color: 0xffb36b }));
+      corona.scale.setScalar(26); scene.add(corona);
+      const light = new THREE.PointLight(0xfff1e0, 3.2, 0, 0); scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.07));
+
+      // distant stars, so dragging the camera shows real depth
+      {
+        const n = 900, pos = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) {
+          const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, r = 140 + Math.random() * 60, q = Math.sqrt(1 - u * u);
+          pos.set([r * q * Math.cos(th), r * u, r * q * Math.sin(th)], i * 3);
+        }
+        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, sizeAttenuation: true, transparent: true, opacity: 0.7, depthWrite: false })));
+      }
+
+      // banded gas-giant surfaces, one per planet
+      const tints = ['#cfdcff', '#ffcf8a', '#e9e9ee', '#9fd7ff', '#ffb3c7', '#b9a6ff', '#a7f0d6', '#ffe1b0', '#d0d4dc', '#8fb7ff'];
+      const surface = (hex: string, seed: number) => {
+        const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+        const g = c.getContext('2d')!;
+        const base = new THREE.Color(hex);
+        let s = seed;
+        const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+        for (let y = 0; y < 128; y += 2 + Math.floor(rnd() * 6)) {
+          const k = 0.55 + rnd() * 0.5, col = base.clone().multiplyScalar(k);
+          g.fillStyle = `#${col.getHexString()}`; g.fillRect(0, y, 256, 8);
+        }
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      };
+
+      type Planet = { mesh: THREE.Mesh; hit: THREE.Mesh; group: THREE.Group; r: number; a: number; w: number; size: number; slug: string; label: HTMLElement; hover: number };
+      const planets: Planet[] = [];
+      const orbitMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 });
+      planetsData.forEach((p, i) => {
+        const r = 4.4 + i * 1.6, size = p.starter ? 0.78 : 0.42 + ((i * 37) % 5) * 0.05;
+        const pts = Array.from({ length: 160 }, (_, k) => new THREE.Vector3(Math.cos((k / 160) * Math.PI * 2) * r, 0, Math.sin((k / 160) * Math.PI * 2) * r));
+        scene.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), orbitMat));
+        const group = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ map: surface(tints[i % tints.length], 11 + i * 97), roughness: 0.8, metalness: 0.02, emissive: new THREE.Color(tints[i % tints.length]), emissiveIntensity: 0.05 });
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(size, 40, 40), mat);
+        mesh.rotation.z = 0.3;
+        group.add(mesh);
+        if (p.starter) {
+          const ring = new THREE.Mesh(new THREE.RingGeometry(size * 1.45, size * 2.25, 96), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
+          ring.rotation.x = Math.PI / 2.4; ring.rotation.y = 0.25; group.add(ring);
+        }
+        // a bigger invisible sphere makes small planets easy to hover
+        const hit = new THREE.Mesh(new THREE.SphereGeometry(Math.max(size * 1.9, 0.9), 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
+        hit.userData.slug = p.slug; group.add(hit);
+        scene.add(group);
+        const label = document.createElement('span');
+        label.className = 'o-label' + (p.starter ? ' big' : '');
+        label.innerHTML = '<b></b><small></small>';
+        label.querySelector('b')!.textContent = p.name; label.querySelector('small')!.textContent = p.stat;
+        labelsEl.append(label);
+        planets.push({ mesh, hit, group, r, a: i * 2.39996, w: 0.55 / Math.pow(r / 4.4, 1.5), size, slug: p.slug, label, hover: 0 });
+      });
+
+      // camera: slow auto-orbit, drag to turn; elevation eases with the page scroll
+      let az = 0.6, el = 0.95, azT = az, elT = el, dragging = false, moved = 0, px = 0, py = 0;
+      let hovered: Planet | null = null;
+      const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+      const hits = planets.map((p) => p.hit);
+      canvas.addEventListener('pointerdown', (e) => { dragging = true; moved = 0; px = e.clientX; py = e.clientY; canvas.setPointerCapture(e.pointerId); });
+      canvas.addEventListener('pointerup', (e) => {
+        dragging = false; canvas.releasePointerCapture(e.pointerId);
+        if (moved < 6 && hovered) location.href = `/entries/${hovered.slug}/`;
+      });
+      canvas.addEventListener('pointermove', (e) => {
+        const r = canvas.getBoundingClientRect();
+        ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+        if (dragging) {
+          const dx = e.clientX - px, dy = e.clientY - py; px = e.clientX; py = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+          azT -= dx * 0.006;
+          if (e.pointerType === 'mouse') elT = Math.min(1.45, Math.max(0.25, elT - dy * 0.004));
+        }
+        ray.setFromCamera(ndc, camera);
+        const hit = ray.intersectObjects(hits)[0];
+        setHover(hit ? planets.find((p) => p.hit === hit.object) ?? null : null);
+      });
+      canvas.addEventListener('pointerleave', () => { if (!dragging) setHover(null); });
+      function setHover(p: Planet | null) {
+        if (hovered === p) return;
+        hovered?.label.classList.remove('on');
+        document.querySelector(`[data-o-chip="${hovered?.slug}"]`)?.classList.remove('on');
+        hovered = p;
+        canvas.style.cursor = p ? 'pointer' : dragging ? 'grabbing' : 'grab';
+        p?.label.classList.add('on');
+        document.querySelector(`[data-o-chip="${p?.slug}"]`)?.classList.add('on');
+      }
+      document.querySelectorAll<HTMLElement>('[data-o-chip]').forEach((chip) => {
+        chip.addEventListener('pointerenter', () => setHover(planets.find((p) => p.slug === chip.dataset.oChip) ?? null));
+        chip.addEventListener('pointerleave', () => setHover(null));
+      });
+
+      let W = 0, H = 0;
+      const resize = () => {
+        W = stage!.clientWidth; H = stage!.clientHeight;
+        renderer.setSize(W, H, false); camera.aspect = W / H;
+        camera.fov = W < 700 ? 52 : 38; camera.updateProjectionMatrix();
+      };
+      new ResizeObserver(resize).observe(stage!);
+      resize();
+
+      let visible = true, last = performance.now();
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) { last = performance.now(); requestAnimationFrame(tick); } }).observe(stage!);
+      const v = new THREE.Vector3();
+      function tick(now: number) {
+        const dt = Math.min(0.05, (now - last) / 1000); last = now;
+        if (!reduce && !dragging) azT += dt * 0.04;
+        // the section's position on screen nudges the camera's elevation as you scroll past
+        const rr = stage!.getBoundingClientRect(), prog = Math.min(1, Math.max(0, 1 - (rr.top + rr.height / 2) / innerHeight));
+        const elS = elT + (reduce ? 0 : (0.5 - prog) * 0.35);
+        az += (azT - az) * 0.08; el += (elS - el) * 0.08;
+        const dist = W < 700 ? 44 : 36;
+        camera.position.set(Math.cos(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.sin(az) * Math.cos(el) * dist);
+        camera.lookAt(0, 0, 0);
+        sun.rotation.y += dt * 0.1;
+        for (const p of planets) {
+          const isHover = p === hovered;
+          if (!reduce && !isHover) p.a += p.w * dt;
+          p.hover += ((isHover ? 1 : 0) - p.hover) * 0.15;
+          p.group.position.set(Math.cos(p.a) * p.r, 0, Math.sin(p.a) * p.r);
+          p.group.scale.setScalar(1 + p.hover * 0.45);
+          p.mesh.rotation.y += dt * 0.4;
+          // label follows the planet on screen
+          v.copy(p.group.position); v.y += p.size * 1.6 + 0.4; v.project(camera);
+          const x = (v.x * 0.5 + 0.5) * W, y = (-v.y * 0.5 + 0.5) * H;
+          p.label.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+          p.label.style.opacity = v.z > 1 ? '0' : '';
+        }
+        renderer.render(scene, camera);
+        if (visible) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+  }
+</script>
+
+<style>
+  .orrery { padding-top: clamp(100px, 16vh, 180px); }
+  .o-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 40px; margin-bottom: 28px; }
+  .o-head h2 { font-size: clamp(2.6rem, 6vw, 5rem); font-weight: 300; }
+  .o-head p { color: var(--ink-2); max-width: 30rem; font-size: 1.02rem; }
+  .o-stage { position: relative; height: min(78vh, 760px); min-height: 460px; background: rgba(255, 255, 255, 0.015); }
+  .o-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
+  .o-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .o-labels :global(.o-label) { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap; font-size: 0.74rem; color: var(--ink-2); transition: color 200ms; will-change: transform; }
+  .o-labels :global(.o-label b) { font-weight: 400; }
+  .o-labels :global(.o-label.big) { color: var(--ink); font-size: 0.84rem; }
+  .o-labels :global(.o-label small) { display: block; opacity: 0; transform: translateY(4px); transition: opacity 200ms, transform 200ms; font-size: 0.78rem; color: var(--amber); }
+  .o-labels :global(.o-label.on) { color: #fff; z-index: 2; }
+  .o-labels :global(.o-label.on b) { padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.6); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35); }
+  .o-labels :global(.o-label.on small) { opacity: 1; transform: none; }
+  .o-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-2); }
+  .o-hint { position: absolute; left: 18px; bottom: 14px; color: var(--ink-2); font-size: 0.8rem; pointer-events: none; }
+  .o-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .o-legend a { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border-radius: 999px; text-decoration: none; font-size: 0.86rem; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--faint); transition: color 200ms, box-shadow 200ms; }
+  .o-legend a:hover, .o-legend a:global(.on) { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+  .o-legend i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+</style>

@@ -1,24 +1,21 @@
 ---
-import Game from '../layouts/Game.astro';
+import Space from '../layouts/Space.astro';
 import { asset } from '../lib/asset';
 import { tools } from '../data/tools';
-
-
 ---
-<Game title="Tools" description="Productivity tools Eshaan built with Claude: a focus-first to-do list, an internship tracker, and a DS & AI crash course.">
-  <section class="tools wrap" aria-labelledby="tools-title">
-    <a class="back" href="/">‹ Home</a>
+<Space title="Tools" description="Productivity tools Eshaan built with Claude: a focus-first to-do list, an internship tracker, and a DS & AI crash course." nav="tools">
+  <section class="tools wrap" data-nebula="aurora" data-nebula-x="0.8" data-nebula-y="0.1" aria-labelledby="tools-title">
+    <a class="back" href="/">Home</a>
     <h1 id="tools-title">AI-built tools</h1>
     <p class="lede">Productivity tools I designed and built with Claude (AI) for my own day-to-day: staying on task, finding internships, studying.</p>
 
     <ol class="list">
       {tools.map((t, i) => (
-        <li class={`tool ${i % 2 ? 'flip' : ''}`} id={t.id} data-reveal>
-          <figure class="shot">
+        <li class:list={['tool', i % 2 && 'flip']} id={t.id} data-rise>
+          <figure class="shot glass-card">
             <img src={asset(t.img)} alt={t.alt} width="1600" height="1000" loading={i ? 'lazy' : 'eager'} />
           </figure>
           <div class="txt">
-            <span class="num">0{i + 1}</span>
             <h2>{t.name}</h2>
             <p class="line">{t.line}</p>
             <dl class="stats">
@@ -32,33 +29,34 @@ import { tools } from '../data/tools';
       ))}
     </ol>
   </section>
-</Game>
+</Space>
+
+<script>
+  import { initRises } from '../scripts/cosmos';
+  initRises();
+</script>
 
 <style>
-  .tools { padding-top: clamp(28px, 5vh, 56px); }
-  .back { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; font: 800 1.1rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); }
+  .tools { padding-top: 104px; padding-bottom: clamp(60px, 10vh, 120px); }
+  .back { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); text-decoration: none; min-height: 44px; font-size: 0.95rem; }
+  .back::before { content: ''; width: 8px; height: 8px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
   .back:hover { color: var(--ink); }
-  h1 { font-size: clamp(2.6rem, 7vw, 5.2rem); font-weight: 900; line-height: 0.9; margin-top: 0.4rem; }
-  .lede { margin-top: 0.9rem; color: var(--ink-2); max-width: 38rem; font-size: 1.1rem; }
-  .list { list-style: none; margin: clamp(36px, 6vh, 64px) 0 0; display: flex; flex-direction: column; gap: clamp(48px, 9vh, 104px); }
+  h1 { font-size: clamp(2.8rem, 7vw, 5.6rem); font-weight: 300; font-stretch: 122%; letter-spacing: -0.035em; margin-top: 0.4rem; }
+  .lede { margin-top: 1rem; color: var(--ink-2); max-width: 38rem; font-size: 1.1rem; }
+  .list { list-style: none; margin-top: clamp(40px, 7vh, 72px); display: flex; flex-direction: column; gap: clamp(56px, 10vh, 112px); }
   .tool { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 56px); align-items: center; }
   .tool.flip .shot { order: 2; }
-  .shot { border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); background: var(--panel); }
   .shot img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
-  .num { font: 800 1rem/1 var(--display); color: var(--blue); letter-spacing: 0.08em; }
-  h2 { font-size: clamp(2rem, 4vw, 3rem); margin-top: 0.35rem; }
-  .line { margin-top: 0.5rem; font-size: 1.1rem; }
-  .stats { display: flex; gap: 0 clamp(18px, 3vw, 36px); margin: 1.1rem 0 0; flex-wrap: wrap; }
-  .stats dt { font: 900 2rem/1 var(--display); color: var(--blue); }
-  .stats dd { margin: 0.2rem 0 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
-  .does { list-style: none; margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.45rem; }
-  .does li { position: relative; padding-left: 1.1rem; color: var(--ink); font-size: 1rem; }
-  .does li::before { content: ''; position: absolute; left: 0; top: 0.72em; width: 8px; height: 2px; background: var(--ink-2); }
+  h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; }
+  .line { margin-top: 0.6rem; font-size: 1.1rem; }
+  .stats { display: flex; gap: 0 clamp(18px, 3vw, 36px); margin-top: 1.2rem; flex-wrap: wrap; }
+  .stats dt { font-weight: 300; font-stretch: 125%; font-size: 2rem; line-height: 1; text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+  .stats dd { margin: 0.3rem 0 0; font-size: 0.82rem; color: var(--ink-2); }
+  .does { list-style: none; margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .does li { position: relative; padding-left: 1.3rem; }
+  .does li::before { content: '✦'; position: absolute; left: 0; top: 0.15em; font-size: 0.7em; color: var(--ink-2); }
   .stack { margin-top: 1.1rem; font-size: 0.92rem; color: var(--ink-2); }
-  .stack b { font-weight: 600; color: var(--ink); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; margin-right: 0.4rem; }
+  .stack b { font-weight: 500; color: var(--ink); margin-right: 0.4rem; }
   .note { margin-top: 0.5rem; font-size: 0.85rem; color: var(--ink-2); }
-  @media (max-width: 899px) {
-    .tool { grid-template-columns: 1fr; }
-    .tool.flip .shot { order: 0; }
-  }
+  @media (max-width: 899px) { .tool { grid-template-columns: 1fr; } .tool.flip .shot { order: 0; } }
 </style>
