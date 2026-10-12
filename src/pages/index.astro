@@ -296,8 +296,8 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   const smooth = (x: number) => x * x * (3 - 2 * x);
   function playLoop() {
     if (!play || !playOn) return;
-    // real speed through the throw and the ball's flight, hold on it, then rewind slowly to the snap
-    const end = play.frames.length - 1.001, run = end / 10, holdEnd = 1.1, back = 3.2, holdStart = 0.6;
+    // real speed through the throw and the ball's flight, a short hold, then a quick rewind to the snap
+    const end = play.frames.length - 1.001, run = end / 10, holdEnd = 0.5, back = 1.5, holdStart = 0.25;
     const tt = ((performance.now() - t0) / 1000) % (run + holdEnd + back + holdStart);
     ft = tt < run ? (tt / run) * end : tt < run + holdEnd ? end : tt < run + holdEnd + back ? end * (1 - smooth((tt - run - holdEnd) / back)) : 0;
     drawPlay();
