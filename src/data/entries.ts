@@ -60,6 +60,8 @@ export const entries: Entry[] = [
       'Fallback: model writes an allow-listed dplyr pipeline, R runs it',
       'Metric dictionary for 60+ measurements and which direction is better',
       'Answers as charts, tables, CSVs, or a downloadable HTML report',
+      'Team Pulse tab: 13 alert checks per athlete, availability, GPS load, load schedule, force testing, VBT, leaderboards',
+      'Athlete view and a printable report for every page; dashboards staff can customize and save',
     ],
     results: [
       '32-question eval, all factual checks pass',

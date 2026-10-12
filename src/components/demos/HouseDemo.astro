@@ -175,18 +175,18 @@ const sliders = [
         Plot.plot({
           width: w, height: Math.round(Math.min(420, Math.max(280, w * 0.5))),
           marginLeft: 52, marginRight: 30, marginBottom: 36, marginTop: 24,
-          style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '12px' },
+          style: { background: 'transparent', color: '#8b93a7', fontFamily: FONT, fontSize: '12px' },
           x: { type: 'log', domain: [1000, 4900], ticks: [1000, 1500, 2000, 3000, 4000], tickFormat: (d: number) => d.toLocaleString(), label: 'Total sq ft →', labelAnchor: 'right' },
           y: { type: 'log', domain: [30000, 12e6], ticks: [1e5, 3e5, 1e6, 3e6, 1e7], tickFormat: (d: number) => (d >= 1e6 ? `$${d / 1e6}M` : `$${d / 1e3}K`), label: '↑ Price' },
           marks: [
-            Plot.gridY([1e5, 3e5, 1e6, 3e6, 1e7], { stroke: '#2a3b58', strokeOpacity: 1 }),
-            Plot.dot(far, { x: 't', y: 'p', r: 1.6, fill: '#a9b4c6', fillOpacity: 0.12, clip: true }),
-            Plot.dot(near, { x: 't', y: 'p', r: 2, fill: '#7fb2e5', fillOpacity: 0.45, clip: true }),
-            Plot.line(oth, { x: 't', y: 'p', z: 'q', stroke: '#a9b4c6', strokeOpacity: 0.55, strokeWidth: 1.2 }),
-            Plot.text(ends.filter((d) => d.q !== state.qual && (w >= 600 || d.q === 1 || d.q === 10)), { x: 't', y: 'p', text: 'q', dx: 10, fill: '#a9b4c6', fontSize: 11 }),
-            Plot.line(sel, { x: 't', y: 'p', stroke: '#7fb2e5', strokeWidth: 3.5 }),
-            Plot.text([ends[state.qual - 1]], { x: 't', y: 'p', text: 'q', dx: 10, fill: '#7fb2e5', fontSize: 13, fontWeight: 800 }),
-            Plot.dot([{ t: state.tsf, p: est }], { x: 't', y: 'p', r: 7, fill: '#f2b33d', stroke: '#0f1724', strokeWidth: 2 }),
+            Plot.gridY([1e5, 3e5, 1e6, 3e6, 1e7], { stroke: 'rgba(255,255,255,0.1)', strokeOpacity: 1 }),
+            Plot.dot(far, { x: 't', y: 'p', r: 1.6, fill: '#8b93a7', fillOpacity: 0.12, clip: true }),
+            Plot.dot(near, { x: 't', y: 'p', r: 2, fill: '#cfdcff', fillOpacity: 0.45, clip: true }),
+            Plot.line(oth, { x: 't', y: 'p', z: 'q', stroke: '#8b93a7', strokeOpacity: 0.55, strokeWidth: 1.2 }),
+            Plot.text(ends.filter((d) => d.q !== state.qual && (w >= 600 || d.q === 1 || d.q === 10)), { x: 't', y: 'p', text: 'q', dx: 10, fill: '#8b93a7', fontSize: 11 }),
+            Plot.line(sel, { x: 't', y: 'p', stroke: '#cfdcff', strokeWidth: 3.5 }),
+            Plot.text([ends[state.qual - 1]], { x: 't', y: 'p', text: 'q', dx: 10, fill: '#cfdcff', fontSize: 13, fontWeight: 800 }),
+            Plot.dot([{ t: state.tsf, p: est }], { x: 't', y: 'p', r: 7, fill: '#ffcf8a', stroke: '#000000', strokeWidth: 2 }),
           ],
         }),
       );
@@ -214,7 +214,7 @@ const sliders = [
     let tab = 'rvf';
     const base = (w: number, h: number) => ({
       width: w, height: h, marginLeft: 46, marginRight: 14, marginBottom: 36, marginTop: 26,
-      style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '12px' },
+      style: { background: 'transparent', color: '#8b93a7', fontFamily: FONT, fontSize: '12px' },
     });
     function drawDiag() {
       const w = Math.max(300, dEl.clientWidth || 600);
@@ -226,10 +226,10 @@ const sliders = [
           ...base(w, h),
           x: { label: 'Fitted log(price) →', labelAnchor: 'right' }, y: { label: '↑ Residual' },
           marks: [
-            Plot.gridY({ stroke: '#2a3b58', strokeOpacity: 1 }),
-            Plot.ruleY([0], { stroke: '#f3efe6', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
-            Plot.dot(pts, { x: 'f', y: 'r', r: 1.6, fill: '#a9b4c6', fillOpacity: 0.28 }),
-            Plot.line(sm, { x: 'x', y: 'y', stroke: '#7fb2e5', strokeWidth: 3 }),
+            Plot.gridY({ stroke: 'rgba(255,255,255,0.1)', strokeOpacity: 1 }),
+            Plot.ruleY([0], { stroke: '#f5f7fb', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
+            Plot.dot(pts, { x: 'f', y: 'r', r: 1.6, fill: '#8b93a7', fillOpacity: 0.28 }),
+            Plot.line(sm, { x: 'x', y: 'y', stroke: '#cfdcff', strokeWidth: 3 }),
           ],
         }));
         cap.textContent = '2,400 of 7,000 residuals. Blue: a smoother over all of them. It stays close to zero, so little curvature is left over, and the spread is similar across the range.';
@@ -239,9 +239,9 @@ const sliders = [
           ...base(w, h),
           x: { label: 'Normal quantile →', labelAnchor: 'right' }, y: { label: '↑ Std. residual' },
           marks: [
-            Plot.gridY({ stroke: '#2a3b58', strokeOpacity: 1 }),
-            Plot.line([{ t: -3, s: -3 }, { t: 3, s: 3 }], { x: 't', y: 's', stroke: '#f3efe6', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
-            Plot.dot(pts, { x: 't', y: 's', r: 2.6, fill: '#7fb2e5' }),
+            Plot.gridY({ stroke: 'rgba(255,255,255,0.1)', strokeOpacity: 1 }),
+            Plot.line([{ t: -3, s: -3 }, { t: 3, s: 3 }], { x: 't', y: 's', stroke: '#f5f7fb', strokeOpacity: 0.6, strokeDasharray: '4 4' }),
+            Plot.dot(pts, { x: 't', y: 's', r: 2.6, fill: '#cfdcff' }),
           ],
         }));
         cap.textContent = `240 quantiles of the standardized residuals. On the line through the middle; the tails drift off, the low tail more (min ${M.qq.min.toFixed(1)}, max ${M.qq.max.toFixed(1)}).`;
@@ -259,14 +259,14 @@ const sliders = [
           t.textContent = p.label;
           cell.append(t, Plot.plot({
             width: cw, height: Math.round(cw * 0.72), marginLeft: 30, marginRight: 8, marginBottom: 24, marginTop: 6,
-            style: { background: 'transparent', color: '#a9b4c6', fontFamily: FONT, fontSize: '10.5px' },
+            style: { background: 'transparent', color: '#8b93a7', fontFamily: FONT, fontSize: '10.5px' },
             x: { type: p.logx ? 'log' : 'linear', domain: [lo, hi], ticks: 3, tickFormat: p.key === 'year' ? (d: number) => `${d}` : (d: number) => (d >= 1000 ? `${d / 1000}k` : `${d}`), label: null },
             y: { domain: [11, 16.5], ticks: 3, label: null },
             marks: [
-              Plot.gridY({ ticks: 3, stroke: '#2a3b58', strokeOpacity: 1 }),
-              Plot.dot(pts, { x: 'x', y: 'y', r: 1.1, fill: '#a9b4c6', fillOpacity: 0.16, clip: true }),
-              Plot.line(ln, { x: 'x', y: 'd', stroke: '#f3efe6', strokeWidth: 2.2 }),
-              Plot.line(ln, { x: 'x', y: 'm', stroke: '#7fb2e5', strokeWidth: 2.6, strokeDasharray: '5 4' }),
+              Plot.gridY({ ticks: 3, stroke: 'rgba(255,255,255,0.1)', strokeOpacity: 1 }),
+              Plot.dot(pts, { x: 'x', y: 'y', r: 1.1, fill: '#8b93a7', fillOpacity: 0.16, clip: true }),
+              Plot.line(ln, { x: 'x', y: 'd', stroke: '#f5f7fb', strokeWidth: 2.2 }),
+              Plot.line(ln, { x: 'x', y: 'm', stroke: '#cfdcff', strokeWidth: 2.6, strokeDasharray: '5 4' }),
             ],
           }));
           wrap.append(cell);
@@ -309,7 +309,7 @@ const sliders = [
   .hp-head { margin-bottom: 18px; }
   .hp-h { font-size: clamp(1.6rem, 3vw, 2.1rem); color: var(--ink); }
   .hp-sub { color: var(--ink-2); font-size: 0.95rem; margin-top: 6px; }
-  .hp-k { color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; }
+  .hp-k { color: var(--ink-2); letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; }
   .hp-fine { color: var(--ink-2); font-size: 0.85rem; margin-top: 14px; }
   .hp-source { margin-top: 0; padding: 0 4px; max-width: 70rem; }
 
@@ -317,9 +317,9 @@ const sliders = [
   @media (min-width: 900px) { .hp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; } }
 
   .hp-out { display: flex; flex-direction: column; gap: 10px; }
-  .hp-price { font: 900 clamp(3.6rem, 9vw, 6rem)/0.85 var(--display); color: var(--blue); letter-spacing: 0.01em; }
+  .hp-price { font: 300 clamp(3.6rem, 9vw, 6rem)/0.85 var(--font); font-stretch: 118%; color: var(--blue); letter-spacing: 0.01em; }
   .hp-pi, .hp-elas { display: flex; flex-direction: column; gap: 3px; }
-  .hp-pi b, .hp-elas b { font: 800 1.45rem/1.05 var(--display); text-transform: uppercase; color: var(--ink); }
+  .hp-pi b, .hp-elas b { font: 300 1.45rem/1.05 var(--font); font-stretch: 118%; color: var(--ink); }
   .hp-band { margin: 4px 0 8px; }
   .hp-band-track { position: relative; height: 14px; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); background: var(--bg); }
   .hp-band-fill { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--blue); opacity: 0.45; transition: left 160ms ease-out, width 160ms ease-out; }
@@ -331,7 +331,7 @@ const sliders = [
   .hp-sl { display: block; min-width: 0; }
   .hp-sl-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--ink); }
   .hp-sl-top em { font-style: normal; font-weight: 400; color: var(--ink-2); font-size: 0.82rem; }
-  .hp-sl-top b { font: 800 1.15rem/1 var(--display); color: var(--blue); }
+  .hp-sl-top b { font: 300 1.15rem/1 var(--font); font-stretch: 118%; color: var(--blue); }
   .hp-sl input { width: 100%; height: 40px; accent-color: var(--lime); cursor: pointer; margin: 0; }
   .hp-reset { justify-self: start; margin-top: 8px; min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
   .hp-reset:hover { color: var(--ink); border-color: var(--ink-2); }
@@ -359,13 +359,13 @@ const sliders = [
     height: calc(var(--h) * 240px);
   }
   .hp-ladder :global(.is-final .hp-rung) { box-shadow: inset 0 0 0 2px var(--blue); }
-  .hp-ladder :global(.hp-r2) { font: 900 clamp(2.4rem, 5vw, 3.4rem)/0.9 var(--display); color: var(--blue); }
-  .hp-ladder :global(.hp-rname) { font: 800 1.35rem/1 var(--display); text-transform: uppercase; }
+  .hp-ladder :global(.hp-r2) { font: 300 clamp(2.4rem, 5vw, 3.4rem)/0.9 var(--font); font-stretch: 118%; color: var(--blue); }
+  .hp-ladder :global(.hp-rname) { font: 300 1.35rem/1 var(--font); font-stretch: 118%; }
   .hp-ladder :global(.hp-rname span) { font: 600 0.72rem/1 var(--body); letter-spacing: 0.08em; color: var(--ink-2); margin-left: 6px; }
   .hp-ladder :global(.hp-rwhat) { color: var(--ink-2); font-size: 0.88rem; margin-top: 4px; }
   .hp-ladder :global(dl) { display: flex; gap: 22px; margin: 8px 0 0; }
   .hp-ladder :global(dt) { color: var(--ink-2); font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; }
-  .hp-ladder :global(dd) { margin: 0; font: 800 1.3rem/1.1 var(--display); color: var(--ink); }
+  .hp-ladder :global(dd) { margin: 0; font: 300 1.3rem/1.1 var(--font); font-stretch: 118%; color: var(--ink); }
   .hp-ladder :global(dd i) { display: block; font: 600 0.8rem/1.3 var(--body); font-style: normal; color: var(--ink-2); }
   @media (min-width: 760px) { .hp-ladder :global(.hp-rwhat) { min-height: 2.7em; } }
   @media (max-width: 759px) {
@@ -377,7 +377,7 @@ const sliders = [
   .hp :global(.hp-mmp) { display: grid; gap: 14px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   @media (min-width: 760px) { .hp :global(.hp-mmp) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   .hp :global(.hp-mmp figure) { margin: 0; min-width: 0; }
-  .hp :global(.hp-mmp figcaption) { margin: 0 0 2px; padding: 0; font-size: 0.78rem; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; }
+  .hp :global(.hp-mmp figcaption) { margin: 0 0 2px; padding: 0; font-size: 0.78rem; font-weight: 600; color: var(--ink); letter-spacing: 0.06em; }
 
   @media (prefers-reduced-motion: reduce) {
     .hp-band-fill, .hp-band-dot { transition: none; }

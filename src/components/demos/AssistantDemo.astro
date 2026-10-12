@@ -1,0 +1,84 @@
+---
+/** UCLA Football AI Assistant: the Team Pulse update. Captioned walkthrough video + a tabbed gallery of the screens.
+ *  Everything shown is synthetic demo data (names come from the synthetic-data generator). */
+import { asset } from '../../lib/asset';
+const shots = [
+  { id: 'overview', label: 'Overview', cap: 'Overview: who needs attention, who is limited or out, new PRs, and who is overdue for testing.' },
+  { id: 'alerts', label: 'Alerts', cap: 'Alerts: 13 checks per athlete (load ratio, sprint distance, CMJ drop, hamstring strength…), most flags first.' },
+  { id: 'athlete', label: 'Athlete view', cap: 'Athlete view: one player’s GPS load and acute:chronic ratio over time.' },
+  { id: 'report', label: 'Printable report', cap: 'Printable athlete report: every alert with its numbers, plus availability, bodyweight and ranks.' },
+  { id: 'schedule', label: 'Load schedule', cap: 'Load schedule: a calendar of the week’s sessions against load targets.' },
+  { id: 'dashboards', label: 'Dashboards', cap: 'Dashboards: pick the metrics and filters, then save the view.' },
+  { id: 'ask-ai', label: 'Ask AI', cap: 'Ask AI from any page: suggested questions hand off to the assistant.' },
+  { id: 'assistant', label: 'AI Assistant', cap: 'The AI Assistant tab: questions in plain English, answers as charts, tables and reports.' },
+];
+---
+<section class="pulse" aria-labelledby="pulse-title">
+  <header class="p-head">
+    <h2 id="pulse-title">Team Pulse: the latest version</h2>
+    <p>A new tab for the strength staff: alerts, availability, bodyweight, GPS load, a load schedule, force testing, speed, VBT and leaderboards, with a view for any athlete and printable reports for every page. Recorded on synthetic data.</p>
+  </header>
+
+  <figure class="p-video">
+    <video src={asset('/media/team-pulse.mp4')} poster={asset('/media/team-pulse-poster.jpg')} controls muted playsinline preload="none" aria-label="Captioned walkthrough of Team Pulse and the AI Assistant, on synthetic data"></video>
+    <figcaption>Captioned walkthrough, 2 min 15 s.</figcaption>
+  </figure>
+
+  <div class="p-gallery">
+    <div class="p-tabs" role="tablist" aria-label="Team Pulse screens">
+      {shots.map((s, i) => (
+        <button type="button" role="tab" id={`pt-${s.id}`} aria-controls="pulse-shot" aria-selected={i === 0 ? 'true' : 'false'} data-shot={s.id} data-src={asset(`/img/pulse/${s.id}.jpg`)} data-cap={s.cap}>{s.label}</button>
+      ))}
+    </div>
+    <figure class="p-shot" id="pulse-shot" role="tabpanel" aria-labelledby="pt-overview">
+      <a href={asset('/img/pulse/overview.jpg')} data-shot-link>
+        <img src={asset('/img/pulse/overview.jpg')} alt="Team Pulse screen: Overview" width="1600" height="1000" loading="lazy" decoding="async" data-shot-img />
+      </a>
+      <figcaption data-shot-cap>{shots[0].cap}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-shot]')];
+  const img = document.querySelector<HTMLImageElement>('[data-shot-img]'), cap = document.querySelector('[data-shot-cap]'), link = document.querySelector<HTMLAnchorElement>('[data-shot-link]'), panel = document.getElementById('pulse-shot');
+  const pick = (b: HTMLButtonElement) => {
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t === b)));
+    if (!img || !cap || !link || !panel) return;
+    img.classList.add('swap');
+    const next = new Image();
+    next.src = b.dataset.src!;
+    next.decode().catch(() => {}).finally(() => {
+      img.src = b.dataset.src!; img.alt = `Team Pulse screen: ${b.textContent}`; link.href = b.dataset.src!;
+      cap.textContent = b.dataset.cap!; panel.setAttribute('aria-labelledby', b.id);
+      requestAnimationFrame(() => img.classList.remove('swap'));
+    });
+  };
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => pick(b));
+    b.addEventListener('keydown', (e) => {
+      const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); pick(n);
+    });
+  });
+</script>
+
+<style>
+  .pulse { display: flex; flex-direction: column; gap: 18px; padding: clamp(18px, 2.6vw, 30px); border-radius: 24px; background: var(--glass); box-shadow: inset 0 0 0 1px var(--faint); }
+  .p-head h2 { font-weight: 300; font-stretch: 120%; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -0.025em; }
+  .p-head p { margin-top: 8px; color: var(--ink-2); max-width: 52rem; }
+  .p-video video { width: 100%; aspect-ratio: 16 / 10; border-radius: 16px; background: #000; box-shadow: 0 0 0 1px var(--faint); }
+  .p-video figcaption, .p-shot figcaption { color: var(--ink-2); font-size: 0.88rem; margin-top: 8px; }
+  .p-gallery { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; margin-top: 8px; }
+  @media (min-width: 960px) { .p-gallery { grid-template-columns: 200px minmax(0, 1fr); } }
+  .p-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  @media (min-width: 960px) { .p-tabs { flex-direction: column; } }
+  .p-tabs button { flex: none; text-align: left; min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font: 400 0.92rem/1 var(--font); cursor: pointer; box-shadow: inset 0 0 0 1px transparent; transition: color 200ms, background-color 200ms, box-shadow 200ms; }
+  .p-tabs button:hover { color: var(--ink); box-shadow: inset 0 0 0 1px var(--faint); }
+  .p-tabs button[aria-selected='true'] { background: var(--ink); color: #000; }
+  .p-shot a { display: block; border-radius: 16px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px var(--faint); }
+  .p-shot img { width: 100%; height: auto; transition: opacity 220ms ease, transform 400ms var(--ease); }
+  .p-shot img:global(.swap) { opacity: 0; transform: scale(0.99); }
+</style>

@@ -15,7 +15,7 @@ const career = [
   ['Summer 2026', 'USAA', 'Data Science Intern'],
   ['2026 – now', 'Bruin Sports Analytics', 'Football co-chair, research analyst'],
   ['2025 – 2026', 'Bruin Sports Analytics', 'Tennis data analyst'],
-  ['2024 – 2026', 'Mystic Lake Casino Steakhouse', 'Lead host'],
+  ['2024 – 2026', 'Mystic Lake Casino Steakhouse', 'Server assist and lead host'],
   ['2022 – 2023', 'Tokyo Sushi and Grill', 'Host and cashier'],
   ['2020 – 2021', 'Kumon', 'Tutor'],
 ];
@@ -54,16 +54,15 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         <a class="btn btn-white" href="#projects">Browse projects</a>
         <a class="btn btn-ghost" href="/resume.pdf">Résumé</a>
       </p>
+      <aside class="telemetry" aria-label="The play behind the name">
+        <p class="ro-title">Behind my name: Herbert dropback, 2021 Wk 3 at KC, real 10 Hz tracking data</p>
+        <dl>
+          <div><dt>After snap</dt><dd><b data-ro-t>0.0</b> s</dd></div>
+          <div><dt>Pocket</dt><dd><b data-ro-area>–</b> yd²</dd></div>
+          <div><dt>Nearest rusher</dt><dd><b data-ro-rush>–</b> yd</dd></div>
+        </dl>
+            </aside>
     </div>
-    <aside class="telemetry" aria-label="The play behind the name">
-      <p class="ro-title">Herbert dropback, 2021 Wk 3 at KC</p>
-      <dl>
-        <div><dt>After snap</dt><dd><b data-ro-t>0.0</b> s</dd></div>
-        <div><dt>Pocket</dt><dd><b data-ro-area>–</b> yd²</dd></div>
-        <div><dt>Nearest rusher</dt><dd><b data-ro-rush>–</b> yd</dd></div>
-      </dl>
-      <p class="ro-note">Real 10 Hz tracking data from my QB clutch project.</p>
-    </aside>
   </section>
 
   <!-- 2. Highlights -->
@@ -246,16 +245,39 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
     const F = play!.frames, i = Math.min(F.length - 2, Math.floor(f)), a = f - i;
     return F[i].map((p, k) => { const q = F[i + 1][k] ?? p; return [p[0] + (q[0] - p[0]) * a, p[1] + (q[1] - p[1]) * a, p[2]] as P; });
   };
+  // where the play is drawn: on desktop it is fitted into the open space right of my name and above
+  // the stats panel, so no player ever sits under the name; on phones it sits above the name
+  let cam = { sc: 1, cx: 0, cy: 0 };
+  function layoutPlay() {
+    if (!play) return;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const f of play.frames) for (const [x, y] of f) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+    const pad = 0.8; minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+    const box = { l: 0, r: PW, t: 0, b: PH };
+    const hero = pc.getBoundingClientRect();
+    const textEls = [...$$('[data-hero-name] span'), ...$$('.hero-in > :not(h1)')];
+    if (PW >= 900) {
+      // measure the text itself, not the block boxes (paragraphs span the full width)
+      const rng = document.createRange();
+      const textRight = Math.max(...textEls.map((el) => { rng.selectNodeContents(el); return rng.getBoundingClientRect().right; })) - hero.left;
+      box.l = textRight + 48; box.r = PW - 40; box.t = 90; box.b = PH - 40;
+    } else {
+      const nameTop = $('[data-hero-name]')!.offsetTop + ($('.hero-in') as HTMLElement).offsetTop;
+      box.l = 12; box.r = PW - 12; box.t = 80; box.b = Math.max(240, nameTop - 16);
+    }
+    const sc = Math.min((box.r - box.l) / (maxX - minX), (box.b - box.t) / (maxY - minY));
+    cam = { sc, cx: (box.l + box.r) / 2 - ((minX + maxX) / 2) * sc, cy: (box.t + box.b) / 2 - ((minY + maxY) / 2) * sc };
+  }
   function sizePlay() {
     const d = Math.min(2, devicePixelRatio || 1);
     PW = pc.offsetWidth; PH = pc.offsetHeight;
     pc.width = PW * d; pc.height = PH * d; px.setTransform(d, 0, 0, d, 0, 0);
+    layoutPlay();
     drawPlay();
   }
   function drawPlay() {
     if (!play || !PW) return;
-    const mobile = PW < 900;
-    const sc = Math.min(PW, PH) / (mobile ? 34 : 40), cx = mobile ? PW * 0.5 : PW * 0.7, cy = mobile ? PH * 0.34 : PH * 0.47;
+    const { sc, cx, cy } = cam;
     const X = (p: number[]) => cx + p[0] * sc, Y = (p: number[]) => cy + p[1] * sc;
     const pos = at(ft), qb = pos.find((p) => p[2] === 'q')!;
     px.clearRect(0, 0, PW, PH);
@@ -296,13 +318,13 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   const smooth = (x: number) => x * x * (3 - 2 * x);
   function playLoop() {
     if (!play || !playOn) return;
-    // real speed through the throw and the ball's flight, a short hold, then a quick rewind to the snap
-    const end = play.frames.length - 1.001, run = end / 10, holdEnd = 0.5, back = 1.5, holdStart = 0.25;
+    // real speed through the throw and the ball's flight, a 0.3 s hold, a 2 s rewind to the snap, a 0.3 s hold
+    const end = play.frames.length - 1.001, run = end / 10, holdEnd = 0.3, back = 2, holdStart = 0.3;
     const tt = ((performance.now() - t0) / 1000) % (run + holdEnd + back + holdStart);
     ft = tt < run ? (tt / run) * end : tt < run + holdEnd ? end : tt < run + holdEnd + back ? end * (1 - smooth((tt - run - holdEnd) / back)) : 0;
     drawPlay();
   }
-  fetch('/data/hero-play.json').then((r) => r.json()).then((d) => { play = d; sizePlay(); if (reduce) { ft = d.releaseIndex; drawPlay(); } });
+  fetch('/data/hero-play.json').then((r) => r.json()).then((d) => { play = d; document.fonts.ready.then(sizePlay); sizePlay(); if (reduce) { ft = d.releaseIndex; drawPlay(); } });
   new ResizeObserver(sizePlay).observe(pc);
   new IntersectionObserver(([e]) => { playOn = e.isIntersecting; }).observe(pc);
   if (!reduce) gsap.ticker.add(playLoop);
@@ -310,11 +332,10 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   /* ---------- hero entrance + parallax ---------- */
   if (!reduce) {
     gsap.from('[data-hero-name] span', { yPercent: 60, opacity: 0, filter: 'blur(12px)', duration: 1.6, ease: 'expo.out', stagger: 0.12, clearProps: 'filter' });
-    gsap.from('.hero-in > :not(h1), .telemetry', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
+    gsap.from('.hero-in > :not(h1)', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
     const st = { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true };
     gsap.to('[data-play]', { yPercent: 22, opacity: 0.35, ease: 'none', scrollTrigger: st });
     gsap.to('.hero-in', { yPercent: -18, ease: 'none', scrollTrigger: st });
-    gsap.to('.telemetry', { y: -90, ease: 'none', scrollTrigger: st });
     $$('[data-feature]').forEach((f) => {
       gsap.fromTo($('.f-sky', f), { y: 80 }, { y: -80, ease: 'none', scrollTrigger: { trigger: f, start: 'top bottom', end: 'bottom top', scrub: true } });
       gsap.fromTo($('.f-card', f), { y: 50 }, { y: -50, ease: 'none', scrollTrigger: { trigger: f, start: 'top bottom', end: 'bottom top', scrub: true } });
@@ -346,22 +367,21 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   .hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; overflow: hidden; }
   .hero-play { position: absolute; inset: 0; width: 100%; height: 100%; }
   .hero-in { width: 100%; padding-bottom: clamp(48px, 10vh, 120px); padding-top: 120px; }
-  .hero h1 { display: flex; flex-direction: column; font-size: clamp(3.4rem, 10.5vw, 10.5rem); font-weight: 300; font-stretch: 125%; text-transform: uppercase; letter-spacing: -0.035em; line-height: 0.88; cursor: default; }
+  .hero h1 { display: flex; flex-direction: column; align-items: flex-start; font-size: clamp(3.4rem, 9vw, 9.4rem); font-weight: 300; font-stretch: 125%; text-transform: uppercase; letter-spacing: -0.035em; line-height: 0.88; cursor: default; }
   .hero h1 span:last-child { color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85); }
   .lede { margin-top: 26px; font-size: clamp(1.08rem, 1.5vw, 1.3rem); max-width: 34rem; line-height: 1.45; }
-  .proof { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .proof { list-style: none; max-width: 40rem; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
   .proof li { font-size: 0.88rem; padding: 7px 13px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--faint); color: var(--ink-2); background: rgba(0, 0, 0, 0.4); }
   .proof li:first-child { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45); }
   .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-  .telemetry { position: absolute; z-index: 2; right: var(--gutter); top: 50%; transform: translateY(-50%); width: 250px; padding: 16px 18px; border-radius: 18px;
-    background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px var(--faint); font-size: 0.84rem; }
-  .ro-title { font-weight: 500; margin-bottom: 8px; }
-  .telemetry dl div { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--faint); }
+  .telemetry { display: inline-flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 12px 16px; border-radius: 16px; max-width: 100%;
+    background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px var(--faint); font-size: 0.8rem; }
+  .ro-title { color: var(--ink-2); }
+  .telemetry dl { display: flex; flex-wrap: wrap; gap: 4px 26px; }
+  .telemetry dl div { display: flex; align-items: baseline; gap: 8px; }
   .telemetry dt { color: var(--ink-2); }
   .telemetry dd { margin: 0; }
-  .telemetry b { font-weight: 400; font-stretch: 115%; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
-  .ro-note { color: var(--ink-2); margin-top: 8px; line-height: 1.4; }
-  @media (max-width: 899px) { .telemetry { top: 84px; transform: none; left: var(--gutter); right: var(--gutter); width: auto; } .ro-title, .ro-note { display: none; } .telemetry dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; } .telemetry dl div { flex-direction: column; border: 0; padding: 0; } }
+  .telemetry b { font-weight: 400; font-stretch: 115%; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 
   /* ---------- ticker ---------- */
   .ticker { position: relative; z-index: 1; border-block: 1px solid var(--faint); background: rgba(0, 0, 0, 0.55); overflow: hidden; }

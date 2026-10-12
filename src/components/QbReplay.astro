@@ -56,7 +56,7 @@
       const s = Math.min(w / 34, h / 22), ox = w * 0.38, oy = h / 2;
       const X = (x: number) => ox + x * s, Y = (y: number) => oy + y * s;
       ctx.clearRect(0, 0, w, h);
-      ctx.strokeStyle = 'rgba(169,180,198,0.15)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(139,147,167,0.15)'; ctx.lineWidth = 1;
       for (let yl = -15; yl <= 35; yl += 5) { ctx.beginPath(); ctx.moveTo(X(yl), 0); ctx.lineTo(X(yl), h); ctx.stroke(); }
       const pos = at(ft);
       if (trailBox.checked) {
@@ -66,11 +66,11 @@
           ctx.strokeStyle = COL[pos[k][2]] || COL.d; ctx.globalAlpha = 0.25; ctx.lineWidth = 1.5; ctx.stroke(); ctx.globalAlpha = 1;
         }
       }
-      if (snapBox.checked) poly(hull(F[d.snapIndex].filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(169,180,198,0.06)', css('--ink-2'), [5, 4]);
-      if (ft >= d.snapIndex) poly(hull(pos.filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(127,178,229,0.14)', COL.o);
+      if (snapBox.checked) poly(hull(F[d.snapIndex].filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(139,147,167,0.06)', css('--ink-2'), [5, 4]);
+      if (ft >= d.snapIndex) poly(hull(pos.filter((p) => p[2] === 'o').map((p) => [X(p[0]), Y(p[1])])), 'rgba(207,220,255,0.14)', COL.o);
       for (const [x, y, k] of pos) { ctx.beginPath(); ctx.arc(X(x), Y(y), k === 'b' ? 4 : k === 'q' ? 9 : 7, 0, Math.PI * 2); ctx.fillStyle = COL[k] || COL.d; ctx.fill(); }
       const qb = pos.find((p) => p[2] === 'q');
-      if (qb) { ctx.fillStyle = COL.q; ctx.font = "600 13px Barlow, sans-serif"; ctx.fillText('Herbert', X(qb[0]) - 24, Y(qb[1]) - 14); }
+      if (qb) { ctx.fillStyle = COL.q; ctx.font = "500 13px 'Archivo Variable', sans-serif"; ctx.fillText('Herbert', X(qb[0]) - 24, Y(qb[1]) - 14); }
       const secs = Math.max(0, (ft - d.snapIndex) / 10);
       timeEl.textContent = ft < d.snapIndex ? 'pre-snap' : ft >= d.releaseIndex ? `throw · ${((d.releaseIndex - d.snapIndex) / 10).toFixed(1)} s` : `${secs.toFixed(1)} s after snap`;
       scrub.value = String(Math.round((ft / (n - 1)) * 1000));
@@ -95,7 +95,7 @@
   .replay canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: var(--bg); border-radius: 10px; }
   .rp-controls { display: flex; align-items: center; gap: 12px; }
   .rp-controls input[type='range'] { flex: 1; accent-color: var(--lime); height: 44px; }
-  .rp-play { min-width: 76px; min-height: 44px; border-radius: 8px; border: 0; cursor: pointer; background: var(--lime); color: var(--on-lime); font: 800 1.05rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.05em; }
+  .rp-play { min-width: 76px; min-height: 44px; border-radius: 8px; border: 0; cursor: pointer; background: var(--lime); color: var(--on-lime); font: 300 1.05rem/1 var(--font); font-stretch: 118%; letter-spacing: 0.05em; }
   .rp-time { min-width: 9rem; text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; }
   .rp-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; color: var(--ink-2); font-size: 0.95rem; }
   .rp-opts button { min-height: 40px; padding: 0 12px; border-radius: 8px; background: transparent; color: var(--ink-2); border: 1px solid var(--line); cursor: pointer; font-weight: 600; }

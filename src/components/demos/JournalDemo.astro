@@ -241,7 +241,7 @@ const METRICS = [
     study: { cuts: [0.01, 1, 2, 3.5], labels: ['0 h', '≤ 1', '≤ 2', '≤ 3.5', '3.5+'], unit: ' h' },
     screen: { cuts: [6, 7, 8, 9], labels: ['< 6 h', '6', '7', '8', '9+'], unit: ' h' },
   };
-  const RAMP = ['#22354f', '#2f5075', '#43709c', '#5e93c6', '#8fbfec'];
+  const RAMP = ['#1c2238', '#2b3561', '#4e5fa6', '#7d8fd6', '#b4c3f5'];
   const val = (d: Day, m: Metric) => (m === 'mood' ? d.mo : m === 'sleep' ? d.sl : m === 'gym' ? d.g : m === 'study' ? d.st : d.sc);
   const color = (v: number | null, m: Metric) => {
     if (v == null) return null;
@@ -509,10 +509,10 @@ const METRICS = [
   .jd { display: flex; flex-direction: column; gap: 20px; --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace; }
   .jd-panel { background: var(--panel); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: clamp(16px, 2.6vw, 28px); min-width: 0; }
   .jd-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 20px; margin-bottom: 16px; }
-  .jd-h { font-size: clamp(1.7rem, 3.2vw, 2.3rem); font-weight: 800; }
-  .jd-h .num { color: var(--blue); font-weight: 900; }
+  .jd-h { font-size: clamp(1.7rem, 3.2vw, 2.3rem); font-weight: 400; }
+  .jd-h .num { color: var(--blue); font-weight: 400; }
   .jd-sub { color: var(--ink-2); font-size: 0.92rem; margin-top: 6px; }
-  .jd-lab { display: inline-block; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
+  .jd-lab { display: inline-block; color: var(--ink-2); letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
   .jd-note { color: var(--ink-2); font-size: 0.88rem; margin-top: 12px; }
   .jd .d-filters { margin: 0; }
   .jd-run { min-height: 44px; font-size: 1.05rem; }
@@ -520,7 +520,7 @@ const METRICS = [
   /* steps */
   .jd-steps { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 18px; }
   .jd-steps li { display: flex; align-items: center; gap: 8px; padding: 8px 0 10px; color: var(--ink-2); font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid var(--line); transition: color 200ms, border-color 200ms; min-width: 0; }
-  .jd-steps span { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; font: 800 0.85rem/1 var(--display); box-shadow: inset 0 0 0 1px var(--line); }
+  .jd-steps span { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; font: 300 0.85rem/1 var(--font); font-stretch: 118%; box-shadow: inset 0 0 0 1px var(--line); }
   .jd-steps li.done { color: var(--ink); border-color: var(--blue); }
   .jd-steps li.done span { background: var(--blue); color: var(--bg); box-shadow: none; }
   .jd-steps li[aria-current='step'] { color: var(--ink); border-color: var(--lime); }
@@ -573,22 +573,22 @@ const METRICS = [
   .jd-grid :global(.cell.missed) { fill: transparent; stroke: var(--ink-2); stroke-dasharray: 3 3; stroke-width: 1; }
   .jd-grid :global(.sel) { fill: none; stroke: var(--lime); stroke-width: 2.5; pointer-events: none; }
   .jd :global(.lab) { fill: var(--ink-2); font: 600 11px var(--body); letter-spacing: 0.04em; }
-  .jd :global(.lab.mon) { fill: var(--ink); text-transform: uppercase; }
-  .jd-grid :global(.split) { fill: var(--bg); font: 800 11px var(--display); pointer-events: none; text-transform: uppercase; }
+  .jd :global(.lab.mon) { fill: var(--ink); }
+  .jd-grid :global(.split) { fill: var(--bg); font: 300 11px var(--font); font-stretch: 118%; pointer-events: none; }
   .jd-grid :global(.track) { stroke: var(--line); stroke-width: 2; }
   .jd-grid :global(.bar) { stroke: var(--blue); stroke-width: 2; opacity: 0.55; }
   .jd-grid :global(.pip) { fill: var(--blue); }
-  .jd-grid :global(.rv) { fill: var(--ink-2); font: 700 13px var(--display); letter-spacing: 0.02em; }
+  .jd-grid :global(.rv) { fill: var(--ink-2); font: 400 13px var(--font); font-stretch: 118%; letter-spacing: 0.02em; }
   .jd-grid :global(.rv.top) { fill: var(--blue); }
 
   @media (max-width: 1099px) { .jd-read { order: -1; } }
   .jd-read { background: var(--bg-2); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); padding: 14px 16px; min-height: 100%; }
-  .jd-read :global(.jd-lab) { display: block; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
-  .jd-read :global(.date) { font: 900 2rem/0.95 var(--display); text-transform: uppercase; margin-bottom: 10px; }
+  .jd-read :global(.jd-lab) { display: block; color: var(--ink-2); letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
+  .jd-read :global(.date) { font: 300 2rem/0.95 var(--font); font-stretch: 118%; margin-bottom: 10px; }
   .jd-read :global(dl) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
   @media (min-width: 1100px) { .jd-read :global(dl) { grid-template-columns: minmax(0, 1fr); gap: 6px; } .jd-read :global(dl > div) { display: flex; justify-content: space-between; align-items: baseline; } }
   .jd-read :global(dt) { color: var(--ink-2); font-size: 0.82rem; font-weight: 600; }
-  .jd-read :global(dd) { margin: 0; color: var(--blue); font: 800 1.35rem/1.1 var(--display); }
+  .jd-read :global(dd) { margin: 0; color: var(--blue); font: 300 1.35rem/1.1 var(--font); font-stretch: 118%; }
   .jd-read :global(.hint) { color: var(--ink-2); font-size: 0.85rem; margin-top: 12px; }
 
   .jd-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; color: var(--ink-2); font-size: 0.8rem; font-weight: 600; }
@@ -599,15 +599,15 @@ const METRICS = [
   /* correlation */
   .jd-corrbody { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); align-items: start; }
   @media (min-width: 860px) { .jd-corrbody { grid-template-columns: 280px minmax(0, 1fr); gap: 28px; } }
-  .big { font: 900 clamp(3.4rem, 7vw, 4.8rem)/0.9 var(--display); color: var(--blue); }
-  .big .rlab { font-size: 0.45em; color: var(--ink-2); font-weight: 800; }
+  .big { font: 300 clamp(3.4rem, 7vw, 4.8rem)/0.9 var(--font); font-stretch: 118%; color: var(--blue); }
+  .big .rlab { font-size: 0.45em; color: var(--ink-2); font-weight: 400; }
   .rlist { list-style: none; margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
   .rlist :global(li) { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr) 3.2rem; gap: 10px; align-items: center; font-size: 0.9rem; color: var(--ink-2); font-weight: 600; }
   .rlist :global(li.cur) { color: var(--ink); }
   .rlist :global(.tr) { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
   .rlist :global(.tr i) { display: block; height: 100%; background: var(--blue); opacity: 0.6; }
   .rlist :global(li.cur .tr i) { opacity: 1; }
-  .rlist :global(b) { text-align: right; color: var(--blue); font: 800 1.05rem/1 var(--display); }
+  .rlist :global(b) { text-align: right; color: var(--blue); font: 300 1.05rem/1 var(--font); font-stretch: 118%; }
   .rlist :global(li.gm) { grid-template-columns: 6.2rem minmax(0, 1fr); padding-top: 8px; border-top: 1px solid var(--line); }
   .rlist :global(.txt) { color: var(--ink); }
   .jd-scatter { min-width: 0; }

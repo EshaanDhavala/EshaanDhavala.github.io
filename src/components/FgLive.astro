@@ -59,7 +59,7 @@
       const rows = grid.distances.map((d: number, i: number) => ({ d, p: series()[i] }));
       const cs = getComputedStyle(root);
       const ink = cs.getPropertyValue('--fg-ink').trim() || '#fff';
-      const accent = cs.getPropertyValue('--fg-accent').trim() || '#ff5a1f';
+      const accent = cs.getPropertyValue('--fg-accent').trim() || '#ffffff';
       const font = cs.fontFamily;
       curve.replaceChildren(
         Plot.plot({
@@ -99,14 +99,14 @@
     display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; color: var(--fg-ink);
   }
   .readout { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
-  .pct { font-size: clamp(3.6rem, 9vw, 5.6rem); font-weight: 800; font-stretch: 125%; line-height: 0.9; letter-spacing: -0.03em; min-width: 3.2ch; }
+  .pct { font-size: clamp(3.6rem, 9vw, 5.6rem); font-weight: 300; font-stretch: 125%; line-height: 0.9; letter-spacing: -0.03em; min-width: 3.2ch; }
   .cap { font-weight: 700; font-size: 1rem; opacity: 0.85; }
   .controls { display: grid; gap: 0.9rem; }
   fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   .ctl-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; opacity: 0.85; margin-bottom: 0.4rem; padding: 0; }
   .ctl-label b { font-weight: 800; opacity: 1; }
   .slider { display: block; }
-  input[type='range'] { width: 100%; accent-color: var(--fg-accent, #ff5a1f); height: 44px; cursor: pointer; }
+  input[type='range'] { width: 100%; accent-color: var(--fg-accent, #ffffff); height: 44px; cursor: pointer; }
   .seg { display: flex; gap: 0.35rem; flex-wrap: wrap; }
   .seg button {
     min-height: 44px; padding: 0 0.9rem; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
@@ -114,7 +114,7 @@
     font-family: inherit;
   }
   .seg button:hover { background: color-mix(in srgb, var(--fg-ink) 22%, transparent); }
-  .seg button[aria-pressed='true'] { background: var(--fg-ink); color: var(--fg-on-ink, #0f3d25); border-color: var(--fg-ink); }
+  .seg button[aria-pressed='true'] { background: var(--fg-ink); color: var(--fg-on-ink, #000000); border-color: var(--fg-ink); }
   .curve { min-height: 120px; }
   @media (min-width: 900px) {
     .fg { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: end; column-gap: 2rem; }

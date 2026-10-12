@@ -8,6 +8,7 @@ import JournalDemo from '../demos/JournalDemo.astro';
 import TennisDemo from '../demos/TennisDemo.astro';
 import AdhdDemo from '../demos/AdhdDemo.astro';
 import HouseDemo from '../demos/HouseDemo.astro';
+import AssistantDemo from '../demos/AssistantDemo.astro';
 import { asset } from '../../lib/asset';
 interface Props { e: Entry; headingLevel?: 2 | 3 }
 const { e, headingLevel = 3 } = Astro.props;
@@ -15,7 +16,7 @@ const H = `h${headingLevel}`;
 // One interactive demo per project, each in its own file under components/demos.
 const DEMOS: Record<string, any> = {
   playscan: PlayScanDemo, 'journal-to-data': JournalDemo, 'tennis-scouting': TennisDemo,
-  'adhd-diagnosis': AdhdDemo, 'house-prices': HouseDemo,
+  'adhd-diagnosis': AdhdDemo, 'house-prices': HouseDemo, 'ucla-football-ai-assistant': AssistantDemo,
 };
 const Demo = DEMOS[e.slug];
 const chartLabel: Record<string, string> = {
