@@ -32,7 +32,8 @@ export interface Entry {
   charts?: ('qb' | 'journal' | 'journal-dow' | 'tennis' | 'fg' | 'replay')[];
   /** jump points in the demo video */
   chapters?: { t: number; label: string }[];
-  video?: { src: string; poster: string; label: string };
+  /** clip: a shorter loop for the home card (skips intros) */
+  video?: { src: string; poster: string; label: string; clip?: string };
   note?: string;
   /** short backstory, in my words, shown above the demo */
   story?: string;
@@ -50,7 +51,7 @@ export const entries: Entry[] = [
     cats: ['sports', 'ai'],
     plate: 'ai',
     pic: { kind: 'img', src: '/thumbs/ucla-football-ai-assistant.jpg', alt: 'A coach question in the chat (Which offensive linemen have the weakest hamstrings? Show me a chart.) and the assistant answer with a bar chart' , caption: 'Asked live in the chat: “Which offensive linemen have the weakest hamstrings? Show me a chart.” Answered in 6.6 s, on synthetic data.' },
-    video: { src: '/media/team-pulse.mp4', poster: '/media/team-pulse-poster.jpg', label: 'Captioned walkthrough of Team Pulse and the AI Assistant, on synthetic data' },
+    video: { src: '/media/team-pulse.mp4', clip: '/media/team-pulse-loop.mp4', poster: '/media/team-pulse-poster.jpg', label: 'Captioned walkthrough of Team Pulse and the AI Assistant, on synthetic data' },
     when: '2026',
     where: 'UCLA Football strength staff, via Bruin Sports Analytics',
     stack: ['R / Shiny', 'Anthropic API', 'Tool use', 'dplyr'],

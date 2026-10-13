@@ -105,7 +105,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         <a class="f-card glass-card" href={`/entries/${e.slug}/`} data-tilt>
           <div class="f-media">
             {e.video ? (
-              <video src={asset(e.video.src)} poster={asset(e.video.poster)} muted loop playsinline preload="none" data-autoplay aria-label={e.video.label}></video>
+              <video src={asset(e.video.clip ?? e.video.src)} poster={asset(e.video.poster)} muted loop playsinline preload="none" data-autoplay aria-label={e.video.label}></video>
             ) : (
               img(e) && <img src={asset(img(e)!.src)} alt={img(e)!.alt} width="1280" height="800" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" style={`view-transition-name: pic-${e.slug}`} />
             )}
