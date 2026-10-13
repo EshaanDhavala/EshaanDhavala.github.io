@@ -44,29 +44,41 @@ async function anime() {
 async function xbox() {
   const key = process.env.OPENXBL_KEY;
   if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
+  // Xbox Live rejects Node's default "Accept-Language: *"; some responses come back as a JSON string in .content
   const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json', 'Accept-Language': 'en-US' } })
-    .then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
+    .then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); })
+    .then((j) => { let c = j?.content ?? j; if (typeof c === 'string') c = JSON.parse(c); return c; });
   const me = (await get('player/summary')).people?.[0];
-  if (process.env.DEBUG_SHAPE && me) {
-    const shape = (o, d = 0) => d > 4 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty', o.length] : Object.fromEntries(Object.keys(o).slice(0, 30).map((k) => [k, shape(o[k], d + 1)]));
-    for (const ep of ['achievements', 'player/titleHistory', `achievements/player/${me.xuid}`, `player/titleHistory/${me.xuid}`]) {
-      const r = await fetch(`https://xbl.io/api/v2/${ep}`, { headers: { 'X-Authorization': key, Accept: 'application/json', 'Accept-Language': 'en-US' } });
-      const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {}
-      if (typeof j?.content === 'string') { try { j = JSON.parse(j.content); } catch { j = { contentText: j.content.slice(0, 120) }; } }
-      if (Array.isArray(j) && typeof j[0] === 'string') j = { text: j[0].slice(0, 200).replace(/\d{10,}/g, '<n>') };
-      if (j?.text) { console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', r.status, JSON.stringify(j.text)); continue; }
-      console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', r.status, j ? JSON.stringify(shape(j?.content ?? j)) : txt.slice(0, 160).replace(/\d{10,}/g, '<n>'));
-    }
-  }
   if (!me) throw new Error('OpenXBL: no profile');
-  const th = me.titleHistory ?? {};
+  const hist = await get('achievements');
+  // games only (no apps like YouTube), with art; strip ™/® from names
+  const clean = (n) => n.replace(/[™®©]/g, '').replace(/\s+/g, ' ').trim();
+  const art = (t) => {
+    const imgs = t.images ?? [];
+    const pick = imgs.find((i) => i.type === 'BoxArt') ?? imgs.find((i) => i.type === 'Poster') ?? imgs.find((i) => i.type === 'BrandedKeyArt') ?? null;
+    return (pick?.url ?? t.displayImage ?? '').replace(/^http:/, 'https:') || null;
+  };
+  const games = (hist.titles ?? []).filter((t) => t.type === 'Game').map((t) => ({
+    name: clean(t.name),
+    cover: art(t),
+    earned: t.achievement?.currentGamerscore ?? 0,
+    total: t.achievement?.totalGamerscore ?? 0,
+    unlocked: t.achievement?.currentAchievements ?? 0,
+    pct: t.achievement?.progressPercentage ?? 0,
+    lastPlayed: t.titleHistory?.lastTimePlayed ?? null,
+  }));
+  const recent = [...games].filter((g) => g.lastPlayed).sort((a, b) => new Date(b.lastPlayed) - new Date(a.lastPlayed)).slice(0, 6);
+  const top = [...games].sort((a, b) => b.earned - a.earned).slice(0, 5);
   await save('xbox', {
     gamertag: me.gamertag ?? null,
     gamerscore: me.gamerScore ? Number(me.gamerScore) : null,
     online: me.presenceState === 'Online',
     status: me.presenceText || null,
-    lastGame: th.TitleName ?? null,
-    lastPlayed: th.LastTimePlayed ?? null,
+    gamesPlayed: games.length,
+    achievements: hist.achievementSummary?.totalAchievementsUnlocked ?? games.reduce((s, g) => s + g.unlocked, 0),
+    completed: games.filter((g) => g.total > 0 && g.pct >= 100).length,
+    recent,
+    top,
   });
 }
 
