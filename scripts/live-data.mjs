@@ -56,7 +56,9 @@ async function xbox() {
   const art = (t) => {
     const imgs = t.images ?? [];
     const pick = imgs.find((i) => i.type === 'BoxArt') ?? imgs.find((i) => i.type === 'Poster') ?? imgs.find((i) => i.type === 'BrandedKeyArt') ?? null;
-    return (pick?.url ?? t.displayImage ?? '').replace(/^http:/, 'https:') || null;
+    const u = (pick?.url ?? t.displayImage ?? '').replace(/^http:/, 'https:');
+    // Microsoft's image CDN resizes on request: ~25 KB instead of ~500 KB
+    return u ? (/store-images\.s-microsoft\.com/.test(u) ? `${u.split('?')[0]}?w=320&h=320&q=80&format=jpg` : u) : null;
   };
   const games = (hist.titles ?? []).filter((t) => t.type === 'Game').map((t) => ({
     name: clean(t.name),
