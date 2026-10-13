@@ -41,9 +41,9 @@ async function anime() {
 async function xbox() {
   const key = process.env.OPENXBL_KEY;
   if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
-  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); });
+  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
   const acct = await get('account');
-  if (process.env.DEBUG_SHAPE) { const shape = (o, d = 0) => d > 3 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty'] : Object.fromEntries(Object.keys(o).slice(0, 25).map((k) => [k, shape(o[k], d + 1)])); console.log('account shape', JSON.stringify(shape(acct))); }
+  if (process.env.DEBUG_SHAPE) { const shape = (o, d = 0) => d > 3 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty'] : Object.fromEntries(Object.keys(o).slice(0, 25).map((k) => [k, shape(o[k], d + 1)])); console.log('account shape', JSON.stringify(shape(acct))); console.log('achievements shape', JSON.stringify(shape(await get('achievements').catch((e) => e.message)))); }
   const settings = Object.fromEntries((acct.profileUsers?.[0]?.settings ?? []).map((s) => [s.id, s.value]));
   const hist = await get('achievements').catch(() => null);
   const titles = (hist?.titles ?? []).filter((t) => t.achievement?.currentGamerscore > 0 || t.titleHistory?.lastTimePlayed);
