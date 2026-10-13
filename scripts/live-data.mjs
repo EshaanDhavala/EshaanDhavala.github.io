@@ -59,6 +59,12 @@ async function xbox() {
   });
 }
 
+/* ---------- Vikings standing (ESPN's team endpoint has no CORS) ---------- */
+async function vikings() {
+  const t = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/16').then((r) => r.json());
+  await save('vikings', { standing: (t.team?.standingSummary ?? '').replace('National Football Conference', 'the NFC') || null });
+}
+
 /* ---------- Last.fm (needs LASTFM_USER + LASTFM_KEY secrets) ---------- */
 async function music() {
   const user = process.env.LASTFM_USER, key = process.env.LASTFM_KEY;
@@ -75,9 +81,9 @@ async function music() {
 
 let failed = 0;
 const available = [];
-for (const [name, fn] of [['anime', anime], ['xbox', xbox], ['music', music]]) {
+for (const [name, fn] of [['anime', anime], ['xbox', xbox], ['vikings', vikings], ['music', music]]) {
   try { if ((await fn()) !== false) { available.push(name); console.log(`${name}: ok`); } } catch (e) { failed++; console.error(`${name}: ${e.message}`); }
 }
 // the site reads this first, so it only requests feeds that exist
 await writeFile(`${OUT}/feeds.json`, JSON.stringify({ updated: now, available }));
-process.exitCode = failed === 3 ? 1 : 0;
+process.exitCode = failed === 4 ? 1 : 0;

@@ -106,7 +106,6 @@ const order = [
     }
     set('[data-vk-next]', next ? `Next: ${next.home ? 'vs' : 'at'} ${next.oppName}, ${when(next.date)} PT` : 'Season over');
     show('vikings');
-    getJSON('https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/teams/16').then((t) => set('[data-vk-stand]', (t.team?.standingSummary ?? '').replace('National Football Conference', 'the NFC'))).catch(() => {});
   }).catch(() => {});
 
   /* ---------- anime + Xbox (refreshed by a GitHub Action) ---------- */
@@ -132,6 +131,8 @@ const order = [
       });
       show('anime');
     }).catch(() => {});
+
+    if (has('vikings')) getJSON(RAW + 'vikings.json').then((d) => set('[data-vk-stand]', d.standing ?? '')).catch(() => {});
 
     if (has('xbox')) getJSON(RAW + 'xbox.json').then((d) => {
       if (d.gamerscore == null) return;
