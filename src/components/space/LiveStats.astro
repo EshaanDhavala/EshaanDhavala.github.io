@@ -170,6 +170,10 @@ const order = [
       set('[data-xb-status]', d.online ? 'online' : 'offline');
       set('[data-xb-upd]', ago(d.updated));
       const rel = (iso: string) => { const days = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); return days <= 0 ? 'today' : days === 1 ? 'yesterday' : days < 30 ? `${days} days ago` : new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); };
+      // my own highlights, typed in by hand (Xbox Live has no per-game rankings); shown whenever the game appears
+      const brag: Record<string, { badge: string; line: string }> = {
+        'UFC 5': { badge: '#86', line: 'Peaked #86 in the world, Stand & Bang' },
+      };
       const recent = $('[data-xb-recent]')!; recent.innerHTML = '';
       (d.recent ?? []).forEach((g: any, i: number) => {
         const li = document.createElement('li'); li.style.setProperty('--i', String(i));
@@ -179,6 +183,12 @@ const order = [
         fig.append(ring);
         const n = document.createElement('span'); n.className = 'xr-n'; n.textContent = g.name;
         const w = document.createElement('span'); w.className = 'xr-w'; w.textContent = rel(g.lastPlayed);
+        const h = brag[g.name];
+        if (h) {
+          li.classList.add('brag');
+          const bd = document.createElement('span'); bd.className = 'xr-badge'; bd.textContent = h.badge; bd.title = h.line; fig.append(bd);
+          w.textContent = h.line;
+        }
         li.append(fig, n, w); recent.append(li);
       });
       const top = $('[data-xb-top]')!; top.innerHTML = '';
@@ -188,6 +198,7 @@ const order = [
         const n = document.createElement('span'); n.className = 'xt-n'; n.textContent = g.name;
         const v = document.createElement('span'); v.className = 'xt-v'; v.textContent = `${g.earned.toLocaleString()} G`;
         const bar = document.createElement('i'); bar.className = 'xt-bar'; bar.style.setProperty('--p', String(g.earned / max));
+        if (brag[g.name]) { const t = document.createElement('span'); t.className = 'xt-brag'; t.textContent = brag[g.name].line; n.append(t); }
         li.append(n, v, bar); top.append(li);
       });
       show('xbox');
@@ -276,6 +287,11 @@ const order = [
     background: radial-gradient(closest-side, rgba(0, 0, 0, 0.82) 74%, transparent 76% 100%), conic-gradient(#4ade80 calc(var(--p) * 360deg), rgba(255, 255, 255, 0.18) 0); }
   .xb-recent :global(.xr-n) { font-size: 0.82rem; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .xb-recent :global(.xr-w) { font-size: 0.74rem; color: var(--ink-2); margin-top: -2px; }
+  .xb-recent :global(.xr-badge) { position: absolute; left: 6px; top: 6px; padding: 4px 8px 3px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; color: #1a1300;
+    background: linear-gradient(135deg, #ffe08a, #ffb84d); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 18px rgba(255, 190, 80, 0.55); }
+  .xb-recent :global(li.brag .xr-art) { box-shadow: 0 0 0 1px rgba(255, 207, 120, 0.7), 0 0 26px rgba(255, 180, 80, 0.35); }
+  .xb-recent :global(li.brag .xr-w) { color: var(--amber); }
+  .xb-top :global(.xt-brag) { margin-left: 8px; font-size: 0.76rem; color: var(--amber); }
   .xb-top { list-style: none; display: grid; gap: 10px 28px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
   .xb-top :global(li) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 0.9rem; counter-increment: xt; }
   .xb-top :global(.xt-n::before) { content: counter(xt) '  '; color: #4ade80; font-variant-numeric: tabular-nums; }
