@@ -49,8 +49,10 @@ async function xbox() {
   const me = (await get('player/summary')).people?.[0];
   if (process.env.DEBUG_SHAPE && me) {
     const shape = (o, d = 0) => d > 4 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty', o.length] : Object.fromEntries(Object.keys(o).slice(0, 30).map((k) => [k, shape(o[k], d + 1)]));
-    for (const ep of ['achievements', 'player/titleHistory', `achievements/player/${me.xuid}`, `player/titleHistory/${me.xuid}`]) {
-      console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', JSON.stringify(shape(await get(ep).catch((e) => e.message))));
+    for (const ep of ['achievements', 'player/titleHistory', `achievements/player/${me.xuid}`, `player/titleHistory/${me.xuid}`, 'achievements/stats', 'activity/history']) {
+      const r = await fetch(`https://xbl.io/api/v2/${ep}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } });
+      const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {}
+      console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', r.status, j ? JSON.stringify(shape(j?.content ?? j)) : txt.slice(0, 160).replace(/\d{10,}/g, '<n>'));
     }
   }
   if (!me) throw new Error('OpenXBL: no profile');
