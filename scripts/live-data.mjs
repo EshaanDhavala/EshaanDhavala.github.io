@@ -53,6 +53,8 @@ async function xbox() {
       const r = await fetch(`https://xbl.io/api/v2/${ep}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } });
       const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {}
       if (typeof j?.content === 'string') { try { j = JSON.parse(j.content); } catch { j = { contentText: j.content.slice(0, 120) }; } }
+      if (Array.isArray(j) && typeof j[0] === 'string') j = { text: j[0].slice(0, 200).replace(/\d{10,}/g, '<n>') };
+      if (j?.text) { console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', r.status, JSON.stringify(j.text)); continue; }
       console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', r.status, j ? JSON.stringify(shape(j?.content ?? j)) : txt.slice(0, 160).replace(/\d{10,}/g, '<n>'));
     }
   }
