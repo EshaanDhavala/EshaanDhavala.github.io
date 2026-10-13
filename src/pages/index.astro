@@ -4,6 +4,7 @@ import FgLive from '../components/FgLive.astro';
 import Ambient from '../components/Ambient.astro';
 import Constellation from '../components/space/Constellation.astro';
 import Orrery from '../components/space/Orrery.astro';
+import LiveStats from '../components/space/LiveStats.astro';
 import { entries, CATS } from '../data/entries';
 import { tools } from '../data/tools';
 import { series } from '../lib/constellations';
@@ -199,6 +200,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         My high school paper ran a feature on me and my Taco Bell order: <b>“Study hard, crunch harder”</b> (The Wave, 2024).
       </a>
     </div>
+    <LiveStats />
   </section>
 
   <!-- 8. Sign-off: my initials form, then go supernova -->
