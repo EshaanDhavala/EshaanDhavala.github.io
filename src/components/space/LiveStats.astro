@@ -1,42 +1,15 @@
 ---
 /**
- * "Right now": live cards in the About section, fetched in the browser on load (all public, CORS-open feeds):
- *   LA time + weather (Open-Meteo), tonight's sky (moon phase computed; ISS from wheretheiss.at; sunset from Open-Meteo),
- *   UCLA football (ESPN team schedule), next UFC card (ESPN UFC calendar).
- * A card stays hidden until its data arrives, so a down feed never shows a broken card.
+ * "Right now": anime (MyAnimeList), Taco Bell, Xbox and Last.fm cards in the About section.
+ * Anime/Xbox/Last.fm come from the live-data branch, refreshed by .github/workflows/live-data.yml;
+ * a card stays hidden until its data exists, so a missing feed never shows a broken card.
  */
 ---
 <section class="live" aria-labelledby="live-title" data-live>
   <div class="live-head">
     <h3 id="live-title">Right now</h3>
-    <p>Live data, fetched when you load the page.</p>
   </div>
   <ul class="live-grid">
-    <li class="lc glass-card" data-card="la" hidden>
-      <p class="lc-k">Los Angeles</p>
-      <p class="lc-v"><span data-la-time>–</span></p>
-      <p class="lc-d"><span data-la-temp>–</span> at UCLA, <span data-la-sky>–</span></p>
-      <p class="lc-src">Open-Meteo</p>
-    </li>
-    <li class="lc glass-card" data-card="sky" hidden>
-      <p class="lc-k">Sky over LA tonight</p>
-      <div class="lc-moon">
-        <svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="46" fill="#1a1d27" /><path data-moon-lit fill="#f1ede2" /></svg>
-        <div>
-          <p class="lc-v lc-v-s" data-moon-name>–</p>
-          <p class="lc-d"><span data-moon-pct>–</span> lit, sunset <span data-sunset>–</span></p>
-        </div>
-      </div>
-      <p class="lc-d" data-iss>Finding the ISS…</p>
-      <p class="lc-src">Moon computed; ISS from wheretheiss.at</p>
-    </li>
-    <li class="lc glass-card" data-card="ucla" hidden>
-      <p class="lc-k">UCLA football</p>
-      <p class="lc-v" data-ucla-record>–</p>
-      <p class="lc-d" data-ucla-last>–</p>
-      <p class="lc-d" data-ucla-next>–</p>
-      <p class="lc-src">ESPN</p>
-    </li>
     <li class="lc glass-card" data-card="anime" hidden>
       <p class="lc-k">Anime</p>
       <p class="lc-v"><span data-an-eps>–</span> <small>episodes</small></p>
@@ -62,12 +35,6 @@
       <p class="lc-d" data-mu-top>–</p>
       <p class="lc-src">Last.fm, updated every few hours</p>
     </li>
-    <li class="lc glass-card" data-card="ufc" hidden>
-      <p class="lc-k">Next UFC card</p>
-      <p class="lc-v lc-v-s" data-ufc-name>–</p>
-      <p class="lc-d" data-ufc-when>–</p>
-      <p class="lc-src">ESPN</p>
-    </li>
   </ul>
 </section>
 
@@ -75,72 +42,7 @@
   const $ = (s: string) => document.querySelector<HTMLElement>(s);
   const show = (k: string) => $(`[data-card="${k}"]`)?.removeAttribute('hidden');
   const set = (s: string, v: string) => { const el = $(s); if (el) el.textContent = v; };
-  const TZ = 'America/Los_Angeles';
-  const fmt = (d: Date, o: Intl.DateTimeFormatOptions) => d.toLocaleString('en-US', { timeZone: TZ, ...o });
-  const until = (d: Date) => {
-    const ms = d.getTime() - Date.now(); if (ms <= 0) return 'now';
-    const days = Math.floor(ms / 864e5), hrs = Math.floor((ms % 864e5) / 36e5), min = Math.floor((ms % 36e5) / 6e4);
-    return days > 0 ? `in ${days}d ${hrs}h` : hrs > 0 ? `in ${hrs}h ${min}m` : `in ${min}m`;
-  };
   const getJSON = (u: string) => fetch(u).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
-
-  /* ---------- LA time + weather ---------- */
-  const WMO: Record<number, string> = { 0: 'clear', 1: 'mostly clear', 2: 'partly cloudy', 3: 'overcast', 45: 'foggy', 48: 'foggy', 51: 'light drizzle', 53: 'drizzle', 55: 'drizzle', 61: 'light rain', 63: 'rain', 65: 'heavy rain', 80: 'showers', 81: 'showers', 82: 'heavy showers', 95: 'thunderstorms' };
-  const tick = () => set('[data-la-time]', fmt(new Date(), { hour: 'numeric', minute: '2-digit', second: '2-digit' }));
-  tick(); setInterval(tick, 1000);
-  getJSON('https://api.open-meteo.com/v1/forecast?latitude=34.07&longitude=-118.44&current=temperature_2m,weather_code&daily=sunset&timezone=America%2FLos_Angeles&temperature_unit=fahrenheit&forecast_days=1')
-    .then((d) => {
-      set('[data-la-temp]', `${Math.round(d.current.temperature_2m)}°F`);
-      set('[data-la-sky]', WMO[d.current.weather_code] ?? 'mixed');
-      show('la');
-      const ss = d.daily?.sunset?.[0];
-      if (ss) set('[data-sunset]', new Date(`${ss}:00${d.utc_offset_seconds < 0 ? '-' : '+'}${String(Math.abs(d.utc_offset_seconds / 3600)).padStart(2, '0')}:00`).toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }));
-    })
-    .catch(() => {});
-
-  /* ---------- tonight's moon (computed) ---------- */
-  {
-    const synodic = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14);
-    const phase = ((((Date.now() - ref) / 864e5) % synodic) + synodic) % synodic / synodic; // 0 new, .5 full
-    const lit = (1 - Math.cos(2 * Math.PI * phase)) / 2;
-    const names = ['New moon', 'Waxing crescent', 'First quarter', 'Waxing gibbous', 'Full moon', 'Waning gibbous', 'Last quarter', 'Waning crescent'];
-    set('[data-moon-name]', names[Math.round(phase * 8) % 8]);
-    set('[data-moon-pct]', `${Math.round(lit * 100)}%`);
-    // lit area: outer half-circle on the lit side + an elliptical terminator
-    const r = 46, waxing = phase < 0.5, k = Math.cos(2 * Math.PI * phase); // 1 new .. -1 full
-    const rx = Math.abs(k) * r, sweepOuter = waxing ? 1 : 0, sweepInner = k > 0 ? (waxing ? 0 : 1) : (waxing ? 1 : 0);
-    $('[data-moon-lit]')?.setAttribute('d', `M0,${-r} A${r},${r} 0 0 ${sweepOuter} 0,${r} A${rx},${r} 0 0 ${sweepInner} 0,${-r} Z`);
-    show('sky');
-  }
-
-  /* ---------- ISS ---------- */
-  const LA = { lat: 34.07, lon: -118.44 };
-  const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
-    const R = 6371, t = Math.PI / 180, dLat = (b.lat - a.lat) * t, dLon = (b.lon - a.lon) * t;
-    const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.sin(dLon / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(h));
-  };
-  const iss = () => getJSON('https://api.wheretheiss.at/v1/satellites/25544').then((d) => {
-    const dist = km(LA, { lat: d.latitude, lon: d.longitude });
-    const ll = `${Math.abs(d.latitude).toFixed(1)}°${d.latitude >= 0 ? 'N' : 'S'}, ${Math.abs(d.longitude).toFixed(1)}°${d.longitude >= 0 ? 'E' : 'W'}`;
-    set('[data-iss]', dist < 2200 ? `The ISS is ${Math.round(dist).toLocaleString()} km from LA right now, over ${ll}.` : `The ISS is over ${ll}, ${Math.round(dist).toLocaleString()} km from LA, moving at ${Math.round(d.velocity).toLocaleString()} km/h.`);
-  }).catch(() => set('[data-iss]', ''));
-  iss(); setInterval(iss, 15000);
-
-  /* ---------- UCLA football ---------- */
-  getJSON('https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/26/schedule').then((d) => {
-    const games = (d.events ?? []).map((e: any) => {
-      const c = e.competitions[0], us = c.competitors.find((x: any) => x.team.id === '26'), them = c.competitors.find((x: any) => x.team.id !== '26');
-      return { date: new Date(e.date), done: c.status.type.completed, home: us.homeAway === 'home', opp: them.team.shortDisplayName, us: us.score?.displayValue, them: them.score?.displayValue, win: us.winner };
-    });
-    const done = games.filter((g: any) => g.done), next = games.find((g: any) => !g.done);
-    const w = done.filter((g: any) => g.win).length;
-    set('[data-ucla-record]', `${w}–${done.length - w}`);
-    const last = done[done.length - 1];
-    set('[data-ucla-last]', last ? `Last: ${last.win ? 'W' : 'L'} ${last.us}–${last.them} ${last.home ? 'vs' : 'at'} ${last.opp}` : 'Season starts soon');
-    set('[data-ucla-next]', next ? `Next: ${next.home ? 'vs' : 'at'} ${next.opp}, ${fmt(next.date, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} PT (${until(next.date)})` : 'Season over');
-    show('ucla');
-  }).catch(() => {});
 
   /* ---------- feeds the browser can't fetch directly: refreshed by a GitHub Action ---------- */
   const RAW = 'https://raw.githubusercontent.com/EshaanDhavala/EshaanDhavala.github.io/live-data/';
@@ -171,16 +73,6 @@
   }).catch(() => {});
   }).catch(() => {});
 
-  /* ---------- next UFC card ---------- */
-  getJSON('https://site.web.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard').then((d) => {
-    const cal: { label: string; startDate: string }[] = d.leagues?.[0]?.calendar ?? [];
-    const now = Date.now();
-    const next = cal.map((c) => ({ ...c, t: new Date(c.startDate) })).filter((c) => c.t.getTime() > now && /^UFC/.test(c.label)).sort((a, b) => a.t.getTime() - b.t.getTime())[0];
-    if (!next) return;
-    set('[data-ufc-name]', next.label);
-    set('[data-ufc-when]', `${fmt(next.t, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} PT, ${until(next.t)}`);
-    show('ufc');
-  }).catch(() => {});
 </script>
 
 <style>
@@ -199,6 +91,4 @@
   .lc-src a { color: inherit; text-underline-offset: 2px; }
   .lc-d { font-size: 0.9rem; line-height: 1.4; }
   .lc-src { margin-top: auto; padding-top: 6px; color: var(--ink-2); font-size: 0.72rem; opacity: 0.7; }
-  .lc-moon { display: flex; align-items: center; gap: 14px; }
-  .lc-moon svg { width: 54px; height: 54px; flex: none; filter: drop-shadow(0 0 12px rgba(241, 237, 226, 0.25)); }
 </style>

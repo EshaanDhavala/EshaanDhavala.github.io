@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: '17 */3 * * *'
   workflow_dispatch:
+    inputs:
+      debug:
+        description: Log response shapes (keys only)
+        default: ''
 
 permissions:
   contents: write
@@ -30,6 +34,7 @@ jobs:
           OPENXBL_KEY: ${{ secrets.OPENXBL_KEY }}
           LASTFM_USER: ${{ secrets.LASTFM_USER }}
           LASTFM_KEY: ${{ secrets.LASTFM_KEY }}
+          DEBUG_SHAPE: ${{ inputs.debug }}
       - name: Publish to the live-data branch
         run: |
           cd live

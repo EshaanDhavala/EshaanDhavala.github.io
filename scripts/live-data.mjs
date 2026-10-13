@@ -43,6 +43,7 @@ async function xbox() {
   if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
   const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); });
   const acct = await get('account');
+  if (process.env.DEBUG_SHAPE) { const shape = (o, d = 0) => d > 3 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty'] : Object.fromEntries(Object.keys(o).slice(0, 25).map((k) => [k, shape(o[k], d + 1)])); console.log('account shape', JSON.stringify(shape(acct))); }
   const settings = Object.fromEntries((acct.profileUsers?.[0]?.settings ?? []).map((s) => [s.id, s.value]));
   const hist = await get('achievements').catch(() => null);
   const titles = (hist?.titles ?? []).filter((t) => t.achievement?.currentGamerscore > 0 || t.titleHistory?.lastTimePlayed);
