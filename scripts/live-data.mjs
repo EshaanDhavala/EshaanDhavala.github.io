@@ -47,6 +47,12 @@ async function xbox() {
   const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } })
     .then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
   const me = (await get('player/summary')).people?.[0];
+  if (process.env.DEBUG_SHAPE && me) {
+    const shape = (o, d = 0) => d > 4 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty', o.length] : Object.fromEntries(Object.keys(o).slice(0, 30).map((k) => [k, shape(o[k], d + 1)]));
+    for (const ep of ['achievements', 'player/titleHistory', `achievements/player/${me.xuid}`, `player/titleHistory/${me.xuid}`]) {
+      console.log(ep.replace(/\d{10,}/, '<xuid>'), '->', JSON.stringify(shape(await get(ep).catch((e) => e.message))));
+    }
+  }
   if (!me) throw new Error('OpenXBL: no profile');
   const th = me.titleHistory ?? {};
   await save('xbox', {
