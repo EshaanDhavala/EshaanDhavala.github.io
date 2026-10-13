@@ -32,6 +32,9 @@ async function anime() {
     planToWatch: by(6).length,
     watching: by(1).map((x) => ({ title: title(x), ep: x.num_watched_episodes, of: x.anime_num_episodes || null })),
     tens: rows.filter((x) => x.score === 10).map(title),
+    favorites: ['One Piece', 'Hunter x Hunter (2011)', 'Jujutsu Kaisen', 'Shingeki no Kyojin: The Final Season - Kanketsu-hen', 'Kaijuu 8-gou']
+      .map((t) => rows.find((x) => x.anime_title === t)).filter(Boolean)
+      .map((x) => ({ title: title(x).replace(/: (The )?Final Season.*/, ''), score: x.score, eps: x.num_watched_episodes, cover: x.anime_image_path.replace(/\/r\/\d+x\d+/, '').split('?')[0], url: `https://myanimelist.net/anime/${x.anime_id}` })),
     topGenre: Object.entries(genres).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
     lastUpdated: last ? { title: title(last), ep: last.num_watched_episodes, at: new Date(last.updated_at * 1000).toISOString() } : null,
   });
@@ -41,17 +44,18 @@ async function anime() {
 async function xbox() {
   const key = process.env.OPENXBL_KEY;
   if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
-  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
-  const acct = await get('account');
-  if (process.env.DEBUG_SHAPE) { const shape = (o, d = 0) => d > 3 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty'] : Object.fromEntries(Object.keys(o).slice(0, 25).map((k) => [k, shape(o[k], d + 1)])); console.log('account shape', JSON.stringify(shape(acct))); for (const ep of ['achievements', 'player/titleHistory', 'player/summary']) console.log(ep, '->', JSON.stringify(shape(await get(ep).catch((e) => e.message)))); }
-  const settings = Object.fromEntries((acct.profileUsers?.[0]?.settings ?? []).map((s) => [s.id, s.value]));
-  const hist = await get('achievements').catch(() => null);
-  const titles = (hist?.titles ?? []).filter((t) => t.achievement?.currentGamerscore > 0 || t.titleHistory?.lastTimePlayed);
-  titles.sort((a, b) => new Date(b.titleHistory?.lastTimePlayed ?? 0) - new Date(a.titleHistory?.lastTimePlayed ?? 0));
+  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } })
+    .then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
+  const me = (await get('player/summary')).people?.[0];
+  if (!me) throw new Error('OpenXBL: no profile');
+  const th = me.titleHistory ?? {};
   await save('xbox', {
-    gamertag: settings.Gamertag ?? null,
-    gamerscore: settings.Gamerscore ? Number(settings.Gamerscore) : null,
-    recent: titles.slice(0, 3).map((t) => ({ name: t.name, lastPlayed: t.titleHistory?.lastTimePlayed ?? null, progress: t.achievement?.progressPercentage ?? null })),
+    gamertag: me.gamertag ?? null,
+    gamerscore: me.gamerScore ? Number(me.gamerScore) : null,
+    online: me.presenceState === 'Online',
+    status: me.presenceText || null,
+    lastGame: th.TitleName ?? null,
+    lastPlayed: th.LastTimePlayed ?? null,
   });
 }
 
