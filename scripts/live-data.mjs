@@ -44,13 +44,13 @@ async function anime() {
 async function xbox() {
   const key = process.env.OPENXBL_KEY;
   if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
-  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } })
+  const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json', 'Accept-Language': 'en-US' } })
     .then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); }).then((j) => j?.content ?? j);
   const me = (await get('player/summary')).people?.[0];
   if (process.env.DEBUG_SHAPE && me) {
     const shape = (o, d = 0) => d > 4 || o === null || typeof o !== 'object' ? typeof o : Array.isArray(o) ? [o.length ? shape(o[0], d + 1) : 'empty', o.length] : Object.fromEntries(Object.keys(o).slice(0, 30).map((k) => [k, shape(o[k], d + 1)]));
     for (const ep of ['achievements', 'player/titleHistory', `achievements/player/${me.xuid}`, `player/titleHistory/${me.xuid}`]) {
-      const r = await fetch(`https://xbl.io/api/v2/${ep}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } });
+      const r = await fetch(`https://xbl.io/api/v2/${ep}`, { headers: { 'X-Authorization': key, Accept: 'application/json', 'Accept-Language': 'en-US' } });
       const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {}
       if (typeof j?.content === 'string') { try { j = JSON.parse(j.content); } catch { j = { contentText: j.content.slice(0, 120) }; } }
       if (Array.isArray(j) && typeof j[0] === 'string') j = { text: j[0].slice(0, 200).replace(/\d{10,}/g, '<n>') };
