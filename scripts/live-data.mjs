@@ -40,7 +40,7 @@ async function anime() {
 /* ---------- Xbox via OpenXBL (needs the OPENXBL_KEY secret) ---------- */
 async function xbox() {
   const key = process.env.OPENXBL_KEY;
-  if (!key) return console.log('xbox: no OPENXBL_KEY, skipped');
+  if (!key) { console.log('xbox: no OPENXBL_KEY, skipped'); return false; }
   const get = (p) => fetch(`https://xbl.io/api/v2/${p}`, { headers: { 'X-Authorization': key, Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(`OpenXBL ${p} ${r.status}`); return r.json(); });
   const acct = await get('account');
   const settings = Object.fromEntries((acct.profileUsers?.[0]?.settings ?? []).map((s) => [s.id, s.value]));
@@ -57,7 +57,7 @@ async function xbox() {
 /* ---------- Last.fm (needs LASTFM_USER + LASTFM_KEY secrets) ---------- */
 async function music() {
   const user = process.env.LASTFM_USER, key = process.env.LASTFM_KEY;
-  if (!user || !key) return console.log('music: no Last.fm secrets, skipped');
+  if (!user || !key) { console.log('music: no Last.fm secrets, skipped'); return false; }
   const get = (m, extra = '') => fetch(`https://ws.audioscrobbler.com/2.0/?method=${m}&user=${encodeURIComponent(user)}&api_key=${key}&format=json${extra}`).then((r) => r.json());
   const [info, recent, artists] = await Promise.all([get('user.getinfo'), get('user.getrecenttracks', '&limit=1'), get('user.gettopartists', '&period=1month&limit=5')]);
   const t = recent.recenttracks?.track?.[0];
@@ -69,7 +69,10 @@ async function music() {
 }
 
 let failed = 0;
+const available = [];
 for (const [name, fn] of [['anime', anime], ['xbox', xbox], ['music', music]]) {
-  try { await fn(); console.log(`${name}: ok`); } catch (e) { failed++; console.error(`${name}: ${e.message}`); }
+  try { if ((await fn()) !== false) { available.push(name); console.log(`${name}: ok`); } } catch (e) { failed++; console.error(`${name}: ${e.message}`); }
 }
+// the site reads this first, so it only requests feeds that exist
+await writeFile(`${OUT}/feeds.json`, JSON.stringify({ updated: now, available }));
 process.exitCode = failed === 3 ? 1 : 0;

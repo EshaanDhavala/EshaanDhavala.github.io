@@ -145,7 +145,9 @@
   /* ---------- feeds the browser can't fetch directly: refreshed by a GitHub Action ---------- */
   const RAW = 'https://raw.githubusercontent.com/EshaanDhavala/EshaanDhavala.github.io/live-data/';
   const ago = (iso: string) => { const h = (Date.now() - new Date(iso).getTime()) / 36e5; return h < 1 ? 'updated under an hour ago' : h < 48 ? `updated ${Math.round(h)}h ago` : `updated ${Math.round(h / 24)}d ago`; };
-  getJSON(RAW + 'anime.json').then((d) => {
+  getJSON(RAW + 'feeds.json').then((f) => {
+  const has = (n: string) => (f.available ?? []).includes(n);
+  if (has('anime')) getJSON(RAW + 'anime.json').then((d) => {
     set('[data-an-eps]', d.episodes.toLocaleString());
     const w = d.watching as { title: string; ep: number; of: number | null }[];
     const lead = w.find((x) => /One Piece/.test(x.title)) ?? w[0];
@@ -154,18 +156,19 @@
     set('[data-an-upd]', ago(d.updated));
     show('anime');
   }).catch(() => {});
-  getJSON(RAW + 'xbox.json').then((d) => {
+  if (has('xbox')) getJSON(RAW + 'xbox.json').then((d) => {
     if (d.gamerscore == null) return;
     set('[data-xb-score]', d.gamerscore.toLocaleString());
     set('[data-xb-recent]', d.recent?.length ? `Lately: ${d.recent.map((t: any) => t.name).join(', ')}.` : '');
     show('xbox');
   }).catch(() => {});
-  getJSON(RAW + 'music.json').then((d) => {
+  if (has('music')) getJSON(RAW + 'music.json').then((d) => {
     if (!d.latest) return;
     set('[data-mu-k]', d.latest.nowPlaying ? 'Listening right now' : 'Last played');
     set('[data-mu-track]', `${d.latest.track}, ${d.latest.artist}`);
     set('[data-mu-top]', d.topArtistsMonth?.length ? `Top this month: ${d.topArtistsMonth.slice(0, 3).join(', ')}. ${d.scrobbles.toLocaleString()} plays logged.` : `${d.scrobbles.toLocaleString()} plays logged.`);
     show('music');
+  }).catch(() => {});
   }).catch(() => {});
 
   /* ---------- next UFC card ---------- */
