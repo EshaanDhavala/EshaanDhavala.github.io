@@ -26,3 +26,4 @@ pnpm-debug.log*
 scripts/data/
 .claude/
 skills-lock.json
+live/

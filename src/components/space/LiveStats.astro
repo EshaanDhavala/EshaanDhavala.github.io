@@ -37,6 +37,31 @@
       <p class="lc-d" data-ucla-next>–</p>
       <p class="lc-src">ESPN</p>
     </li>
+    <li class="lc glass-card" data-card="anime" hidden>
+      <p class="lc-k">Anime</p>
+      <p class="lc-v"><span data-an-eps>–</span> <small>episodes</small></p>
+      <p class="lc-d" data-an-watching>–</p>
+      <p class="lc-d lc-dim" data-an-tens>–</p>
+      <p class="lc-src"><a data-an-link href="https://myanimelist.net/animelist/dhaesh04">MyAnimeList</a>, <span data-an-upd>updated every few hours</span></p>
+    </li>
+    <li class="lc glass-card" data-card="taco">
+      <p class="lc-k">Taco Bell Rewards</p>
+      <p class="lc-v">74,518 <small>points</small></p>
+      <p class="lc-d">Usual: Build Your Own Cravings Box with a Cheesy Gordita Crunch (beans instead of beef), Spicy Potato Soft Taco, Cheesy Fiesta Potatoes, Baja Blast Zero.</p>
+      <p class="lc-src">As of October 2026. <a href="https://plhswave.org/4411/features/study-hard-crunch-harder/">My high school paper covered it</a></p>
+    </li>
+    <li class="lc glass-card" data-card="xbox" hidden>
+      <p class="lc-k">Xbox</p>
+      <p class="lc-v"><span data-xb-score>–</span> <small>gamerscore</small></p>
+      <p class="lc-d" data-xb-recent>–</p>
+      <p class="lc-src">OpenXBL, updated every few hours</p>
+    </li>
+    <li class="lc glass-card" data-card="music" hidden>
+      <p class="lc-k" data-mu-k>Last played</p>
+      <p class="lc-v lc-v-s" data-mu-track>–</p>
+      <p class="lc-d" data-mu-top>–</p>
+      <p class="lc-src">Last.fm, updated every few hours</p>
+    </li>
     <li class="lc glass-card" data-card="ufc" hidden>
       <p class="lc-k">Next UFC card</p>
       <p class="lc-v lc-v-s" data-ufc-name>–</p>
@@ -117,6 +142,32 @@
     show('ucla');
   }).catch(() => {});
 
+  /* ---------- feeds the browser can't fetch directly: refreshed by a GitHub Action ---------- */
+  const RAW = 'https://raw.githubusercontent.com/EshaanDhavala/EshaanDhavala.github.io/live-data/';
+  const ago = (iso: string) => { const h = (Date.now() - new Date(iso).getTime()) / 36e5; return h < 1 ? 'updated under an hour ago' : h < 48 ? `updated ${Math.round(h)}h ago` : `updated ${Math.round(h / 24)}d ago`; };
+  getJSON(RAW + 'anime.json').then((d) => {
+    set('[data-an-eps]', d.episodes.toLocaleString());
+    const w = d.watching as { title: string; ep: number; of: number | null }[];
+    const lead = w.find((x) => /One Piece/.test(x.title)) ?? w[0];
+    set('[data-an-watching]', lead ? `${d.completed} shows finished. Watching ${lead.title} (episode ${lead.ep.toLocaleString()}) and ${w.length - 1} more.` : `${d.completed} shows finished.`);
+    set('[data-an-tens]', d.tens?.length ? `Rated 10: ${d.tens.slice(0, 4).join(', ')}${d.tens.length > 4 ? ` and ${d.tens.length - 4} more` : ''}.` : '');
+    set('[data-an-upd]', ago(d.updated));
+    show('anime');
+  }).catch(() => {});
+  getJSON(RAW + 'xbox.json').then((d) => {
+    if (d.gamerscore == null) return;
+    set('[data-xb-score]', d.gamerscore.toLocaleString());
+    set('[data-xb-recent]', d.recent?.length ? `Lately: ${d.recent.map((t: any) => t.name).join(', ')}.` : '');
+    show('xbox');
+  }).catch(() => {});
+  getJSON(RAW + 'music.json').then((d) => {
+    if (!d.latest) return;
+    set('[data-mu-k]', d.latest.nowPlaying ? 'Listening right now' : 'Last played');
+    set('[data-mu-track]', `${d.latest.track}, ${d.latest.artist}`);
+    set('[data-mu-top]', d.topArtistsMonth?.length ? `Top this month: ${d.topArtistsMonth.slice(0, 3).join(', ')}. ${d.scrobbles.toLocaleString()} plays logged.` : `${d.scrobbles.toLocaleString()} plays logged.`);
+    show('music');
+  }).catch(() => {});
+
   /* ---------- next UFC card ---------- */
   getJSON('https://site.web.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard').then((d) => {
     const cal: { label: string; startDate: string }[] = d.leagues?.[0]?.calendar ?? [];
@@ -140,6 +191,9 @@
   .lc-k { color: var(--ink-2); font-size: 0.82rem; }
   .lc-v { font-weight: 300; font-stretch: 122%; font-size: 2rem; line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .lc-v-s { font-size: 1.25rem; letter-spacing: -0.01em; }
+  .lc-v small { font-size: 0.9rem; font-stretch: 100%; letter-spacing: 0; color: var(--ink-2); }
+  .lc-dim { color: var(--ink-2); }
+  .lc-src a { color: inherit; text-underline-offset: 2px; }
   .lc-d { font-size: 0.9rem; line-height: 1.4; }
   .lc-src { margin-top: auto; padding-top: 6px; color: var(--ink-2); font-size: 0.72rem; opacity: 0.7; }
   .lc-moon { display: flex; align-items: center; gap: 14px; }

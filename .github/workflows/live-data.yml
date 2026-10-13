@@ -1,0 +1,41 @@
+name: Live data
+
+# Refreshes the site's "Right now" feeds that can't be fetched from the browser
+# (MyAnimeList, plus Xbox and Last.fm once their secrets exist). Publishes small
+# JSON summaries to the live-data branch; the site reads them from
+# raw.githubusercontent.com, so this never triggers a site deploy.
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-data
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch feeds
+        run: node scripts/live-data.mjs
+        env:
+          OPENXBL_KEY: ${{ secrets.OPENXBL_KEY }}
+          LASTFM_USER: ${{ secrets.LASTFM_USER }}
+          LASTFM_KEY: ${{ secrets.LASTFM_KEY }}
+      - name: Publish to the live-data branch
+        run: |
+          cd live
+          git init -q -b live-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Live data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" live-data
