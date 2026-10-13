@@ -52,7 +52,7 @@ async function xbox() {
   if (!me) throw new Error('OpenXBL: no profile');
   const hist = await get('achievements');
   // games only (no apps like YouTube), with art; strip ™/® from names
-  const clean = (n) => n.replace(/[™®©]/g, '').replace(/\s+/g, ' ').trim();
+  const clean = (n) => n.replace(/[™®©]/g, '').replace(/\s*\(?(for )?Xbox (One|Series X\|S|Series X|360)( Edition)?\)?\s*$/i, '').replace(/\s+/g, ' ').trim();
   const art = (t) => {
     const imgs = t.images ?? [];
     const pick = imgs.find((i) => i.type === 'BoxArt') ?? imgs.find((i) => i.type === 'Poster') ?? imgs.find((i) => i.type === 'BrandedKeyArt') ?? null;
