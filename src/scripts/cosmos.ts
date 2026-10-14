@@ -124,7 +124,8 @@ export function runWarp() {
   if (reduce) return;
   cv.classList.remove('sky-in'); void cv.offsetWidth; cv.classList.add('sky-in');
 }
-if (!reduce && document.querySelector('[data-hero]') && scrollY < 40) runWarp();
+// the home page's intro starts once fonts are ready (or after 1 s), so it plays where you can see it
+export const introReady: Promise<void> = Promise.race([document.fonts.ready.then(() => {}), new Promise<void>((r) => setTimeout(r, 1000))]);
 
 // cursor stardust
 type Dust = { x: number; y: number; vx: number; vy: number; life: number; r: number };

@@ -40,6 +40,7 @@ const palData = JSON.stringify({ projects: entries.map((e) => ({ slug: e.slug, n
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
     <meta name="theme-color" content="#000000" />
     <style is:inline set:html={condFace}></style>
+    <script is:inline>if (location.pathname === '/' && !location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
     <script is:inline data-goatcounter="https://eshaandhavala.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </head>
   <body>

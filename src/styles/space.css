@@ -51,7 +51,9 @@ main { position: relative; z-index: 1; }
 .skip { position: fixed; left: 12px; top: -60px; z-index: 95; background: var(--ink); color: #000; padding: 10px 14px; border-radius: 8px; }
 .skip:focus { top: 12px; }
 .cosmos { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-/* intro: the sky fades in from black and settles (compositor-only, no per-frame drawing) */
+/* home intro: hidden until the page is ready, then faded in by index.astro (opacity only, GPU-composited) */
+html.intro .cosmos, html.intro .hero-in > *, html.intro [data-profile] { opacity: 0; }
+/* palette "warp to top": a quick fade of the sky */
 .cosmos.sky-in { animation: sky-in 1.2s ease-out both; }
 @keyframes sky-in { from { opacity: 0; } to { opacity: 1; } }
 
