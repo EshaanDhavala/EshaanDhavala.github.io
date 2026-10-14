@@ -130,7 +130,7 @@ export function runWarp() {
   cv.classList.remove('sky-in'); void cv.offsetWidth; cv.classList.add('sky-in');
 }
 // the home page's intro starts once fonts are ready (or after 1 s), so it plays where you can see it
-export const introReady: Promise<void> = Promise.race([document.fonts.ready.then(() => {}), new Promise<void>((r) => setTimeout(r, 1000))]);
+export const introReady: Promise<void> = Promise.race([document.fonts.ready.then(() => {}), new Promise<void>((r) => setTimeout(r, 200))]);
 
 // cursor stardust
 type Dust = { x: number; y: number; vx: number; vy: number; life: number; r: number };
@@ -175,7 +175,7 @@ function frame() {
   // intro starburst: the sky's own stars burst out from the centre into place (same dots, no extra drawing)
   const bursting = burst >= 0 && burst < 1;
   if (bursting) {
-    if (!holding) burst = Math.min(1, burst + dt / 2.2);
+    if (!holding) burst = Math.min(1, burst + dt / 1.5);
     const f = (1 - burst) ** 2, R = Math.max(W, H) * (0.12 + burst * 0.5);
     const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, R);
     g.addColorStop(0, `rgba(255,255,255,${0.7 * f})`); g.addColorStop(0.25, `rgba(170,150,255,${0.34 * f})`); g.addColorStop(1, 'rgba(91,60,255,0)');

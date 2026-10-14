@@ -382,8 +382,8 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         document.documentElement.classList.remove('intro');
         startBurst();
         gsap.timeline({ defaults: { ease: 'sine.inOut' } })
-          .to(name, { opacity: 1, y: 0, duration: 1.4, ease: 'power2.out', stagger: 0.15 }, 0.7)
-          .to(rest, { opacity: 1, duration: 1.1 }, 1.3)
+          .to(name, { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out', stagger: 0.1 }, 0.1)
+          .to(rest, { opacity: 1, duration: 0.7 }, 0.35)
           .set([...name, ...rest], { clearProps: 'opacity,transform' });
       });
     }
