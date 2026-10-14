@@ -412,14 +412,14 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
       segs.forEach((g) => gsap.set(g, { strokeDashoffset: Number(g.dataset.len) }));
       const tl = gsap.timeline({ paused: true });
       // both rows draw at the same time and are paced to finish together
-      const LETTERS_SPAN = 4.2; // seconds from each row's first letter starting to its last letter starting
+      const LETTERS_SPAN = 3.3; // seconds from each row's first letter starting to its last letter starting
       const startOf: Record<number, number> = {};
       for (const r of rows) {
         const ls = Array.from({ length: count }, (_, l) => l).filter((l) => rowOf(l) === r);
         ls.forEach((l, i) => (startOf[l] = (i / Math.max(1, ls.length - 1)) * LETTERS_SPAN));
       }
       // last letters differ in how long their strokes take (N vs A), so shift each row to end on the same frame
-      const segDur = (g: SVGLineElement) => 0.14 + Number(g.dataset.len) / 420;
+      const segDur = (g: SVGLineElement) => 0.11 + Number(g.dataset.len) / 520;
       const letterDur = (l: number) => 0.28 + segs.filter((x) => x.dataset.l === String(l)).reduce((t, g, i, a) => t + (i < a.length - 1 ? segDur(g) * 0.85 : segDur(g)), 0);
       const lastOf = (r: number) => Math.max(...Array.from({ length: count }, (_, l) => l).filter((l) => rowOf(l) === r));
       const ends = rows.map((r) => startOf[lastOf(r)] + letterDur(lastOf(r)));
