@@ -52,8 +52,8 @@ main { position: relative; z-index: 1; }
 .skip:focus { top: 12px; }
 .cosmos { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
 /* intro: the sky fades in from black and settles (compositor-only, no per-frame drawing) */
-.cosmos.sky-in { animation: sky-in 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-@keyframes sky-in { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
+.cosmos.sky-in { animation: sky-in 1.2s ease-out both; }
+@keyframes sky-in { from { opacity: 0; } to { opacity: 1; } }
 
 /* buttons (btn-lime / btn-line kept for shared components) */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5em; min-height: 48px; padding: 0 22px; border: 0; border-radius: 999px; cursor: pointer; text-decoration: none; white-space: nowrap; font: 500 0.97rem/1 var(--font); letter-spacing: 0.005em; transition: transform 160ms var(--ease), background-color 240ms, box-shadow 240ms; }

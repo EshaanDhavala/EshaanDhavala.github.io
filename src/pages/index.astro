@@ -376,8 +376,8 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 
   /* ---------- hero entrance + parallax ---------- */
   if (!reduce) {
-    gsap.from('[data-hero-name] span', { yPercent: 40, opacity: 0, duration: 1.8, ease: 'power3.out', stagger: 0.14 });
-    gsap.from('.hero-in > :not(h1), [data-profile]', { y: 22, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.5 });
+    gsap.from('[data-hero-name] span', { y: 12, opacity: 0, duration: 1.1, ease: 'power2.out', stagger: 0.08 });
+    gsap.from('.hero-in > :not(h1), [data-profile]', { opacity: 0, duration: 0.9, ease: 'power1.out', delay: 0.35 });
     const st = { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true };
     gsap.to('[data-play]', { yPercent: 22, opacity: 0.35, ease: 'none', scrollTrigger: st });
     gsap.to('.hero-in', { yPercent: -18, ease: 'none', scrollTrigger: st });
