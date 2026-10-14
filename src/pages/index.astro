@@ -30,13 +30,46 @@ const ticker = [
   ['26 matches', 'of UCLA Tennis data'],
   ['Bruin Sports Analytics', 'football co-chair'],
 ];
-// my initials, for the sign-off constellation
-let sd = 33;
-const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
-const ED = {
-  stars: [[20, 20], [110, 20], [20, 90], [88, 90], [20, 160], [110, 160], [170, 20], [170, 160], [232, 148], [272, 90], [232, 32]].map(([x, y], i) => ({ x, y, r: i === 9 ? 4.6 : 2.6 + (i % 3) * 0.5, sx: (rnd() - 0.5) * 520, sy: (rnd() - 0.5) * 360 })),
-  d: 'M110,20 L20,20 L20,160 L110,160 M20,90 L88,90 M170,20 L170,160 L232,148 L272,90 L232,32 Z',
+// my name as a constellation for the sign-off: each letter is a few straight strokes with a star at every corner
+const GLYPHS: Record<string, [number, number][][]> = {
+  E: [[[56, 0], [0, 0], [0, 100], [56, 100]], [[0, 50], [42, 50]]],
+  S: [[[58, 10], [32, 0], [4, 14], [8, 42], [50, 58], [56, 86], [28, 100], [0, 90]]],
+  H: [[[0, 0], [0, 100]], [[58, 0], [58, 100]], [[0, 50], [58, 50]]],
+  A: [[[0, 100], [30, 0], [60, 100]], [[13, 58], [47, 58]]],
+  N: [[[0, 100], [0, 0], [58, 100], [58, 0]]],
+  D: [[[0, 0], [0, 100], [36, 96], [58, 70], [58, 30], [36, 4], [0, 0]]],
+  V: [[[0, 0], [30, 100], [60, 0]]],
+  L: [[[0, 0], [0, 100], [52, 100]]],
 };
+function nameConstellation(lines: string[], adv = 84, lineH = 150) {
+  let sd = 33;
+  const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+  const widths = lines.map((l) => l.length * adv - (adv - 60));
+  const W = Math.max(...widths);
+  let d = '';
+  const stars: { x: number; y: number; r: number; sx: number; sy: number }[] = [];
+  lines.forEach((line, li) => {
+    const x0 = (W - widths[li]) / 2, y0 = li * lineH;
+    [...line].forEach((ch, ci) => {
+      const seen = new Set<string>();
+      for (const stroke of GLYPHS[ch]) {
+        stroke.forEach(([x, y], k) => {
+          const X = x0 + ci * adv + x, Y = y0 + y;
+          d += `${k ? 'L' : 'M'}${X},${Y} `;
+          const key = `${x},${y}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          stars.push({ x: X, y: Y, r: 2 + rnd() * 1.6, sx: (rnd() - 0.5) * W * 0.9, sy: (rnd() - 0.5) * 420 });
+        });
+      }
+    });
+  });
+  // the apex of the last A goes supernova
+  const nova = stars.filter((s) => s.y === lineH).reduce((a, b) => (b.x > a.x ? b : a));
+  nova.r = 4.4;
+  return { d: d.trim(), stars, w: W, h: lineH + 100, nova };
+}
+const NAME = nameConstellation(['ESHAAN', 'DHAVALA']);
 const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : null);
 ---
 <Space>
@@ -203,11 +236,11 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
     <LiveStats />
   </section>
 
-  <!-- 8. Sign-off: my initials form, then go supernova -->
+  <!-- 8. Sign-off: my name forms as a constellation, then goes supernova -->
   <section class="contact wrap" data-signoff data-nebula="amber" data-nebula-x="0.6" data-nebula-y="0.45" aria-labelledby="contact-title">
-    <svg class="con ed-con" viewBox="0 0 300 180" data-assemble data-mode="scroll" data-nova-id="signoff" data-nova-x="272" data-nova-y="90" data-big data-end="center 60%" aria-hidden="true">
-      <path class="con-line" d={ED.d} pathLength="1" />
-      {ED.stars.map((s) => <circle class="cstar" cx={s.x} cy={s.y} r={s.r} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
+    <svg class="con name-con" viewBox={`-12 -12 ${NAME.w + 24} ${NAME.h + 24}`} data-assemble data-mode="scroll" data-nova-id="signoff-name" data-nova-x={NAME.nova.x + 12} data-nova-y={NAME.nova.y + 12} data-big data-end="center 60%" aria-hidden="true">
+      <path class="con-line" d={NAME.d} pathLength="1" />
+      {NAME.stars.map((s) => <circle class="cstar" cx={s.x} cy={s.y} r={s.r.toFixed(2)} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
     </svg>
     <h2 id="contact-title">Get in touch</h2>
     <p class="cta">
@@ -516,7 +549,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 
   /* ---------- sign-off ---------- */
   .contact { padding-block: clamp(120px, 20vh, 220px) clamp(100px, 14vh, 160px); display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .ed-con { width: min(78vw, 420px); height: auto; margin-bottom: 30px; cursor: pointer; }
+  .name-con { width: min(88vw, 620px); height: auto; margin-bottom: 40px; cursor: pointer; overflow: visible; }
   .contact h2 { font-size: clamp(3rem, 9vw, 8rem); font-weight: 300; font-stretch: 125%; letter-spacing: -0.04em; }
   .contact .cta { justify-content: center; }
   .k-hint { margin-top: 22px; color: var(--ink-2); font-size: 0.9rem; display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }
