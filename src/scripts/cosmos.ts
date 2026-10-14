@@ -243,13 +243,16 @@ function frame() {
 gsap.ticker.add(frame);
 
 /* ================= constellations: assemble, then go supernova once per visit ================= */
-// <svg data-assemble data-nova-id="..." data-nova-x data-nova-y data-mode="scroll|load" data-big>
+// <svg data-assemble data-nova-id="..." data-nova-x data-nova-y data-mode="scroll|load|enter" data-big>
+// scroll: scrubbed with the scroll. load: plays on page load. enter: plays (timed) each time the page is
+// loaded and it scrolls into view; only its supernova is once per visit.
 export function initConstellations(root: ParentNode = document) {
   $$<SVGSVGElement>('svg[data-assemble]', root).forEach((svg) => {
     const id = svg.dataset.novaId!, big = svg.hasAttribute('data-big'), mode = svg.dataset.mode ?? 'scroll';
     const stars = $$<SVGCircleElement>('.cstar', svg), line = svg.querySelector<SVGPathElement>('.con-line')!;
     const finish = () => { svg.classList.add('lit'); gsap.set(stars, { x: 0, y: 0, opacity: 1, scale: 1 }); gsap.set(line, { strokeDashoffset: 0 }); };
-    if (reduce || store.get(`nova:${id}`)) { finish(); return; }
+    const seen = !!store.get(`nova:${id}`);
+    if (reduce || (seen && mode !== 'enter')) { finish(); return; }
     const vb = svg.viewBox.baseVal;
     const boom = () => supernovaAt(svg, Number(svg.dataset.novaX) / vb.width, Number(svg.dataset.novaY) / vb.height, big);
     // stars fly in and line up; the line then draws from the left-most star to the right-most and is
@@ -259,10 +262,15 @@ export function initConstellations(root: ParentNode = document) {
       { x: 0, y: 0, opacity: 1, scale: 1, ease: 'power2.inOut', duration: 1, stagger: 0.03 })
       .fromTo(line, { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'none', duration: 1.2 }, 0.55);
     let done = false;
-    const lock = () => { if (done) return; done = true; store.set(`nova:${id}`); st?.kill(); tl.progress(1).kill(); finish(); boom(); };
+    const lock = () => { if (done) return; done = true; store.set(`nova:${id}`); st?.kill(); tl.progress(1).kill(); finish(); if (!seen) boom(); };
     let st: ScrollTrigger | null = null;
     if (mode === 'load') {
       tl.eventCallback('onComplete', lock); tl.duration(2.2); gsap.delayedCall(0.5, () => tl.play());
+    } else if (mode === 'enter') {
+      gsap.set(stars, { x: (i) => Number(stars[i].dataset.sx), y: (i) => Number(stars[i].dataset.sy), opacity: 0.15, scale: 0.5, transformOrigin: 'center' });
+      gsap.set(line, { strokeDashoffset: 1 });
+      tl.eventCallback('onComplete', lock); tl.duration(2.6);
+      st = ScrollTrigger.create({ trigger: svg, start: 'top 80%', once: true, onEnter: () => tl.play() });
     } else {
       const trigger = svg.closest('[data-assemble-trigger]') ?? svg;
       st = ScrollTrigger.create({

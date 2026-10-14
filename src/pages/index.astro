@@ -238,7 +238,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 
   <!-- 8. Sign-off: my name forms as a constellation, then goes supernova -->
   <section class="contact wrap" data-signoff data-nebula="amber" data-nebula-x="0.6" data-nebula-y="0.45" aria-labelledby="contact-title">
-    <svg class="con name-con" viewBox={`-12 -12 ${NAME.w + 24} ${NAME.h + 24}`} data-assemble data-mode="scroll" data-nova-id="signoff-name" data-nova-x={NAME.nova.x + 12} data-nova-y={NAME.nova.y + 12} data-big data-end="center 60%" aria-hidden="true">
+    <svg class="con name-con" viewBox={`-12 -12 ${NAME.w + 24} ${NAME.h + 24}`} data-assemble data-mode="enter" data-nova-id="signoff-name" data-nova-x={NAME.nova.x + 12} data-nova-y={NAME.nova.y + 12} data-big data-end="center 60%" aria-hidden="true">
       <path class="con-line" d={NAME.d} pathLength="1" />
       {NAME.stars.map((s) => <circle class="cstar" cx={s.x} cy={s.y} r={s.r.toFixed(2)} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
     </svg>
