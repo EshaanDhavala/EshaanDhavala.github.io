@@ -1,7 +1,7 @@
 // The sky behind every page, plus the shared interactions of the space theme.
 // One fixed canvas: three depths of twinkling stars, nebulas anchored to [data-nebula] sections that drift
-// slower than the page, shooting stars (more when you scroll fast), supernovas, a warp-speed intro once per
-// visit, cursor stardust and a comet that shows scroll position. Native scrolling, eased lightly by Lenis.
+// slower than the page, shooting stars (more when you scroll fast), supernovas, an intro fade on the home page,
+// cursor stardust and a comet that shows scroll position. Native scrolling, eased lightly by Lenis.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
@@ -118,10 +118,13 @@ export function supernovaAt(el: Element, fx = 0.5, fy = 0.5, big = false) {
   supernova(r.left + fx * r.width, scrollY + r.top + fy * r.height, big);
 }
 
-// warp-speed intro: every fresh load of the home page, starting from the top
-let warp = 0;
-if (!reduce && document.querySelector('[data-hero]') && scrollY < 40) warp = 1;
-export const runWarp = () => { if (!reduce) warp = 1; };
+// intro: the sky fades in from black and settles, like eyes adjusting to the dark.
+// It's a CSS transition on the canvas element (GPU-composited), so it costs nothing per frame.
+export function runWarp() {
+  if (reduce) return;
+  cv.classList.remove('sky-in'); void cv.offsetWidth; cv.classList.add('sky-in');
+}
+if (!reduce && document.querySelector('[data-hero]') && scrollY < 40) runWarp();
 
 // cursor stardust
 type Dust = { x: number; y: number; vx: number; vy: number; life: number; r: number };
@@ -134,7 +137,8 @@ if (fine && !reduce) addEventListener('pointermove', (e) => {
 });
 
 function size() {
-  const dpr = Math.min(2, devicePixelRatio || 1);
+  // stars are soft dots, so 1.5x is indistinguishable from 2x and draws ~44% fewer pixels
+  const dpr = Math.min(1.5, devicePixelRatio || 1);
   W = innerWidth; H = innerHeight;
   cv.width = W * dpr; cv.height = H * dpr; c.setTransform(dpr, 0, 0, dpr, 0, 0);
   seedStars();
@@ -162,26 +166,8 @@ function frame() {
   c.globalAlpha = 1;
   c.globalCompositeOperation = 'source-over';
 
-  // stars: three depths, twinkling; streaking during the warp intro
-  if (warp > 0) warp = Math.max(0, warp - dt / 2.4);
-  const wk = warp * warp, cx0 = W / 2, cy0 = H / 2;
-  if (wk > 0.01) {
-    // gentle streaks, one path per depth so the intro stays smooth
-    c.lineCap = 'round'; c.strokeStyle = '#ffffff';
-    for (const { depth, dots } of layers) {
-      const off = reduce ? 0 : sy * depth, k = 1 - 0.24 * wk * (0.5 + depth * 1.6);
-      c.globalAlpha = (0.32 + depth * 1.1) * (0.55 + 0.45 * wk); c.lineWidth = 0.6 + depth * 1.9;
-      c.beginPath();
-      for (const d of dots) {
-        const y = (((d.y - off) % H) + H) % H;
-        c.moveTo(cx0 + (d.x - cx0) * k, cy0 + (y - cy0) * k); c.lineTo(d.x, y);
-      }
-      c.stroke();
-    }
-    c.globalAlpha = 1;
-  }
+  // stars: three depths, twinkling
   for (const { depth, dots } of layers) {
-    if (wk > 0.01) break;
     const off = reduce ? 0 : sy * depth;
     for (const d of dots) {
       const y = (((d.y - off) % H) + H) % H;

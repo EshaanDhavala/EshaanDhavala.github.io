@@ -54,11 +54,11 @@ rounded:
 
 ## Motion
 - Native scrolling eased lightly by Lenis (lerp 0.22). Nothing pins; scrolling always moves the page.
-- Sky canvas (src/scripts/cosmos.ts): three depths of twinkling stars (parallax), nebulas at half page speed, shooting stars (more when scrolling fast), warp-speed intro once per visit, cursor stardust, a comet on the right edge showing scroll position.
+- Sky canvas (src/scripts/cosmos.ts): three depths of twinkling stars (parallax), nebulas at half page speed, shooting stars (more when scrolling fast), an intro where the sky fades in and settles (CSS only), cursor stardust, a comet on the right edge showing scroll position.
 - Constellations assemble as they scroll in (stars fly in, the line draws to the last star), then go supernova once per visit (sessionStorage). On project pages they assemble on load.
 - The original site's background data animations (Ambient.astro) still loop faintly, recoloured white.
 - The 3D solar system (Three.js) loads only when near; drag turns it; it never captures the wheel.
-- Reduced motion: static sky, constellations shown formed, no warp, shooting stars, novas or orbits.
+- Reduced motion: static sky, constellations shown formed, no intro, shooting stars, novas or orbits.
 
 ## Do's and Don'ts
 - **Do** draw anything decorative from real project data where possible, and say what it is in the footer note.
