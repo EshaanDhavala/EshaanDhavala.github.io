@@ -46,25 +46,25 @@ function nameConstellation(lines: string[], adv = 84, lineH = 150) {
   const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
   const widths = lines.map((l) => l.length * adv - (adv - 60));
   const W = Math.max(...widths);
-  let d = '';
-  const stars: { x: number; y: number; r: number; sx: number; sy: number }[] = [];
+  // one entry per letter, in reading order: its stars and its star-to-star segments (with exact lengths,
+  // so each segment can be drawn by animating its dash in plain pixels, which every browser supports)
+  const letters: { stars: { x: number; y: number; r: number }[]; segs: { x1: number; y1: number; x2: number; y2: number; len: number }[] }[] = [];
   lines.forEach((line, li) => {
     const x0 = (W - widths[li]) / 2, y0 = li * lineH;
     [...line].forEach((ch, ci) => {
-      const seen = new Set<string>();
+      const seen = new Set<string>(), L = { stars: [] as any[], segs: [] as any[] };
       for (const stroke of GLYPHS[ch]) {
-        stroke.forEach(([x, y], k) => {
-          const X = x0 + ci * adv + x, Y = y0 + y;
-          d += `${k ? 'L' : 'M'}${X},${Y} `;
-          const key = `${x},${y}`;
-          if (seen.has(key)) return;
-          seen.add(key);
-          stars.push({ x: X, y: Y, r: 2 + rnd() * 1.6, sx: (rnd() - 0.5) * W * 0.9, sy: (rnd() - 0.5) * 420 });
+        const pts = stroke.map(([x, y]) => [x0 + ci * adv + x, y0 + y]);
+        pts.forEach(([X, Y], k) => {
+          const key = `${X},${Y}`;
+          if (!seen.has(key)) { seen.add(key); L.stars.push({ x: X, y: Y, r: 2 + rnd() * 1.6 }); }
+          if (k) { const [px, py] = pts[k - 1]; L.segs.push({ x1: px, y1: py, x2: X, y2: Y, len: Math.hypot(X - px, Y - py) }); }
         });
       }
+      letters.push(L);
     });
   });
-  return { d: d.trim(), stars, w: W, h: lineH + 100 };
+  return { letters, w: W, h: lineH + 100 };
 }
 const NAME = nameConstellation(['ESHAAN', 'DHAVALA']);
 const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : null);
@@ -236,8 +236,8 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   <!-- 8. Sign-off: my name forms as a constellation, then goes supernova -->
   <section class="contact wrap" data-signoff data-nebula="amber" data-nebula-x="0.6" data-nebula-y="0.45" aria-labelledby="contact-title">
     <svg class="con name-con" viewBox={`-12 -12 ${NAME.w + 24} ${NAME.h + 24}`} data-name-con aria-hidden="true">
-      <path class="con-line" d={NAME.d} pathLength="1" />
-      <g filter="url(#glow)">{NAME.stars.map((s) => <circle class="nstar" cx={s.x} cy={s.y} r={s.r.toFixed(2)} />)}</g>
+      <g class="nsegs">{NAME.letters.map((L, li) => L.segs.map((g) => <line class="nseg" data-l={li} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} style={`stroke-dasharray:${g.len.toFixed(1)}`} data-len={g.len.toFixed(1)} />))}</g>
+      <g filter="url(#glow)">{NAME.letters.map((L, li) => L.stars.map((st) => <circle class="nstar" data-l={li} cx={st.x} cy={st.y} r={st.r.toFixed(2)} />))}</g>
     </svg>
     <h2 id="contact-title">Get in touch</h2>
     <p class="cta">
@@ -263,7 +263,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 </Space>
 
 <script>
-  import { gsap, ScrollTrigger, reduce, $, $$, initConstellations, initCountUps, initTilt, initRises, supernova, introReady } from '../scripts/cosmos';
+  import { gsap, ScrollTrigger, reduce, $, $$, initConstellations, initCountUps, initTilt, initRises, supernova, introReady, startBurst } from '../scripts/cosmos';
 
   /* ---------- the Herbert play, behind the name ---------- */
   type P = [number, number, string];
@@ -377,14 +377,14 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
     // the stars fade up from black, my name rises gently, and the rest follows
     if (document.documentElement.classList.contains('intro')) {
       introReady.then(() => {
-        const cosmos = $('[data-cosmos]')!, name = $$('[data-hero-name] span'), rest = $$('.hero-in > :not(h1), [data-profile]');
-        gsap.set(cosmos, { opacity: 0 }); gsap.set(name, { opacity: 0, y: 18 }); gsap.set(rest, { opacity: 0 });
+        const name = $$('[data-hero-name] span'), rest = $$('.hero-in > :not(h1), [data-profile]');
+        gsap.set(name, { opacity: 0, y: 18 }); gsap.set(rest, { opacity: 0 });
         document.documentElement.classList.remove('intro');
+        startBurst();
         gsap.timeline({ defaults: { ease: 'sine.inOut' } })
-          .to(cosmos, { opacity: 1, duration: 2 })
-          .to(name, { opacity: 1, y: 0, duration: 1.4, ease: 'power2.out', stagger: 0.15 }, 0.5)
-          .to(rest, { opacity: 1, duration: 1.1 }, 1.2)
-          .set([cosmos, ...name, ...rest], { clearProps: 'opacity,transform' });
+          .to(name, { opacity: 1, y: 0, duration: 1.4, ease: 'power2.out', stagger: 0.15 }, 0.7)
+          .to(rest, { opacity: 1, duration: 1.1 }, 1.3)
+          .set([...name, ...rest], { clearProps: 'opacity,transform' });
       });
     }
     const st = { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true };
@@ -399,15 +399,27 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 
   initConstellations();
 
-  /* ---------- my name at the bottom: stars twinkle on left to right while the line writes through it ---------- */
+  /* ---------- my name at the bottom: drawn one letter at a time; each letter's stars twinkle on,
+     then lines connect them star to star, then the next letter starts ---------- */
   {
-    const svg = $('[data-name-con]')!, stars = $$<SVGCircleElement>('.nstar', svg), line = svg.querySelector<SVGPathElement>('.con-line')!;
+    const svg = $('[data-name-con]')!;
     if (!reduce) {
+      const stars = $$<SVGCircleElement>('.nstar', svg), segs = $$<SVGLineElement>('.nseg', svg);
+      const count = Math.max(...stars.map((s) => Number(s.dataset.l))) + 1;
       gsap.set(stars, { opacity: 0, scale: 0.2, transformOrigin: 'center', transformBox: 'fill-box' });
-      gsap.set(line, { strokeDashoffset: 1, opacity: 0.9 });
-      const tl = gsap.timeline({ paused: true, defaults: { ease: 'sine.out' } })
-        .to(stars, { opacity: 1, scale: 1, duration: 0.9, stagger: { amount: 3.6 } }, 0)
-        .to(line, { strokeDashoffset: 0, duration: 4.4, ease: 'sine.inOut' }, 0.3);
+      segs.forEach((g) => gsap.set(g, { strokeDashoffset: Number(g.dataset.len) }));
+      const tl = gsap.timeline({ paused: true });
+      const STEP = 0.42; // seconds between letters
+      for (let l = 0; l < count; l++) {
+        const t0 = l * STEP;
+        tl.to(stars.filter((s) => s.dataset.l === String(l)), { opacity: 1, scale: 1, duration: 0.55, ease: 'sine.out', stagger: 0.06 }, t0);
+        let t = t0 + 0.28;
+        for (const g of segs.filter((x) => x.dataset.l === String(l))) {
+          const dur = 0.14 + Number(g.dataset.len) / 420; // longer lines take a little longer
+          tl.to(g, { strokeDashoffset: 0, duration: dur, ease: 'none' }, t);
+          t += dur * 0.85;
+        }
+      }
       ScrollTrigger.create({ trigger: svg, start: 'top 82%', once: true, onEnter: () => tl.play() });
     }
   }
@@ -573,6 +585,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
   .contact { padding-block: clamp(120px, 20vh, 220px) clamp(100px, 14vh, 160px); display: flex; flex-direction: column; align-items: center; text-align: center; }
   .name-con { width: min(88vw, 620px); height: auto; margin-bottom: 40px; overflow: visible; }
   .name-con .nstar { fill: #fff; }
+  .name-con .nseg { stroke: rgba(255, 255, 255, 0.78); stroke-width: 1.3; stroke-linecap: round; fill: none; }
   .contact h2 { font-size: clamp(3rem, 9vw, 8rem); font-weight: 300; font-stretch: 125%; letter-spacing: -0.04em; }
   .contact .cta { justify-content: center; }
   .k-hint { margin-top: 22px; color: var(--ink-2); font-size: 0.9rem; display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }

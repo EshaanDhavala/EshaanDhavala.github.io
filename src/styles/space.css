@@ -52,7 +52,7 @@ main { position: relative; z-index: 1; }
 .skip:focus { top: 12px; }
 .cosmos { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
 /* home intro: hidden until the page is ready, then faded in by index.astro (opacity only, GPU-composited) */
-html.intro .cosmos, html.intro .hero-in > *, html.intro [data-profile] { opacity: 0; }
+html.intro .hero-in > *, html.intro [data-profile] { opacity: 0; }
 /* palette "warp to top": a quick fade of the sky */
 .cosmos.sky-in { animation: sky-in 1.2s ease-out both; }
 @keyframes sky-in { from { opacity: 0; } to { opacity: 1; } }

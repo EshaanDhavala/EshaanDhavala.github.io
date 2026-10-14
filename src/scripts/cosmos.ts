@@ -120,7 +120,12 @@ export function supernovaAt(el: Element, fx = 0.5, fy = 0.5, big = false) {
 
 // intro: the sky fades in from black and settles, like eyes adjusting to the dark.
 // It's a CSS transition on the canvas element (GPU-composited), so it costs nothing per frame.
+// on the home intro the stars wait, hidden at the centre, until the burst starts
+let burst = !reduce && document.documentElement.classList.contains('intro') ? 0 : -1, holding = burst === 0;
+/** the intro starburst; also used by the palette's "warp to the top" */
+export function startBurst() { if (!reduce) { burst = 0; holding = false; } }
 export function runWarp() {
+  startBurst();
   if (reduce) return;
   cv.classList.remove('sky-in'); void cv.offsetWidth; cv.classList.add('sky-in');
 }
@@ -167,16 +172,27 @@ function frame() {
   c.globalAlpha = 1;
   c.globalCompositeOperation = 'source-over';
 
+  // intro starburst: the sky's own stars burst out from the centre into place (same dots, no extra drawing)
+  const bursting = burst >= 0 && burst < 1;
+  if (bursting) {
+    if (!holding) burst = Math.min(1, burst + dt / 2.2);
+    const f = (1 - burst) ** 2, R = Math.max(W, H) * (0.12 + burst * 0.5);
+    const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, R);
+    g.addColorStop(0, `rgba(255,255,255,${0.7 * f})`); g.addColorStop(0.25, `rgba(170,150,255,${0.34 * f})`); g.addColorStop(1, 'rgba(91,60,255,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
   // stars: three depths, twinkling
   for (const { depth, dots } of layers) {
     const off = reduce ? 0 : sy * depth;
+    // nearer layers fly out faster, so the burst has depth
+    const e = bursting ? 1 - (1 - Math.min(1, burst * (1.05 + depth * 1.6))) ** 4 : 1;
+    const fade = bursting ? Math.min(1, 0.35 + burst * 6) : 1;
     for (const d of dots) {
       const y = (((d.y - off) % H) + H) % H;
-      const a = reduce ? d.a : d.a * (0.65 + 0.35 * Math.sin(t * d.tw + d.ph));
-      {
-        c.globalAlpha = a; c.fillStyle = d.col;
-        c.beginPath(); c.arc(d.x, y, d.r, 0, 6.283); c.fill();
-      }
+      const a = (reduce ? d.a : d.a * (0.65 + 0.35 * Math.sin(t * d.tw + d.ph))) * fade;
+      const x = bursting ? W / 2 + (d.x - W / 2) * e : d.x, yy = bursting ? H / 2 + (y - H / 2) * e : y;
+      c.globalAlpha = a; c.fillStyle = d.col;
+      c.beginPath(); c.arc(x, yy, d.r, 0, 6.283); c.fill();
     }
   }
   c.globalAlpha = 1;
