@@ -412,23 +412,23 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
       segs.forEach((g) => gsap.set(g, { strokeDashoffset: Number(g.dataset.len) }));
       const tl = gsap.timeline({ paused: true });
       // both rows draw at the same time and are paced to finish together
-      const LETTERS_SPAN = 3.3; // seconds from each row's first letter starting to its last letter starting
+      const LETTERS_SPAN = 2.0; // seconds from each row's first letter starting to its last letter starting
       const startOf: Record<number, number> = {};
       for (const r of rows) {
         const ls = Array.from({ length: count }, (_, l) => l).filter((l) => rowOf(l) === r);
         ls.forEach((l, i) => (startOf[l] = (i / Math.max(1, ls.length - 1)) * LETTERS_SPAN));
       }
       // last letters differ in how long their strokes take (N vs A), so shift each row to end on the same frame
-      const segDur = (g: SVGLineElement) => 0.11 + Number(g.dataset.len) / 520;
-      const letterDur = (l: number) => 0.28 + segs.filter((x) => x.dataset.l === String(l)).reduce((t, g, i, a) => t + (i < a.length - 1 ? segDur(g) * 0.85 : segDur(g)), 0);
+      const segDur = (g: SVGLineElement) => 0.066 + Number(g.dataset.len) / 867;
+      const letterDur = (l: number) => 0.17 + segs.filter((x) => x.dataset.l === String(l)).reduce((t, g, i, a) => t + (i < a.length - 1 ? segDur(g) * 0.85 : segDur(g)), 0);
       const lastOf = (r: number) => Math.max(...Array.from({ length: count }, (_, l) => l).filter((l) => rowOf(l) === r));
       const ends = rows.map((r) => startOf[lastOf(r)] + letterDur(lastOf(r)));
       const latest = Math.max(...ends);
       rows.forEach((r, i) => { for (let l = 0; l < count; l++) if (rowOf(l) === r) startOf[l] += latest - ends[i]; });
       for (let l = 0; l < count; l++) {
         const t0 = startOf[l];
-        tl.to(stars.filter((s) => s.dataset.l === String(l)), { opacity: 1, scale: 1, duration: 0.55, ease: 'sine.out', stagger: 0.06 }, t0);
-        let t = t0 + 0.28;
+        tl.to(stars.filter((s) => s.dataset.l === String(l)), { opacity: 1, scale: 1, duration: 0.33, ease: 'sine.out', stagger: 0.036 }, t0);
+        let t = t0 + 0.17;
         for (const g of segs.filter((x) => x.dataset.l === String(l))) {
           const dur = segDur(g); // longer lines take a little longer
           tl.to(g, { strokeDashoffset: 0, duration: dur, ease: 'none' }, t);
