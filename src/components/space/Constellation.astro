@@ -18,7 +18,18 @@ const fig = w === 400 && h === 280 && pad === 36 ? figures[slug] : undefined;
   data-nova-id={assemble ? novaId : undefined}
   data-end={end}
 >
-  {fig && <g class="con-fig" transform={fig.transform}>{fig.paths.map((d) => <path d={d} />)}</g>}
+  {fig && (
+    <g class="con-fig">
+      <g class="con-axes">
+        <path d="M14,6 V266 H394 M10,12 L14,4 L18,12 M388,262 L396,266 L388,270" />
+        {stars.map((s) => <path d={`M${s.x.toFixed(1)},266 v5`} />)}
+        {[62, 124, 186, 248].map((y) => <path d={`M9,${266 - y} h5`} />)}
+        <text x="394" y="284" text-anchor="end">{fig.axes.x}</text>
+        <text x="-8" y="6" text-anchor="end" transform="rotate(-90 -8 6)">{fig.axes.y}</text>
+      </g>
+      <g transform={fig.transform}>{fig.paths.map((d) => <path d={d} />)}</g>
+    </g>
+  )}
   <path class="con-line" d={linePath(stars)} pathLength="1" />
   {stars.map((s) => <circle class="cstar" cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={(s.r * starScale).toFixed(2)} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
 </svg>
