@@ -1,6 +1,6 @@
 // The sky behind every page, plus the shared interactions of the space theme.
 // One fixed canvas: three depths of twinkling stars, nebulas anchored to [data-nebula] sections that drift
-// slower than the page, shooting stars (more when you scroll fast), supernovas, an intro fade on the home page,
+// slower than the page, shooting stars (more when you scroll fast), an intro starburst on the home page,
 // cursor stardust and a comet that shows scroll position. Native scrolling, eased lightly by Lenis.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -102,21 +102,6 @@ function spawnShoot(fast = false) {
   shoots.push({ x: R() * W, y: R() * H * 0.6, vx: Math.cos(ang) * sp, vy: Math.abs(Math.sin(ang)) * sp, life: 0, max: 0.6 + R() * 0.5 });
 }
 export function meteorShower() { if (reduce) return; for (let i = 0; i < 22; i++) setTimeout(() => spawnShoot(true), i * 110 + R() * 120); }
-
-type Nova = { x: number; y: number; t: number; col: string; parts: { a: number; v: number; r: number }[]; big: boolean };
-const novas: Nova[] = [];
-const novaCols = ['#ffb35c', '#ff5ca8', '#5cd8ff', '#b07bff', '#7dffcf'];
-/** supernova at page coordinates (it scrolls with the page) */
-export function supernova(pageX: number, pageY: number, big = false) {
-  if (reduce) return;
-  const col = novaCols[Math.floor(R() * novaCols.length)];
-  novas.push({ x: pageX, y: pageY, t: 0, col, big, parts: Array.from({ length: big ? 70 : 38 }, () => ({ a: R() * 6.283, v: (big ? 160 : 90) + R() * (big ? 260 : 150), r: 0.6 + R() * 1.6 })) });
-}
-/** supernova at an element's on-screen point, given as fractions of its box */
-export function supernovaAt(el: Element, fx = 0.5, fy = 0.5, big = false) {
-  const r = el.getBoundingClientRect();
-  supernova(r.left + fx * r.width, scrollY + r.top + fy * r.height, big);
-}
 
 // intro: the sky fades in from black and settles, like eyes adjusting to the dark.
 // It's a CSS transition on the canvas element (GPU-composited), so it costs nothing per frame.
@@ -231,47 +216,20 @@ function frame() {
     c.beginPath(); c.moveTo(sh.x, sh.y); c.lineTo(sh.x - sh.vx * len, sh.y - sh.vy * len); c.stroke();
     c.fillStyle = `rgba(255,255,255,${fade})`; c.beginPath(); c.arc(sh.x, sh.y, 1.4, 0, 6.283); c.fill();
   }
-
-  // supernovas: flash, shock ring, debris
-  c.globalCompositeOperation = 'lighter';
-  for (let i = novas.length - 1; i >= 0; i--) {
-    const n = novas[i]; n.t += dt;
-    const dur = n.big ? 3 : 2.1, k = n.t / dur;
-    if (k >= 1) { novas.splice(i, 1); continue; }
-    const x = n.x, y = n.y - sy, sc = n.big ? 1.6 : 1;
-    const flash = Math.max(0, 1 - k * 3.2);
-    const core = c.createRadialGradient(x, y, 0, x, y, 70 * sc * (0.4 + k));
-    core.addColorStop(0, `rgba(255,255,255,${flash})`); core.addColorStop(0.25, n.col + Math.round(flash * 200).toString(16).padStart(2, '0')); core.addColorStop(1, n.col + '00');
-    c.fillStyle = core; c.beginPath(); c.arc(x, y, 70 * sc * (0.4 + k), 0, 6.283); c.fill();
-    const ringR = 12 + (1 - Math.pow(1 - k, 3)) * 190 * sc, ringA = (1 - k) * 0.85;
-    c.strokeStyle = n.col; c.globalAlpha = ringA; c.lineWidth = 2.2 * (1 - k) + 0.4;
-    c.beginPath(); c.arc(x, y, ringR, 0, 6.283); c.stroke();
-    c.globalAlpha = ringA * 0.5; c.lineWidth = 8 * (1 - k);
-    c.beginPath(); c.arc(x, y, ringR * 0.92, 0, 6.283); c.stroke();
-    for (const p of n.parts) {
-      const d = p.v * (1 - Math.pow(1 - k, 2)) * sc;
-      c.globalAlpha = 1 - k; c.fillStyle = k < 0.3 ? '#ffffff' : n.col;
-      c.beginPath(); c.arc(x + Math.cos(p.a) * d, y + Math.sin(p.a) * d, p.r, 0, 6.283); c.fill();
-    }
-    c.globalAlpha = 1;
-  }
-  c.globalCompositeOperation = 'source-over';
 }
 gsap.ticker.add(frame);
 
-/* ================= constellations: assemble, then go supernova once per visit ================= */
-// <svg data-assemble data-nova-id="..." data-nova-x data-nova-y data-mode="scroll|load|enter" data-big>
+/* ================= constellations: assemble, then stay lit ================= */
+// <svg data-assemble data-nova-id="..." data-mode="scroll|load|enter">
 // scroll: scrubbed with the scroll. load: plays on page load. enter: plays (timed) each time the page is
-// loaded and it scrolls into view; only its supernova is once per visit.
+// loaded and it scrolls into view. Once assembled, scroll/load ones stay lit for the rest of the visit.
 export function initConstellations(root: ParentNode = document) {
   $$<SVGSVGElement>('svg[data-assemble]', root).forEach((svg) => {
-    const id = svg.dataset.novaId!, big = svg.hasAttribute('data-big'), mode = svg.dataset.mode ?? 'scroll';
+    const id = svg.dataset.novaId!, mode = svg.dataset.mode ?? 'scroll';
     const stars = $$<SVGCircleElement>('.cstar', svg), line = svg.querySelector<SVGPathElement>('.con-line')!;
     const finish = () => { svg.classList.add('lit'); gsap.set(stars, { x: 0, y: 0, opacity: 1, scale: 1 }); gsap.set(line, { strokeDashoffset: 0 }); };
     const seen = !!store.get(`nova:${id}`);
     if (reduce || (seen && mode !== 'enter')) { finish(); return; }
-    const vb = svg.viewBox.baseVal;
-    const boom = () => supernovaAt(svg, Number(svg.dataset.novaX) / vb.width, Number(svg.dataset.novaY) / vb.height, big);
     // stars fly in and line up; the line then draws from the left-most star to the right-most and is
     // the last tween on the timeline, so it reaches the end exactly when the scroll does
     const tl = gsap.timeline({ paused: true });
@@ -279,7 +237,7 @@ export function initConstellations(root: ParentNode = document) {
       { x: 0, y: 0, opacity: 1, scale: 1, ease: 'power2.inOut', duration: 1, stagger: 0.03 })
       .fromTo(line, { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'none', duration: 1.2 }, 0.55);
     let done = false;
-    const lock = () => { if (done) return; done = true; store.set(`nova:${id}`); st?.kill(); tl.progress(1).kill(); finish(); if (!seen) boom(); };
+    const lock = () => { if (done) return; done = true; store.set(`nova:${id}`); st?.kill(); tl.progress(1).kill(); finish(); };
     let st: ScrollTrigger | null = null;
     if (mode === 'load') {
       tl.eventCallback('onComplete', lock); tl.duration(2.2); gsap.delayedCall(0.5, () => tl.play());
@@ -295,7 +253,6 @@ export function initConstellations(root: ParentNode = document) {
         onUpdate: (self) => { if (self.progress >= 0.995) lock(); }, onLeave: lock,
       });
     }
-    svg.addEventListener('click', (e) => supernova(e.clientX, scrollY + e.clientY));
   });
 }
 

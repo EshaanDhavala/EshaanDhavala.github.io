@@ -233,7 +233,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
     <LiveStats />
   </section>
 
-  <!-- 8. Sign-off: my name forms as a constellation, then goes supernova -->
+  <!-- 8. Sign-off: my name forms as a constellation -->
   <section class="contact wrap" data-signoff data-nebula="amber" data-nebula-x="0.6" data-nebula-y="0.45" aria-labelledby="contact-title">
     <svg class="con name-con" viewBox={`-12 -12 ${NAME.w + 24} ${NAME.h + 24}`} data-name-con aria-hidden="true">
       <g class="nsegs">{NAME.letters.map((L, li) => L.segs.map((g) => <line class="nseg" data-l={li} data-row={L.row} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} style={`stroke-dasharray:${g.len.toFixed(1)}`} data-len={g.len.toFixed(1)} />))}</g>
@@ -254,7 +254,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
         {entries.map((e) => <li><b>{e.name} constellation:</b> {series[e.slug]?.from}.</li>)}
         <li><b>Faint charts:</b> QB clutch ratings, FG make probability, PlayScan’s calls on its demo plays, USAA capture rate, weekly mood, tennis returns, ADHD severity by income, and the AI assistant answering (synthetic demo data).</li>
         <li><b>The 3D system:</b> one planet per project; the featured three are ringed.</li>
-        <li><b>Stars, nebulas, shooting stars, supernovas:</b> decoration. Shooting stars come more often when you scroll fast.</li>
+        <li><b>Stars, nebulas, shooting stars:</b> decoration. Shooting stars come more often when you scroll fast.</li>
       </ul>
     </details>
   </section>
@@ -263,7 +263,7 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
 </Space>
 
 <script>
-  import { gsap, ScrollTrigger, reduce, $, $$, initConstellations, initCountUps, initTilt, initRises, supernova, introReady, startBurst } from '../scripts/cosmos';
+  import { gsap, ScrollTrigger, reduce, $, $$, initConstellations, initCountUps, initTilt, initRises, introReady, startBurst } from '../scripts/cosmos';
 
   /* ---------- the Herbert play, behind the name ---------- */
   type P = [number, number, string];
@@ -395,7 +395,6 @@ const img = (e: (typeof entries)[number]) => (e.pic.kind === 'img' ? e.pic : nul
       gsap.fromTo($('.f-card', f), { y: 50 }, { y: -50, ease: 'none', scrollTrigger: { trigger: f, start: 'top bottom', end: 'bottom top', scrub: true } });
     });
   }
-  $('[data-hero-name]')!.addEventListener('click', (e) => supernova(e.clientX, scrollY + e.clientY, true));
 
   initConstellations();
 
