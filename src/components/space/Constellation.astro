@@ -2,9 +2,12 @@
 /** A project's constellation, drawn from its data. With `assemble`, the stars fly in and the line draws
  *  (on scroll, or on load), then stays lit. */
 import { constellation, linePath } from '../../lib/constellations';
+import { figures } from '../../lib/figures';
 interface Props { slug: string; w?: number; h?: number; pad?: number; class?: string; assemble?: false | 'scroll' | 'load'; novaId?: string; end?: string; starScale?: number }
 const { slug, w = 400, h = 280, pad = 36, class: cls, assemble = false, novaId = slug, end, starScale = 1 } = Astro.props;
 const stars = constellation(slug, w, h, pad);
+// figures are drawn for the default box, so only show them there
+const fig = w === 400 && h === 280 && pad === 36 ? figures[slug] : undefined;
 ---
 <svg
   class:list={['con', cls]}
@@ -15,6 +18,7 @@ const stars = constellation(slug, w, h, pad);
   data-nova-id={assemble ? novaId : undefined}
   data-end={end}
 >
+  {fig && <g class="con-fig" transform={fig.transform}>{fig.paths.map((d) => <path d={d} />)}</g>}
   <path class="con-line" d={linePath(stars)} pathLength="1" />
   {stars.map((s) => <circle class="cstar" cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={(s.r * starScale).toFixed(2)} data-sx={s.sx.toFixed(1)} data-sy={s.sy.toFixed(1)} />)}
 </svg>
