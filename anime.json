@@ -1,0 +1,101 @@
+{
+  "updated": "2026-10-17T15:30:19.594Z",
+  "profile": "https://myanimelist.net/animelist/dhaesh04",
+  "entries": 176,
+  "completed": 139,
+  "episodes": 5902,
+  "planToWatch": 24,
+  "watching": [
+    {
+      "title": "Black Clover Season 2",
+      "ep": 2,
+      "of": null
+    },
+    {
+      "title": "Bleach: Thousand-Year Blood War - The Calamity",
+      "ep": 8,
+      "of": 10
+    },
+    {
+      "title": "Dragon Ball Super: Beerus",
+      "ep": 1,
+      "of": null
+    },
+    {
+      "title": "Kuroko's Basketball 2",
+      "ep": 14,
+      "of": 25
+    },
+    {
+      "title": "One Piece",
+      "ep": 1180,
+      "of": null
+    },
+    {
+      "title": "Steel Ball Run: JoJo's Bizarre Adventure",
+      "ep": 1,
+      "of": null
+    },
+    {
+      "title": "Tokyo Revengers: War of the Three Titan Arc",
+      "ep": 2,
+      "of": 13
+    }
+  ],
+  "tens": [
+    "One Piece",
+    "Hunter x Hunter",
+    "Jujutsu Kaisen",
+    "Kaiju No. 8",
+    "Demon Slayer: Kimetsu no Yaiba - The Movie: Mugen Train",
+    "Demon Slayer: Kimetsu no Yaiba Entertainment District Arc",
+    "Solo Leveling Season 2: Arise from the Shadow",
+    "Attack on Titan: The Last Attack",
+    "Attack on Titan: Final Season Part 2",
+    "That Time I Got Reincarnated as a Slime",
+    "Tokyo Revengers"
+  ],
+  "favorites": [
+    {
+      "title": "One Piece",
+      "score": 10,
+      "eps": 1180,
+      "cover": "https://cdn.myanimelist.net/images/anime/1244/138851.jpg",
+      "url": "https://myanimelist.net/anime/21"
+    },
+    {
+      "title": "Hunter x Hunter",
+      "score": 10,
+      "eps": 148,
+      "cover": "https://cdn.myanimelist.net/images/anime/1337/99013.jpg",
+      "url": "https://myanimelist.net/anime/11061"
+    },
+    {
+      "title": "Jujutsu Kaisen",
+      "score": 10,
+      "eps": 24,
+      "cover": "https://cdn.myanimelist.net/images/anime/1171/109222.jpg",
+      "url": "https://myanimelist.net/anime/40748"
+    },
+    {
+      "title": "Attack on Titan",
+      "score": 9,
+      "eps": 2,
+      "cover": "https://cdn.myanimelist.net/images/anime/1279/131078.jpg",
+      "url": "https://myanimelist.net/anime/51535"
+    },
+    {
+      "title": "Kaiju No. 8",
+      "score": 10,
+      "eps": 12,
+      "cover": "https://cdn.myanimelist.net/images/anime/1370/140362.jpg",
+      "url": "https://myanimelist.net/anime/52588"
+    }
+  ],
+  "topGenre": "Action",
+  "lastUpdated": {
+    "title": "Kuroko's Basketball 2",
+    "ep": 14,
+    "at": "2026-10-13T06:09:20.000Z"
+  }
+}
