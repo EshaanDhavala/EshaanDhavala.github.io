@@ -1,0 +1,113 @@
+{
+  "updated": "2026-10-24T10:54:24.282Z",
+  "gamertag": "Thirst 0ps",
+  "gamerscore": 33140,
+  "online": true,
+  "status": "Madden NFL 26 (XSX)",
+  "gamesPlayed": 224,
+  "achievements": 1562,
+  "completed": 0,
+  "recent": [
+    {
+      "name": "EA SPORTS Madden NFL 26",
+      "cover": "https://store-images.s-microsoft.com/image/apps.56628.14396710821719966.730a4ed9-c54b-46d0-88ec-a2e00b01241b.bf35d963-6a5a-4c64-9f9b-ef86ec462b87?w=320&h=320&q=80&format=jpg",
+      "earned": 70,
+      "total": 1000,
+      "unlocked": 3,
+      "pct": 7,
+      "lastPlayed": "2026-10-24T10:21:39.5107217Z"
+    },
+    {
+      "name": "NBA 2K25",
+      "cover": "https://store-images.s-microsoft.com/image/apps.15676.13524839737985609.1bdc9493-6baf-4ab6-85f1-db97d039b65c.0278daca-0faf-4f3f-ac1c-b0c8cd541d7b?w=320&h=320&q=80&format=jpg",
+      "earned": 15,
+      "total": 1000,
+      "unlocked": 1,
+      "pct": 1,
+      "lastPlayed": "2026-10-24T09:39:54.1910828Z"
+    },
+    {
+      "name": "Rocket League",
+      "cover": "https://store-images.s-microsoft.com/image/apps.42368.65187692735347017.3990a461-2db8-41ef-8bf8-33d50ff2e82a.c3b82bee-c39d-4e94-b239-2ab0170c2551?w=320&h=320&q=80&format=jpg",
+      "earned": 2030,
+      "total": 2200,
+      "unlocked": 70,
+      "pct": 92,
+      "lastPlayed": "2026-10-24T08:43:47.9233626Z"
+    },
+    {
+      "name": "NARUTO SHIPPUDEN: Ultimate Ninja STORM 4",
+      "cover": "https://store-images.s-microsoft.com/image/apps.61775.64948385422045442.fc5518ac-d506-4b26-8e08-6bb267328027.4682e586-9bec-4a74-9314-268846333735?w=320&h=320&q=80&format=jpg",
+      "earned": 200,
+      "total": 1120,
+      "unlocked": 19,
+      "pct": 17,
+      "lastPlayed": "2026-10-24T06:47:55.1373584Z"
+    },
+    {
+      "name": "FIGHT NIGHT CHAMPION",
+      "cover": "https://store-images.s-microsoft.com/image/apps.43877.69068534869269909.2e5bd713-07e4-4ab3-ab98-5c3b344e3c50.bee59007-7def-4791-b9e7-891669c1465d?w=320&h=320&q=80&format=jpg",
+      "earned": 250,
+      "total": 1150,
+      "unlocked": 18,
+      "pct": 21,
+      "lastPlayed": "2026-10-24T06:28:42.5981327Z"
+    },
+    {
+      "name": "SpeedRunners 2: King of Speed",
+      "cover": "https://store-images.s-microsoft.com/image/apps.58974.14327242010981927.a5495c37-2e09-4b3f-82a1-e015a8eb734a.8c25e957-1f8c-439d-8dd9-71cffbb588bc?w=320&h=320&q=80&format=jpg",
+      "earned": 130,
+      "total": 1000,
+      "unlocked": 4,
+      "pct": 13,
+      "lastPlayed": "2026-10-24T02:30:42.9362695Z"
+    }
+  ],
+  "top": [
+    {
+      "name": "Rocket League",
+      "cover": "https://store-images.s-microsoft.com/image/apps.42368.65187692735347017.3990a461-2db8-41ef-8bf8-33d50ff2e82a.c3b82bee-c39d-4e94-b239-2ab0170c2551?w=320&h=320&q=80&format=jpg",
+      "earned": 2030,
+      "total": 2200,
+      "unlocked": 70,
+      "pct": 92,
+      "lastPlayed": "2026-10-24T08:43:47.9233626Z"
+    },
+    {
+      "name": "Minecraft",
+      "cover": "https://store-images.s-microsoft.com/image/apps.46509.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.86bf6099-e11f-428b-a60a-1947131b7c26?w=320&h=320&q=80&format=jpg",
+      "earned": 1350,
+      "total": 2980,
+      "unlocked": 63,
+      "pct": 45,
+      "lastPlayed": "2023-01-14T16:37:03.5300166Z"
+    },
+    {
+      "name": "Assassin's Creed Odyssey",
+      "cover": "https://store-images.s-microsoft.com/image/apps.60169.71972716530068101.ccdcadf1-1d2a-49f2-9c37-0b0a27e5a53c.90ee9374-df3a-4c86-8948-858a5adf29b7?w=320&h=320&q=80&format=jpg",
+      "earned": 1015,
+      "total": 1850,
+      "unlocked": 56,
+      "pct": 54,
+      "lastPlayed": "2024-01-18T02:51:03.7959102Z"
+    },
+    {
+      "name": "Destiny",
+      "cover": "https://store-images.s-microsoft.com/image/apps.9427.65506807380982023.0e494b93-8e27-4f0d-aa29-8b32bb48a45b.36af2922-8c20-4ecc-8055-d0fe060dbd32?w=320&h=320&q=80&format=jpg",
+      "earned": 980,
+      "total": 1500,
+      "unlocked": 43,
+      "pct": 65,
+      "lastPlayed": "2017-12-03T17:18:27.0009208Z"
+    },
+    {
+      "name": "UFC 4",
+      "cover": "https://store-images.s-microsoft.com/image/apps.44890.68458959458300043.df539657-64e3-4d17-a12b-abfee3e8f434.52abc444-6fc7-40fc-8f63-9f741151b714?w=320&h=320&q=80&format=jpg",
+      "earned": 895,
+      "total": 1000,
+      "unlocked": 25,
+      "pct": 89,
+      "lastPlayed": "2024-04-16T23:17:38.1097938Z"
+    }
+  ]
+}
