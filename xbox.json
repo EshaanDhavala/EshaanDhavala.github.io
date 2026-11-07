@@ -1,0 +1,113 @@
+{
+  "updated": "2026-11-07T12:55:34.771Z",
+  "gamertag": "Thirst 0ps",
+  "gamerscore": 33215,
+  "online": false,
+  "status": "Last seen 486d ago: Home",
+  "gamesPlayed": 227,
+  "achievements": 1565,
+  "completed": 0,
+  "recent": [
+    {
+      "name": "Fortnite",
+      "cover": "https://store-images.s-microsoft.com/image/apps.31130.70702278257994163.f7265b8a-f10e-49c4-8115-73c4d800af63.641ad74a-edd4-40c9-8049-3bb73387d09a?w=320&h=320&q=80&format=jpg",
+      "earned": 220,
+      "total": 1000,
+      "unlocked": 17,
+      "pct": 22,
+      "lastPlayed": "2026-11-07T07:12:20.1151878Z"
+    },
+    {
+      "name": "Rocket League",
+      "cover": "https://store-images.s-microsoft.com/image/apps.42368.65187692735347017.3990a461-2db8-41ef-8bf8-33d50ff2e82a.c3b82bee-c39d-4e94-b239-2ab0170c2551?w=320&h=320&q=80&format=jpg",
+      "earned": 2030,
+      "total": 2200,
+      "unlocked": 70,
+      "pct": 92,
+      "lastPlayed": "2026-11-07T01:27:47.381295Z"
+    },
+    {
+      "name": "DREDGE",
+      "cover": "https://store-images.s-microsoft.com/image/apps.63652.13820556954312705.ce2b6824-c2a0-4535-b8cb-e13dda14a92d.0209b610-a2c9-4eaf-8541-96ad1f554d39?w=320&h=320&q=80&format=jpg",
+      "earned": 20,
+      "total": 1450,
+      "unlocked": 1,
+      "pct": 1,
+      "lastPlayed": "2026-11-03T00:08:48.8880571Z"
+    },
+    {
+      "name": "NBA 2K25",
+      "cover": "https://store-images.s-microsoft.com/image/apps.15676.13658153007394895.2c282c9c-7877-44a7-b68d-576fd158cef8.6a058ea6-5991-450d-9344-b060494adb0d?w=320&h=320&q=80&format=jpg",
+      "earned": 15,
+      "total": 1000,
+      "unlocked": 1,
+      "pct": 1,
+      "lastPlayed": "2026-11-02T07:38:09.0693915Z"
+    },
+    {
+      "name": "ROUNDS",
+      "cover": "https://store-images.s-microsoft.com/image/apps.29505.13538378816161558.1f5794bc-a6c8-4147-99d3-205a64ee4ce7.a4640cc6-22c8-41c3-b8d2-a80672179d35?w=320&h=320&q=80&format=jpg",
+      "earned": 0,
+      "total": 1975,
+      "unlocked": 0,
+      "pct": 0,
+      "lastPlayed": "2026-11-01T04:21:06.4443782Z"
+    },
+    {
+      "name": "REMATCH",
+      "cover": "https://store-images.s-microsoft.com/image/apps.32652.14036668029170653.97838000-87b6-4a56-9c79-e4eddcea3b6f.0e8acd37-4ade-4b98-b9a1-3ce6befe26d8?w=320&h=320&q=80&format=jpg",
+      "earned": 700,
+      "total": 1000,
+      "unlocked": 33,
+      "pct": 70,
+      "lastPlayed": "2026-11-01T02:23:22.9232176Z"
+    }
+  ],
+  "top": [
+    {
+      "name": "Rocket League",
+      "cover": "https://store-images.s-microsoft.com/image/apps.42368.65187692735347017.3990a461-2db8-41ef-8bf8-33d50ff2e82a.c3b82bee-c39d-4e94-b239-2ab0170c2551?w=320&h=320&q=80&format=jpg",
+      "earned": 2030,
+      "total": 2200,
+      "unlocked": 70,
+      "pct": 92,
+      "lastPlayed": "2026-11-07T01:27:47.381295Z"
+    },
+    {
+      "name": "Minecraft",
+      "cover": "https://store-images.s-microsoft.com/image/apps.46509.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.86bf6099-e11f-428b-a60a-1947131b7c26?w=320&h=320&q=80&format=jpg",
+      "earned": 1350,
+      "total": 2980,
+      "unlocked": 63,
+      "pct": 45,
+      "lastPlayed": "2023-01-14T16:37:03.5300166Z"
+    },
+    {
+      "name": "Assassin's Creed Odyssey",
+      "cover": "https://store-images.s-microsoft.com/image/apps.60169.71972716530068101.ccdcadf1-1d2a-49f2-9c37-0b0a27e5a53c.90ee9374-df3a-4c86-8948-858a5adf29b7?w=320&h=320&q=80&format=jpg",
+      "earned": 1015,
+      "total": 1850,
+      "unlocked": 56,
+      "pct": 54,
+      "lastPlayed": "2024-01-18T02:51:03.7959102Z"
+    },
+    {
+      "name": "Destiny",
+      "cover": "https://store-images.s-microsoft.com/image/apps.9427.65506807380982023.0e494b93-8e27-4f0d-aa29-8b32bb48a45b.36af2922-8c20-4ecc-8055-d0fe060dbd32?w=320&h=320&q=80&format=jpg",
+      "earned": 980,
+      "total": 1500,
+      "unlocked": 43,
+      "pct": 65,
+      "lastPlayed": "2017-12-03T17:18:27.0009208Z"
+    },
+    {
+      "name": "UFC 4",
+      "cover": "https://store-images.s-microsoft.com/image/apps.44890.68458959458300043.df539657-64e3-4d17-a12b-abfee3e8f434.52abc444-6fc7-40fc-8f63-9f741151b714?w=320&h=320&q=80&format=jpg",
+      "earned": 895,
+      "total": 1000,
+      "unlocked": 25,
+      "pct": 89,
+      "lastPlayed": "2024-04-16T23:17:38.1097938Z"
+    }
+  ]
+}
